@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gbé Tché - L'Excellence Fon</title>
+    <!-- CSS -->
+    <link rel="stylesheet" href="./src/assets/styles.css?v=1">
+    <!-- Scripts CDN -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <div id="app"></div>
+
+    <script type="module">
+        import App from './src/App.js';
+
+        const { createApp } = Vue;
+        const app = createApp(App);
+        app.mount('#app');
+    </script>
+</body>
+</html>

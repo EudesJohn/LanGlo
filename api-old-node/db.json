@@ -1,0 +1,44 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "name": "Admin Gbe Tche",
+      "email": "eudesjohn650@gmail.com",
+      "password": "Johnson40",
+      "role": "admin"
+    }
+  ],
+  "words": [
+    {
+      "id": 1,
+      "french": "bonjour",
+      "fon": "kɔ́kú",
+      "category": "salutations",
+      "example": "Kɔ́kú, à ní cɛ ɖé?",
+      "phonetic": "ko-koo",
+      "status": "approved",
+      "added_by": 1
+    },
+    {
+      "id": 2,
+      "french": "merci",
+      "fon": "à wá",
+      "category": "salutations",
+      "example": "À wá kpɛ́dé",
+      "phonetic": "a-wa",
+      "status": "approved",
+      "added_by": 1
+    },
+    {
+      "id": 3,
+      "french": "eau",
+      "fon": "sin",
+      "category": "nature",
+      "example": "Sin ɖé mɛ",
+      "phonetic": "sin",
+      "status": "approved",
+      "added_by": 1
+    }
+  ],
+  "favorites": []
+}
