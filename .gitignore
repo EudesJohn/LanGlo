@@ -1,0 +1,9 @@
+node_modules/
+.env
+*.sqlite
+gbetche.sqlite
+api-old-php/
+api-old-node/
+.vercel/
+dist/
+.DS_Store
