@@ -1,24 +1,76 @@
 // app/src/components/WordCard.js
+import LucideIcon from './LucideIcon.js'
 
 export default {
-  props: ['word', 'isFavorite'],
-  emits: ['toggleFavorite', 'playAudio'],
+  props: ['word', 'favorites'],
+  emits: ['navigate'],
+  components: { LucideIcon },
   template: `
-    <div class="word-card glass-card">
-      <div class="card-top">
-        <span class="category-badge">{{ word.category }}</span>
-        <button @click="$emit('toggleFavorite', word.id)" :class="['fav-btn', {active: isFavorite}]">
-          <i data-lucide="heart" style="width:20px; height:20px;"></i>
-        </button>
+    <div class="word-card-luxury glass-effect glow-on-hover scale-in">
+      <!-- HEADER: CATEGORY & STATUS -->
+      <div class="card-luxury-header-detail">
+        <div class="badge-luxury premium-gradient">{{ word.category || 'Général' }}</div>
+        <div class="word-id-label">Réf #{{ word.id }}</div>
       </div>
-      <h2 class="fon-text">{{ word.fon }}</h2>
-      <p class="phonetic">/{{ word.phonetic }}/</p>
-      <p class="french-text">{{ word.french }}</p>
-      <p class="example">"{{ word.example }}"</p>
-      <div class="card-footer">
-        <button class="audio-btn" @click="$emit('playAudio', word.audio_url)">
-          <i data-lucide="volume-2"></i> Prononciation
-        </button>
+
+      <!-- MAIN CONTENT -->
+      <div class="card-luxury-body">
+        
+        <!-- SECTION FON -->
+        <div class="detail-section">
+          <span class="detail-label">Mot en Fon</span>
+          <h2 class="fon-heading font-fon">{{ word.fon }}</h2>
+          <div class="phonetic-detail" v-if="word.phonetic">
+            <lucide-icon name="music-2" :size="14" />
+            <span>Prononciation : <strong>[{{ word.phonetic }}]</strong></span>
+          </div>
+        </div>
+
+        <!-- SECTION FRANCAIS -->
+        <div class="detail-section mt-20">
+          <span class="detail-label">Traduction Française</span>
+          <div class="translation-box-v2">
+            <p class="value">{{ word.french }}</p>
+          </div>
+        </div>
+
+        <!-- SECTION EXEMPLE -->
+        <div class="detail-section mt-20" v-if="word.example">
+          <span class="detail-label">Exemple / Contexte d'usage</span>
+          <div class="luxury-context-v2">
+            <p>" {{ word.example }} "</p>
+          </div>
+        </div>
+
+        <!-- SECTION AUDIO AVEC TITRES CLAIRS -->
+        <div class="detail-section mt-25">
+          <span class="detail-label">Audio & Prononciation</span>
+          <div class="luxury-audio-grid">
+            
+            <div v-if="word.audio_url" class="audio-control-card">
+              <span class="audio-title">Prononciation du mot</span>
+              <button @click="$refs.audioWord.play()" class="btn-audio-action">
+                <lucide-icon name="play-circle" /> Écouter le mot
+              </button>
+              <audio ref="audioWord" :src="word.audio_url" preload="none"></audio>
+            </div>
+
+            <div v-if="word.example_audio_url" class="audio-control-card">
+              <span class="audio-title">Exemple lu à haute voix</span>
+              <button @click="$refs.audioExample.play()" class="btn-audio-action secondary">
+                <lucide-icon name="mic" /> Écouter la phrase
+              </button>
+              <audio ref="audioExample" :src="word.example_audio_url" preload="none"></audio>
+            </div>
+
+          </div>
+          
+          <div v-if="!word.audio_url && !word.example_audio_url" class="no-audio-premium">
+            <lucide-icon name="volume-x" />
+            <span>Aucun enregistrement disponible pour ce mot</span>
+          </div>
+        </div>
+
       </div>
     </div>
   `

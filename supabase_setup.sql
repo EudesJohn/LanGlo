@@ -1,49 +1,72 @@
--- SQL Schema for Supabase
--- Run this in the Supabase SQL Editor
+-- ==========================================================
+-- SQL Schema COMPLET pour Dico Fon (Gbé Tché)
+-- À exécuter dans l'Editor SQL de Supabase
+-- ==========================================================
 
--- 1. Create Users Table
+-- 1. Nettoyage (Optionnel - à ne faire que si vous voulez repartir à zéro)
+DROP TABLE IF EXISTS public.favorites;
+DROP TABLE IF EXISTS public.words;
+DROP TABLE IF EXISTS public.users;
+
+-- 2. Table des Utilisateurs (En synchronisation avec Supabase Auth)
 CREATE TABLE IF NOT EXISTS public.users (
-    id SERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL,
     email TEXT UNIQUE NOT NULL,
-    password TEXT NOT NULL,
-    role TEXT DEFAULT 'user',
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()),
-    is_active BOOLEAN DEFAULT true
+    password TEXT, -- Optionnel car géré par Supabase Auth
+    role TEXT DEFAULT 'user', -- 'user' ou 'admin'
+    nationality TEXT DEFAULT 'Béninoise',
+    ethnicity TEXT DEFAULT 'Fon',
+    pseudo TEXT,
+    avatar_url TEXT,
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
 );
 
--- 2. Create Words Table
+-- ==========================================================
+-- MIGRATION : À exécuter si vous avez déjà créé la table users
+-- ==========================================================
+-- ALTER TABLE public.users ADD COLUMN IF NOT EXISTS pseudo TEXT;
+-- ALTER TABLE public.users ADD COLUMN IF NOT EXISTS avatar_url TEXT;
+
+-- 3. Table des Mots et Suggestions
 CREATE TABLE IF NOT EXISTS public.words (
     id SERIAL PRIMARY KEY,
     french TEXT NOT NULL,
     fon TEXT NOT NULL,
+    phonetic TEXT,
     category TEXT,
     example TEXT,
-    phonetic TEXT,
-    audio_url TEXT,
-    status TEXT DEFAULT 'pending',
-    added_by INTEGER REFERENCES public.users(id),
+    audio_url TEXT, -- Prononciation du mot
+    example_audio_url TEXT, -- Prononciation de la phrase
+    status TEXT DEFAULT 'pending', -- 'pending', 'approved', 'rejected'
+    added_by UUID REFERENCES public.users(id),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
 );
 
--- 3. Create Favorites Table
+-- 4. Table des Favoris
 CREATE TABLE IF NOT EXISTS public.favorites (
-    user_id INTEGER REFERENCES public.users(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
     word_id INTEGER REFERENCES public.words(id) ON DELETE CASCADE,
     PRIMARY KEY (user_id, word_id)
 );
 
--- 4. Insert Initial Admin (Password: Johnson40)
--- Note: In a real app, use Supabase Auth instead of a custom user table if possible.
--- This schema matches your current logic.
-INSERT INTO public.users (name, email, password, role) 
-VALUES ('Admin Gbe Tche', 'eudesjohn650@gmail.com', 'Johnson40', 'admin')
-ON CONFLICT (email) DO NOTHING;
+-- 5. Injection de données initiales (Admin & Exemples)
+-- Note: L'ID 1 est réservé pour le premier admin créé manuellement.
+INSERT INTO public.users (id, name, email, password, role, nationality, ethnicity) 
+VALUES ('00000000-0000-0000-0000-000000000001', 'Admin Gbe Tche', 'eudesjohn650@gmail.com', 'Johnson@@50', 'admin', 'Béninoise', 'Fon')
+ON CONFLICT (id) DO UPDATE SET 
+    role = 'admin', 
+    password = EXCLUDED.password;
 
--- 5. Seed initial data
 INSERT INTO public.words (french, fon, category, example, phonetic, status, added_by)
 VALUES 
-('bonjour', 'kɔ́kú', 'salutations', 'Kɔ́kú, à ní cɛ ɖé?', 'ko-koo', 'approved', 1),
-('merci', 'à wá', 'salutations', 'À wá kpɛ́dé', 'a-wa', 'approved', 1),
-('eau', 'sin', 'nature', 'Sin ɖé mɛ', 'sin', 'approved', 1)
+('bonjour', 'kɔ́kú', 'salutations', 'Kɔ́kú, à ní cɛ ɖé?', 'ko-koo', 'approved', '00000000-0000-0000-0000-000000000001'),
+('merci', 'à wá', 'salutations', 'À wá kpɛ́dé', 'a-wa', 'approved', '00000000-0000-0000-0000-000000000001'),
+('eau', 'sin', 'nature', 'Sin ɖé mɛ', 'sin', 'approved', '00000000-0000-0000-0000-000000000001')
 ON CONFLICT DO NOTHING;
+
+-- ==========================================================
+-- SCRIPT DE PROMOTION ADMIN (À exécuter APRÈS votre inscription sur le site)
+-- ==========================================================
+-- UPDATE public.users SET role = 'admin' WHERE email = 'eudesjohn650@gmail.com';

@@ -1,31 +1,57 @@
 // app/src/components/Navbar.js
+import LucideIcon from './LucideIcon.js'
 
 export default {
-  props: ['user', 'currentPage'],
+  props: ['user', 'currentPage', 'isProfileComplete'],
   emits: ['navigate', 'logout'],
+  components: { LucideIcon },
+  data() {
+    return {
+      isMenuOpen: false
+    }
+  },
+  methods: {
+    handleNav(page) {
+      this.isMenuOpen = false;
+      this.$emit('navigate', page);
+    }
+  },
   template: `
     <header class="navbar glass-card">
-      <div class="logo clickable" @click="$emit('navigate', 'home')">
-        <span class="gradient-text">Gbé Tché</span>
+      <div class="container navbar-inner">
+        <div class="logo clickable" @click="handleNav('home')">
+          <span class="gradient-text">Gbé Tché</span>
+        </div>
+        
+        <!-- MOBILE HAMBURGER -->
+        <button class="mobile-toggle" @click="isMenuOpen = !isMenuOpen">
+          <lucide-icon v-if="!isMenuOpen" name="menu" />
+          <lucide-icon v-else name="x" />
+        </button>
+  
+        <nav class="nav-links" :class="{ 'mobile-open': isMenuOpen }">
+          <template v-if="user">
+            <button @click="handleNav('add-word')" class="nav-btn">
+              <lucide-icon name="plus" /> <span>Suggérer</span>
+            </button>
+            <button v-if="user?.role === 'admin'" @click="handleNav('admin')" class="nav-btn admin-btn">
+              <lucide-icon name="shield" /> <span>Admin</span>
+            </button>
+            <button @click="handleNav('profile')" class="nav-btn user-profile-btn">
+               <img v-if="user.avatar_url" :src="user.avatar_url" class="nav-avatar" />
+               <lucide-icon v-else name="user" /> 
+               <span class="user-name-nav">{{ user.pseudo || user.name }}</span>
+            </button>
+            <button @click="$emit('logout'); isMenuOpen = false" class="logout-btn">
+              <lucide-icon name="log-out" />
+            </button>
+          </template>
+          
+          <button v-if="!user" @click="handleNav('login')" class="btn-premium">
+            <lucide-icon name="log-in" /> Connexion
+          </button>
+        </nav>
       </div>
-      
-      <nav class="nav-links">
-        <button v-if="user" @click="$emit('navigate', 'add-word')" class="nav-btn">
-          <i data-lucide="plus"></i> Suggérer
-        </button>
-        <button v-if="user?.role === 'admin'" @click="$emit('navigate', 'admin')" class="nav-btn admin-btn">
-          <i data-lucide="shield"></i> Admin
-        </button>
-        <button v-if="user" @click="$emit('navigate', 'profile')" class="nav-btn">
-          <i data-lucide="user"></i> {{ user.name }}
-        </button>
-        <button v-if="!user" @click="$emit('navigate', 'login')" class="btn-premium">
-          <i data-lucide="log-in"></i> Connexion
-        </button>
-        <button v-else @click="$emit('logout')" class="logout-btn">
-          <i data-lucide="log-out"></i>
-        </button>
-      </nav>
     </header>
   `
 }

@@ -1,44 +1,69 @@
-// d:/Dico Fon/app/src/views/ForgotPassword.js
+// app/src/views/ForgotPassword.js
+import LucideIcon from '../components/LucideIcon.js'
 
 export default {
-  emits: ['navigate'],
+  emits: ['navigate', 'submit'],
+  components: { LucideIcon },
   data() {
     return {
       email: '',
-      submitted: false
+      submitted: false,
+      loading: false
+    }
+  },
+  methods: {
+    async handleSubmit() {
+      this.loading = true;
+      this.$emit('submit', this.email);
+      // Logic for transition (handled in App.js)
+      setTimeout(() => {
+        this.loading = false;
+        this.submitted = true;
+      }, 800);
     }
   },
   template: `
-    <div class="view-auth page-animate">
-      <div class="auth-card glass-card">
+    <div class="auth-container-v2">
+      <div class="auth-glow-card glass-card">
         <template v-if="!submitted">
-          <h2>Récupération</h2>
-          <p>On va vous aider à retrouver votre accès.</p>
+          <div class="auth-header-v2">
+            <h2 class="gradient-text">Récupération</h2>
+            <p>On va vous aider à retrouver votre accès en un éclair.</p>
+          </div>
           
-          <form @submit.prevent="submitted = true">
-            <div class="form-group">
-              <label><i data-lucide="mail"></i> Votre Email</label>
-              <input type="email" v-model="email" class="input-field" placeholder="exemple@mail.com" required />
+          <form @submit.prevent="handleSubmit">
+            <div class="input-wrapper-v2">
+              <lucide-icon name="mail" />
+              <input type="email" v-model="email" class="input-v2" placeholder="Votre email de secours" required />
             </div>
-            <button type="submit" class="btn-premium wide">Recevoir le lien magique</button>
+            
+            <button type="submit" class="btn-auth-premium" :disabled="loading">
+              <span v-if="!loading">Envoyer le lien magique <lucide-icon name="sparkles" /></span>
+              <span v-else>Envoi en cours...</span>
+            </button>
           </form>
         </template>
+
         <template v-else>
-          <div class="success-state page-animate">
-            <div class="success-icon-wrapper">
-              <i data-lucide="send" size="48"></i>
+          <div class="success-state" style="text-align: center; padding: 20px 0;">
+            <div class="success-icon-wrapper" style="margin-bottom: 30px; width: 100px; height: 100px; font-size: 2.5rem;">
+              <lucide-icon name="mail-check" :size="48" />
             </div>
-            <h2>Email envoyé !</h2>
-            <p>Vérifiez votre boîte mail <b>{{ email }}</b>.</p>
-            <button @click="$emit('navigate', 'login')" class="btn-premium wide">
-              <i data-lucide="arrow-left"></i> Retour à la connexion
+            <h2 style="font-size: 2.2rem; margin-bottom: 15px;">Vérifiez votre boîte !</h2>
+            <p style="opacity: 0.6; margin-bottom: 35px; line-height: 1.6;">
+              Un lien de réinitialisation vient d'être envoyé à <br><b>{{ email }}</b>.
+            </p>
+            <button @click="$emit('navigate', 'login')" class="btn-outline wide" style="border-radius: 15px;">
+              <lucide-icon name="arrow-left" /> Retour à la connexion
             </button>
           </div>
         </template>
         
-        <p v-if="!submitted" class="auth-footer">
-          <a @click="$emit('navigate', 'login')"><i data-lucide="chevron-left"></i> Retour</a>
-        </p>
+        <div v-if="!submitted" class="auth-footer-v2">
+          <a @click="$emit('navigate', 'login')" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <lucide-icon name="chevron-left" /> Retour à la connexion
+          </a>
+        </div>
       </div>
     </div>
   `

@@ -39,6 +39,8 @@
     "deep-extend": "^0.6.0",
     "define-lazy-prop": "^2.0.0",
     "dotenv": "^17.4.1",
+    "cookie-parser": "^1.4.6",
+    "express-rate-limit": "^6.7.0",
     "eastasianwidth": "^0.2.0",
     "elementtree": "^0.1.7",
     "emoji-regex": "^8.0.0",
@@ -137,6 +139,7 @@
     "yauzl": "^2.10.0"
   },
   "scripts": {
+    "dev": "node local-dev.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
