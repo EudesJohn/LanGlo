@@ -112,18 +112,28 @@ module.exports = async (req, res) => {
         try {
           const fileName = `${id}_${Date.now()}.jpg`;
           const fileBuffer = Buffer.from(avatar_base64, 'base64');
+          
+          // Ensure public 'avatars' storage bucket exists
+          try {
+            await supabase.storage.createBucket('avatars', { public: true });
+          } catch (bucketErr) {
+            // Silence if already exists
+          }
+
           const { error: uploadError } = await supabase.storage
             .from('avatars')
             .upload(fileName, fileBuffer, { contentType: 'image/jpeg', upsert: true });
 
           if (uploadError) {
-            console.warn("Storage Error (Avatars):", uploadError.message);
+            console.error("Storage Error (Avatars):", uploadError.message);
+            throw new Error(`Erreur de stockage Supabase : ${uploadError.message}`);
           } else {
             const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(fileName);
             avatar_url = urlData.publicUrl;
           }
         } catch (err) {
           console.error("Avatar Process Error:", err);
+          throw err;
         }
       }
 
