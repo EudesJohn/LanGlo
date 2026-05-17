@@ -30,6 +30,13 @@ app.all('/api/:resource/:action', async (req, res) => {
     try {
       // Clear cache for development
       delete require.cache[require.resolve(filePath)];
+      
+      // Also clear lib/supabase cache to pick up .env changes
+      const libPath = path.join(__dirname, 'api', 'lib', 'supabase.js');
+      if (fs.existsSync(libPath)) {
+        delete require.cache[require.resolve(libPath)];
+      }
+
       const handler = require(filePath);
       await handler(req, res);
     } catch (err) {

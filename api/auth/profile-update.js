@@ -75,7 +75,12 @@ module.exports = async (req, res) => {
       user: { ...data, contributions_count } 
     });
   } catch (e) {
-    console.error("Profile Update Error:", e.message);
-    return res.status(500).json({ success: false, message: e.message || "Erreur serveur lors de la mise à jour." });
+    console.error("Profile Update Crash:", e);
+    return res.status(500).json({ 
+      success: false, 
+      message: e.message || "Erreur serveur lors de la mise à jour.",
+      details: e.details || null,
+      code: e.code || null
+    });
   }
 };

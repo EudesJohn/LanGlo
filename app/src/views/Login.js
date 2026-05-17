@@ -16,7 +16,9 @@ export default {
     },
     handleGoogleSubmit() {
       this.loadingGoogle = true;
-      this.$emit('google-login');
+      this.$emit('google-login', {
+        onComplete: () => this.loadingGoogle = false
+      });
     }
   },
   template: `

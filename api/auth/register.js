@@ -44,13 +44,15 @@ module.exports = async (req, res) => {
       }
     }
 
-    // Set httpOnly cookie with access token
+    // Set httpOnly cookie with access token (if session exists)
+    if (authData.session) {
       res.cookie('token', authData.session.access_token, {
         httpOnly: true,
         sameSite: 'strict',
         secure: process.env.NODE_ENV === 'production',
         maxAge: 7 * 24 * 60 * 60 * 1000 // 1 week
       });
+    }
       return res.status(200).json({
         success: true,
         user: authData.user,

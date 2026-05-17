@@ -34,9 +34,23 @@ export default {
     const navbarKey = ref(0);
 
     const API = '/api';
-    const SUPABASE_URL = "https://pahmcbhktyioyvcbreow.supabase.co";
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBhaG1jYmhrdHlpb3l2Y2JyZW93Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5NDA5NDAsImV4cCI6MjA5MTUxNjk0MH0.G1cbp6SWC1PWzKNjJPVjwyM9wnFf5iHjQpEd1TeWoX4";
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const supabaseClient = ref(null);
+
+    const initSupabase = async () => {
+      try {
+        console.log("Fetching Supabase config...");
+        const res = await axios.get(`${API}/config/supabase`);
+        const { supabaseUrl, supabaseAnonKey } = res.data;
+        if (!supabaseUrl || !supabaseAnonKey) throw new Error("Credentials missing from API response");
+        supabaseClient.value = supabase.createClient(supabaseUrl, supabaseAnonKey);
+        console.log("✅ Supabase initialized successfully");
+        return true;
+      } catch (e) {
+        console.error("❌ Failed to initialize Supabase:", e);
+        notify("Erreur de connexion à la base de données", "error");
+        return false;
+      }
+    };
 
     const isProfileComplete = computed(() => {
       if (!user.value) return true;
@@ -60,17 +74,32 @@ export default {
       }
     };
 
-    const handleGoogleLogin = async () => {
+    const handleGoogleLogin = async (data) => {
+      console.log("handleGoogleLogin triggered");
       try {
-        const { error } = await supabaseClient.auth.signInWithOAuth({
+        if (!supabaseClient.value) await initSupabase();
+        if (!supabaseClient.value) {
+          notify("Erreur d'initialisation Supabase. Vérifiez votre connexion.", "error");
+          if (data && data.onComplete) data.onComplete();
+          return;
+        }
+        
+        const { error } = await supabaseClient.value.auth.signInWithOAuth({
           provider: 'google',
           options: {
-            redirectTo: window.location.origin
+            redirectTo: window.location.origin,
+            queryParams: {
+              access_type: 'offline',
+              prompt: 'select_account',
+            },
           }
         });
         if (error) throw error;
       } catch (e) {
-        notify("Erreur de connexion Google", "error");
+        console.error("Google Login Error:", e);
+        notify("Erreur de connexion Google : " + (e.message || "Inconnue"), "error");
+      } finally {
+        if (data && data.onComplete) data.onComplete();
       }
     };
 
@@ -147,15 +176,62 @@ export default {
 
     const handleUpdateProfile = async (newData) => {
       try {
-        const res = await axios.post(`${API}/auth/profile-update`, newData);
+        // Try direct update first (more reliable with RLS if session exists)
+        // If there is an avatar to upload, we MUST use the backend API
+        if (supabaseClient.value && user.value && !newData.avatar_base64) {
+          const cleanData = {
+            id: user.value.id,
+            email: user.value.email,
+            name: newData.name,
+            pseudo: newData.pseudo,
+            nationality: newData.nationality,
+            ethnicity: newData.ethnicity,
+            role: newData.role || user.value.role,
+            avatar_url: newData.avatar_url || user.value.avatar_url
+          };
+          
+          console.log("Attempting Direct Upsert:", cleanData);
+
+          const { data: updatedUser, error } = await supabaseClient.value
+            .from('users')
+            .upsert(cleanData)
+            .select()
+            .single();
+          
+          if (error) {
+            console.warn("Direct Upsert failed, falling back to API. Error:", error.message);
+          } else if (updatedUser) {
+            user.value = { ...user.value, ...updatedUser };
+            localStorage.setItem('user', JSON.stringify(user.value));
+            navbarKey.value++;
+            notify("Profil mis à jour !");
+            return;
+          }
+        }
+
+        // Fallback to API (handles avatars and backend syncing)
+        console.log("Calling Profile Update API...");
+        const res = await axios.post(`${API}/auth/profile-update`, {
+          id: user.value?.id,
+          email: user.value?.email,
+          ...newData
+        });
+        
         if (res.data.success) {
           user.value = res.data.user;
           localStorage.setItem('user', JSON.stringify(user.value));
           navbarKey.value++;
           notify("Profil mis à jour !");
+        } else {
+          throw new Error(res.data.message || "Erreur inconnue");
         }
-      } catch (e) { notify(e.response?.data?.message || e.message, "error"); }
+      } catch (e) { 
+        console.error("Profile update error:", e);
+        const detail = e.response?.data?.details || e.message;
+        notify("Échec de la mise à jour : " + detail, "error"); 
+      }
     };
+
 
     const handleUpdateWord = async (word) => {
       try {
@@ -218,7 +294,8 @@ export default {
 
     const handleResetPassword = async (data) => {
       try {
-        const { error } = await supabaseClient.auth.updateUser({ password: data.password });
+        if (!supabaseClient.value) await initSupabase();
+        const { error } = await supabaseClient.value.auth.updateUser({ password: data.password });
         if (error) throw error;
         notify("Mot de passe mis à jour ! Vous pouvez maintenant vous connecter.");
         navigate('login');
@@ -231,6 +308,17 @@ export default {
 
     onMounted(async () => {
       console.log('App Mounted');
+      
+      // Check for LocalStorage access
+      try {
+        localStorage.setItem('test', '1');
+        localStorage.removeItem('test');
+      } catch (e) {
+        notify("Le stockage local est bloqué par votre navigateur. La connexion pourrait ne pas fonctionner.", "error");
+        console.error("LocalStorage is blocked:", e);
+      }
+
+      await initSupabase();
 
       // Check for Recovery Link (Password Reset)
       const hash = window.location.hash;
@@ -244,7 +332,7 @@ export default {
       }
 
       // Check for Supabase Session (OAuth)
-      const { data: { session } } = await supabaseClient.auth.getSession();
+      const { data: { session } } = await supabaseClient.value.auth.getSession();
       if (session) {
         const authUser = session.user;
 
@@ -259,7 +347,7 @@ export default {
         }
 
         // Sync role from database (Source of Truth for Admin role)
-        const { data: dbUser } = await supabaseClient
+        const { data: dbUser } = await supabaseClient.value
           .from('users')
           .select('role')
           .eq('email', authUser.email)
@@ -270,7 +358,7 @@ export default {
           user.value.role = dbUser.role;
         } else {
           // If the user is new (not in public.users), create them automatically
-          await supabaseClient.from('users').insert([{
+          await supabaseClient.value.from('users').insert([{
             id: authUser.id,
             email: authUser.email,
             name: user.value.name,
@@ -296,13 +384,25 @@ export default {
       }
 
       // Fetch Global Stats
-      try {
-        const [wCount, uCount] = await Promise.all([
-          supabaseClient.from('words').select('id', { count: 'exact', head: true }).eq('status', 'approved'),
-          supabaseClient.from('users').select('id', { count: 'exact', head: true })
-        ]);
-        stats.value = { words: wCount.count || 0, contributors: uCount.count || 0 };
-      } catch (e) { console.error("Stats error", e); }
+      if (supabaseClient.value) {
+        try {
+          const [wCount, uCount] = await Promise.all([
+            supabaseClient.value.from('words').select('id', { count: 'exact', head: true }).eq('status', 'approved'),
+            supabaseClient.value.from('users').select('id', { count: 'exact', head: true })
+          ]);
+          
+          if (wCount.error) console.error("Words fetch error:", wCount.error);
+          if (uCount.error) console.error("Users fetch error:", uCount.error);
+          
+          stats.value = { 
+            words: wCount.count || 0, 
+            contributors: uCount.count || 0 
+          };
+          console.log("Stats loaded:", stats.value);
+        } catch (e) { 
+          console.error("Stats fetching exception:", e); 
+        }
+      }
     });
 
     return {

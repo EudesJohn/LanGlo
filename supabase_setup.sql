@@ -67,6 +67,38 @@ VALUES
 ON CONFLICT DO NOTHING;
 
 -- ==========================================================
+-- 6. POLITIQUES DE SÉCURITÉ (RLS) - CRUCIAL POUR SUPABASE
+-- ==========================================================
+
+-- Activer RLS sur toutes les tables
+ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.words ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.favorites ENABLE ROW LEVEL SECURITY;
+
+-- POLITIQUES POUR 'users'
+CREATE POLICY "Public profiles are viewable by everyone" ON public.users FOR SELECT USING (true);
+CREATE POLICY "Users can insert their own profile" ON public.users FOR INSERT WITH CHECK (auth.uid() = id);
+CREATE POLICY "Users can update their own profile" ON public.users FOR UPDATE USING (auth.uid() = id);
+
+-- POLITIQUES POUR 'words'
+CREATE POLICY "Approved words are viewable by everyone" ON public.words FOR SELECT USING (status = 'approved');
+CREATE POLICY "Admins can view all words" ON public.words FOR SELECT USING (
+  EXISTS (SELECT 1 FROM public.users WHERE id = auth.uid() AND role = 'admin')
+);
+CREATE POLICY "Authenticated users can suggest words" ON public.words FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+CREATE POLICY "Admins can update words" ON public.words FOR UPDATE USING (
+  EXISTS (SELECT 1 FROM public.users WHERE id = auth.uid() AND role = 'admin')
+);
+CREATE POLICY "Admins can delete words" ON public.words FOR DELETE USING (
+  EXISTS (SELECT 1 FROM public.users WHERE id = auth.uid() AND role = 'admin')
+);
+
+-- POLITIQUES POUR 'favorites'
+CREATE POLICY "Users can view their own favorites" ON public.favorites FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can add their own favorites" ON public.favorites FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can remove their own favorites" ON public.favorites FOR DELETE USING (auth.uid() = user_id);
+
+-- ==========================================================
 -- SCRIPT DE PROMOTION ADMIN (À exécuter APRÈS votre inscription sur le site)
 -- ==========================================================
 -- UPDATE public.users SET role = 'admin' WHERE email = 'eudesjohn650@gmail.com';

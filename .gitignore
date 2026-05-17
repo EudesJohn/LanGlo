@@ -7,3 +7,4 @@ api-old-node/
 .vercel/
 dist/
 .DS_Store
+scratch/
