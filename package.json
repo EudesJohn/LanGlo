@@ -140,6 +140,7 @@
   },
   "scripts": {
     "dev": "node local-dev.js",
+    "build": "echo 'No compilation needed'",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
