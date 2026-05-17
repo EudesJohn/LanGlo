@@ -3,6 +3,9 @@
   "cleanUrls": true,
   "outputDirectory": "app",
   "rewrites": [
-    { "source": "/api/:path*", "destination": "/api/:path*" }
+    { "source": "/api/admin/:action", "destination": "/api/admin.js" },
+    { "source": "/api/auth/:action", "destination": "/api/auth.js" },
+    { "source": "/api/dictionary/:action", "destination": "/api/dictionary.js" },
+    { "source": "/api/config/:action", "destination": "/api/config.js" }
   ]
 }
