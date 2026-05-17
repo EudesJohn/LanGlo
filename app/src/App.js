@@ -318,8 +318,45 @@ export default {
       }
     };
 
+    const showInstallBanner = ref(false);
+    const isIOS = ref(false);
+    let deferredPrompt = null;
+
+    const handleInstallPrompt = (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      showInstallBanner.value = true;
+    };
+
+    const triggerInstall = async () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log(`User response to PWA prompt: ${outcome}`);
+        deferredPrompt = null;
+        showInstallBanner.value = false;
+      }
+    };
+
+    const checkIOSInstallable = () => {
+      const ua = window.navigator.userAgent;
+      const isIPad = !!ua.match(/iPad/i);
+      const isIPhone = !!ua.match(/iPhone/i);
+      const isSafari = !!ua.match(/Safari/i) && !ua.match(/CriOS/i);
+      const isStandalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
+      
+      if ((isIPhone || isIPad) && isSafari && !isStandalone) {
+        isIOS.value = true;
+        showInstallBanner.value = true;
+      }
+    };
+
     onMounted(async () => {
       console.log('App Mounted');
+      
+      // PWA listeners
+      window.addEventListener('beforeinstallprompt', handleInstallPrompt);
+      checkIOSInstallable();
       
       // Check for LocalStorage access
       try {
@@ -422,6 +459,7 @@ export default {
 
     return {
       currentPage, user, words, favorites, pendingWords, allWords, searchQuery, notification, stats, navbarKey,
+      showInstallBanner, isIOS, triggerInstall,
       navigate, handleSearch, handleLogin, handleLogout, notify, isProfileComplete,
       handleRegister, handleUpdateProfile, adminApprove, adminDelete, handleUpdateWord, fetchAdminData,
       handleAddWord, handleForgotPassword, handleGoogleLogin, handleResetPassword
@@ -465,6 +503,24 @@ export default {
       </main>
 
       <app-footer @navigate="navigate" @notify="notify" />
+
+      <!-- PWA INSTALL BANNER -->
+      <div class="pwa-install-banner" :class="{ visible: showInstallBanner }">
+        <div class="pwa-icon-box">G</div>
+        <div class="pwa-content">
+          <div class="pwa-title">Installer Gbé Tché</div>
+          <div class="pwa-desc" v-if="isIOS">
+            Appuyez sur 📤 puis sur "Sur l'écran d'accueil"
+          </div>
+          <div class="pwa-desc" v-else>
+            Ajoutez l'app sur votre écran d'accueil !
+          </div>
+        </div>
+        <div class="pwa-buttons">
+          <button v-if="!isIOS" @click="triggerInstall" class="btn-pwa-install">Installer</button>
+          <button @click="showInstallBanner = false" class="btn-pwa-close"><lucide-icon name="x" :size="14" /></button>
+        </div>
+      </div>
     </div>
   `
 }

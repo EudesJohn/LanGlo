@@ -1191,3 +1191,68 @@ td { padding: 15px; border-bottom: 1px solid var(--glass-border); }
   background-size: 200% auto;
   animation: shimmer 3s linear infinite;
 }
+
+/* =============================================
+   PWA INSTALL BANNER PREMIUM STYLES
+   ============================================= */
+.pwa-install-banner {
+  position: fixed;
+  bottom: 25px; left: 50%;
+  transform: translateX(-50%) translateY(120px);
+  width: 90%; max-width: 480px;
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border: 1px solid var(--glass-border);
+  padding: 16px 20px;
+  border-radius: 24px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  opacity: 0;
+  transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+  pointer-events: none;
+}
+
+.pwa-install-banner.visible {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.pwa-icon-box {
+  width: 46px; height: 46px;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--human-accent) 100%);
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-weight: 900; font-size: 1.4rem;
+  box-shadow: 0 8px 20px rgba(99, 102, 241, 0.35);
+  flex-shrink: 0;
+}
+
+.pwa-content { flex: 1; min-width: 0; }
+.pwa-title { font-weight: 800; font-size: 1rem; color: #fff; margin-bottom: 2px; }
+.pwa-desc { font-size: 0.8rem; opacity: 0.75; line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.pwa-buttons { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.btn-pwa-install {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--human-accent) 100%);
+  color: white; border: none; outline: none;
+  padding: 8px 16px; border-radius: 9999px;
+  font-weight: 800; font-size: 0.85rem;
+  cursor: pointer; transition: 0.3s;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+}
+.btn-pwa-install:hover { transform: scale(1.05); box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4); }
+.btn-pwa-install:active { transform: scale(0.98); }
+
+.btn-pwa-close {
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff; border: none; outline: none;
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: 0.3s;
+}
+.btn-pwa-close:hover { background: rgba(255, 255, 255, 0.12); color: var(--accent); }
