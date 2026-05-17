@@ -24,7 +24,7 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 // Main handler for all requests
 app.all('/api/:resource/:action', async (req, res) => {
   const { resource, action } = req.params;
-  const filePath = path.join(__dirname, 'api', `${resource}.js`);
+  const filePath = path.join(__dirname, 'api', resource, '[action].js');
   
   if (fs.existsSync(filePath)) {
     try {

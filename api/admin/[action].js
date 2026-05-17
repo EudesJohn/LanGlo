@@ -1,4 +1,4 @@
-const supabase = require('./lib/supabase');
+const supabase = require('../lib/supabase');
 
 module.exports = async (req, res) => {
   const action = req.params?.action || req.query?.action || req.url.split('/').pop().split('?')[0];
