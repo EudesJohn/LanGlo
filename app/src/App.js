@@ -209,6 +209,7 @@ export default {
             localStorage.setItem('user', JSON.stringify(user.value));
             navbarKey.value++;
             notify("Profil mis à jour !");
+            if (newData.onSuccess) newData.onSuccess();
             return;
           }
         }
@@ -226,6 +227,7 @@ export default {
           localStorage.setItem('user', JSON.stringify(user.value));
           navbarKey.value++;
           notify("Profil mis à jour !");
+          if (newData.onSuccess) newData.onSuccess();
         } else {
           throw new Error(res.data.message || "Erreur inconnue");
         }
@@ -233,6 +235,7 @@ export default {
         console.error("Profile update error:", e);
         const detail = e.response?.data?.details || e.message;
         notify("Échec de la mise à jour : " + detail, "error"); 
+        if (newData.onError) newData.onError();
       }
     };
 

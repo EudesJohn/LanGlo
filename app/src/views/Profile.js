@@ -8,6 +8,7 @@ export default {
   data() {
     return {
       isEditing: false,
+      isSaving: false,
       editForm: { name: '', pseudo: '', nationality: '', ethnicity: '' },
       customEthnicity: '',
       avatar_base64: null,
@@ -39,14 +40,21 @@ export default {
       reader.readAsDataURL(file);
     },
     async saveProfile() {
+      this.isSaving = true;
       const finalEthnicity = this.editForm.ethnicity === 'Autre' ? this.customEthnicity : this.editForm.ethnicity;
       this.$emit('updateProfile', {
         ...this.editForm,
         ethnicity: finalEthnicity,
-        avatar_base64: this.avatar_base64
+        avatar_base64: this.avatar_base64,
+        onSuccess: () => {
+          this.isEditing = false;
+          this.avatar_base64 = null;
+          this.isSaving = false;
+        },
+        onError: () => {
+          this.isSaving = false;
+        }
       });
-      this.isEditing = false;
-      this.avatar_base64 = null;
     },
     cancelEdit() {
       this.isEditing = false;
@@ -122,8 +130,11 @@ export default {
                 </div>
                 
                 <div style="display:flex; gap:10px; margin-top:20px;">
-                  <button @click="saveProfile" class="btn-premium mini" style="flex:1">Sauvegarder</button>
-                  <button @click="cancelEdit" class="btn-outline mini" style="padding: 8px 15px;">Annuler</button>
+                  <button @click="saveProfile" class="btn-premium mini" style="flex:1" :disabled="isSaving">
+                    <span v-if="isSaving">Enregistrement...</span>
+                    <span v-else>Sauvegarder</span>
+                  </button>
+                  <button @click="cancelEdit" class="btn-outline mini" style="padding: 8px 15px;" :disabled="isSaving">Annuler</button>
                 </div>
               </div>
   
