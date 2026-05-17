@@ -511,7 +511,7 @@ export default {
 
       <!-- PWA INSTALL BANNER -->
       <div class="pwa-install-banner" :class="{ visible: showInstallBanner }">
-        <div class="pwa-icon-box">G</div>
+        <img src="./icon.png" class="pwa-icon-box" style="object-fit: cover; padding: 0;" />
         <div class="pwa-content">
           <div class="pwa-title">Installer Gbé Tché</div>
           <div class="pwa-desc" v-if="isIOS">
