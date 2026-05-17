@@ -159,8 +159,8 @@ export default {
 
     const adminApprove = async (id) => {
       try {
-        await axios.post(`${API}/admin/approve`, { id });
-        notify("Mot approuvé !");
+        const res = await axios.post(`${API}/admin/approve`, { id });
+        notify(res.data.message || "Mot approuvé !");
         fetchAdminData();
       } catch (e) { 
         const errMsg = e.response?.data?.message || "Erreur de validation";
@@ -171,8 +171,8 @@ export default {
     const adminDelete = async (id) => {
       if (!confirm("Supprimer définitivement ce mot ?")) return;
       try {
-        await axios.post(`${API}/admin/delete`, { id });
-        notify("Mot supprimé !");
+        const res = await axios.post(`${API}/admin/delete`, { id });
+        notify(res.data.message || "Mot supprimé !");
         fetchAdminData();
       } catch (e) { 
         const errMsg = e.response?.data?.message || "Erreur lors de la suppression";

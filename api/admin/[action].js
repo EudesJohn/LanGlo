@@ -58,17 +58,39 @@ module.exports = async (req, res) => {
         .update({ status: 'approved' })
         .eq('id', id);
       if (error) throw error;
-      return res.status(200).json({ success: true, data });
+      
+      return res.status(200).json({ 
+        success: true, 
+        message: `Le mot ('${currentWord.french}' - '${currentWord.fon}') a été approuvé et publié !`,
+        data 
+      });
     } 
     
     if (action === 'delete') {
       const { id } = req.body;
-      const { data, error } = await supabase
+
+      // Check if word exists before deleting
+      const { data: currentWord, error: getError } = await supabase
+        .from('words')
+        .select('french, fon')
+        .eq('id', id)
+        .maybeSingle();
+
+      if (getError) throw getError;
+      if (!currentWord) {
+        return res.status(404).json({ success: false, message: "Ce mot n'existe pas ou a déjà été supprimé." });
+      }
+
+      const { error } = await supabase
         .from('words')
         .delete()
         .eq('id', id);
       if (error) throw error;
-      return res.status(200).json({ success: true, data });
+      
+      return res.status(200).json({ 
+        success: true, 
+        message: `Le mot ('${currentWord.french}' - '${currentWord.fon}') a été supprimé définitivement.` 
+      });
     } 
     
     if (action === 'update') {

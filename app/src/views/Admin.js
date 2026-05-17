@@ -14,7 +14,16 @@ export default {
       editForm: { 
         french: '', fon: '', phonetic: '', example: '', 
         wordAudioBlob: null, phraseAudioBlob: null 
-      }
+      },
+      processingIds: []
+    }
+  },
+  watch: {
+    pendingWords() {
+      this.processingIds = [];
+    },
+    allWords() {
+      this.processingIds = [];
     }
   },
   computed: {
@@ -30,6 +39,16 @@ export default {
     }
   },
   methods: {
+    approveWord(id) {
+      if (this.processingIds.includes(id)) return;
+      this.processingIds.push(id);
+      this.$emit('approve', id);
+    },
+    deleteWord(id) {
+      if (this.processingIds.includes(id)) return;
+      this.processingIds.push(id);
+      this.$emit('delete', id);
+    },
     startEdit(word) {
       this.editingId = word.id;
       this.editForm = { ...word, wordAudioBlob: null, phraseAudioBlob: null };
@@ -175,8 +194,22 @@ export default {
               <button @click="saveEdit" class="btn-action-v3 save"><lucide-icon name="save" /> Enregistrer les modifications</button>
             </template>
             <template v-else>
-              <button v-if="w.status === 'pending'" @click="$emit('approve', w.id)" class="btn-action-v3 approve"><lucide-icon name="check-circle-2" /> Approuver</button>
-              <button @click="$emit('delete', w.id)" class="btn-action-v3 delete"><lucide-icon name="trash-2" /> Supprimer</button>
+              <button v-if="w.status === 'pending'" @click="approveWord(w.id)" :disabled="processingIds.includes(w.id)" class="btn-action-v3 approve">
+                <template v-if="processingIds.includes(w.id)">
+                  <lucide-icon name="loader" class="spin" /> Approbation...
+                </template>
+                <template v-else>
+                  <lucide-icon name="check-circle-2" /> Approuver
+                </template>
+              </button>
+              <button @click="deleteWord(w.id)" :disabled="processingIds.includes(w.id)" class="btn-action-v3 delete">
+                <template v-if="processingIds.includes(w.id)">
+                  <lucide-icon name="loader" class="spin" /> Suppression...
+                </template>
+                <template v-else>
+                  <lucide-icon name="trash-2" /> Supprimer
+                </template>
+              </button>
             </template>
           </div>
 
