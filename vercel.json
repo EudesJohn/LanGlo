@@ -1,12 +1,8 @@
 {
   "version": 2,
-  "name": "dico-fon",
-  "builds": [
-    { "src": "api/**/*.js", "use": "@vercel/node" },
-    { "src": "app/**", "use": "@vercel/static" }
-  ],
-  "routes": [
-    { "src": "/api/(.*)", "dest": "/api/$1" },
-    { "src": "/(.*)", "dest": "/app/$1" }
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "/api/:path*" },
+    { "source": "/(.*)", "destination": "/app/$1" }
   ]
 }
