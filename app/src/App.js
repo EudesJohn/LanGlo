@@ -162,7 +162,10 @@ export default {
         await axios.post(`${API}/admin/approve`, { id });
         notify("Mot approuvé !");
         fetchAdminData();
-      } catch (e) { notify("Erreur", "error"); }
+      } catch (e) { 
+        const errMsg = e.response?.data?.message || "Erreur de validation";
+        notify(errMsg, "error"); 
+      }
     };
 
     const adminDelete = async (id) => {
@@ -171,7 +174,10 @@ export default {
         await axios.post(`${API}/admin/delete`, { id });
         notify("Mot supprimé !");
         fetchAdminData();
-      } catch (e) { notify("Erreur lors de la suppression", "error"); }
+      } catch (e) { 
+        const errMsg = e.response?.data?.message || "Erreur lors de la suppression";
+        notify(errMsg, "error"); 
+      }
     };
 
     const handleUpdateProfile = async (newData) => {
@@ -238,7 +244,10 @@ export default {
         await axios.post(`${API}/admin/update`, word);
         notify("Mot mis à jour !");
         fetchAdminData();
-      } catch (e) { notify("Erreur de mise à jour", "error"); }
+      } catch (e) { 
+        const errMsg = e.response?.data?.message || "Erreur de mise à jour";
+        notify(errMsg, "error"); 
+      }
     };
 
     const handleLogout = () => {

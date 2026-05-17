@@ -3,6 +3,14 @@ const supabase = require('../lib/supabase');
 module.exports = async (req, res) => {
   const action = req.params?.action || req.query?.action || req.url.split('/').pop().split('?')[0];
 
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    console.error("ADMIN ERROR: SUPABASE_SERVICE_ROLE_KEY is missing from environment variables!");
+    return res.status(500).json({
+      success: false,
+      message: "Erreur de configuration : la clé secrète SUPABASE_SERVICE_ROLE_KEY est manquante dans les variables d'environnement de Vercel. Cette clé est indispensable pour valider, supprimer ou modifier des mots en tant qu'administrateur en contournant les politiques de sécurité (RLS) de Supabase."
+    });
+  }
+
   try {
     if (action === 'all') {
       const { data, error } = await supabase
