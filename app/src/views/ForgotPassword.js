@@ -32,9 +32,12 @@ export default {
           </div>
           
           <form @submit.prevent="handleSubmit">
-            <div class="input-wrapper-v2">
-              <lucide-icon name="mail" />
-              <input type="email" v-model="email" class="input-v2" placeholder="Votre email de secours" required />
+            <div class="auth-field-group">
+              <label class="auth-label">ADRESSE EMAIL DE SECOURS</label>
+              <div class="input-wrapper-v2">
+                <lucide-icon name="mail" />
+                <input type="email" v-model="email" class="input-v2" placeholder="Votre email de secours" required />
+              </div>
             </div>
             
             <button type="submit" class="btn-auth-premium" :disabled="loading">

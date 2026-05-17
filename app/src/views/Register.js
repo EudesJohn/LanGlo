@@ -72,7 +72,7 @@ export default {
               </div>
             </div>
 
-            <div class="auth-field-group" style="grid-column: span 2;">
+            <div class="auth-field-group full-width">
               <label class="auth-label">ETHNIE / LANGUE MATERNELLE</label>
               <div class="input-wrapper-v2">
                 <lucide-icon name="users" />
@@ -93,7 +93,7 @@ export default {
             </div>
 
             <!-- Custom Ethnicity Input -->
-            <div v-if="ethnicity === 'Autre'" class="auth-field-group" style="grid-column: span 2; animation: slideUp 0.3s ease-out;">
+            <div v-if="ethnicity === 'Autre'" class="auth-field-group full-width" style="animation: slideUp 0.3s ease-out;">
               <label class="auth-label">PRÉCISEZ VOTRE ETHNIE</label>
               <div class="input-wrapper-v2">
                 <lucide-icon name="edit-2" />

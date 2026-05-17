@@ -470,10 +470,17 @@ td { padding: 15px; border-bottom: 1px solid var(--glass-border); }
 .auth-header-v2 h2 { font-size: 3rem; font-weight: 800; letter-spacing: -1px; margin-bottom: 10px; }
 .auth-header-v2 p { opacity: 0.5; font-size: 1.1rem; }
 
-.input-wrapper-v2 { position: relative; margin-bottom: 25px; }
-.input-wrapper-v2 i { 
+.input-wrapper-v2 { position: relative; margin-bottom: 0px; }
+.input-wrapper-v2 > span { 
   position: absolute; left: 18px; top: 50%; transform: translateY(-50%); 
-  color: var(--primary); opacity: 0.7; font-size: 1.1rem;
+  display: inline-flex; align-items: center; justify-content: center;
+  pointer-events: none; z-index: 5;
+}
+.input-wrapper-v2 > span i { 
+  color: var(--primary); opacity: 0.75; font-size: 1.1rem; width: 20px; height: 20px;
+}
+.auth-field-group.full-width {
+  grid-column: span 2;
 }
 .input-v2 {
   width: 100%; padding: 16px 16px 16px 50px;
@@ -1009,7 +1016,8 @@ td { padding: 15px; border-bottom: 1px solid var(--glass-border); }
   
   /* Form responsiveness and modern rounding */
   .form-grid { grid-template-columns: 1fr !important; gap: 15px; }
-  .form-group.full-width { grid-column: span 1 !important; }
+  .form-group.full-width, .auth-field-group.full-width { grid-column: span 1 !important; }
+  .auth-field-group { margin-bottom: 15px !important; }
   .auth-card { padding: 40px 20px; border-radius: 24px !important; }
   .auth-glow-card { padding: 40px 20px; border-radius: 24px !important; }
 
