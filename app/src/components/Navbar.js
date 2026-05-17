@@ -43,7 +43,7 @@ export default {
                <span class="user-name-nav">{{ user.pseudo || user.name }}</span>
             </button>
             <button @click="$emit('logout'); isMenuOpen = false" class="logout-btn">
-              <lucide-icon name="log-out" />
+              <lucide-icon name="log-out" /> <span class="logout-text">Déconnexion</span>
             </button>
           </template>
           
