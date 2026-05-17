@@ -40,11 +40,6 @@ export default {
             <p>Bâtisseurs de cités historiques comme Porto-Novo, connus pour leur organisation sociale raffinée.</p>
           </div>
           <div class="ethnic-card glass-card">
-            <h4>Les Peulhs</h4>
-            <span class="ethnic-region">Tout le pays</span>
-            <p>Traditionnellement nomades, ils sont les sentinelles de la nature et du bétail béninois.</p>
-          </div>
-          <div class="ethnic-card glass-card">
             <h4>Les Somba (Ditammari)</h4>
             <span class="ethnic-region">Atacora</span>
             <p>Célèbres pour leurs "Tata Somba", d'admirables forteresses en terre uniques au monde.</p>

@@ -72,6 +72,11 @@ export default {
         if (page === 'admin') fetchAdminData();
         navbarKey.value++;
       }
+      
+      // Auto scroll to top upon page navigation
+      window.scrollTo(0, 0);
+      document.body.scrollTop = 0;
+      document.documentElement.scrollTop = 0;
     };
 
     const handleGoogleLogin = async (data) => {
