@@ -186,26 +186,24 @@ export default {
         // If there is an avatar to upload, we MUST use the backend API
         if (supabaseClient.value && user.value && !newData.avatar_base64) {
           const cleanData = {
-            id: user.value.id,
-            email: user.value.email,
             name: newData.name,
-            pseudo: newData.pseudo,
-            nationality: newData.nationality,
-            ethnicity: newData.ethnicity,
-            role: newData.role || user.value.role,
-            avatar_url: newData.avatar_url || user.value.avatar_url
+            pseudo: newData.pseudo || null,
+            nationality: newData.nationality || "Béninoise",
+            ethnicity: newData.ethnicity || "Fon",
+            avatar_url: newData.avatar_url || user.value.avatar_url || null
           };
           
-          console.log("Attempting Direct Upsert:", cleanData);
+          console.log("Attempting Direct Update:", cleanData);
 
           const { data: updatedUser, error } = await supabaseClient.value
             .from('users')
-            .upsert(cleanData)
+            .update(cleanData)
+            .eq('id', user.value.id)
             .select()
             .single();
           
           if (error) {
-            console.warn("Direct Upsert failed, falling back to API. Error:", error.message);
+            console.warn("Direct Update failed, falling back to API. Error:", error.message);
           } else if (updatedUser) {
             user.value = { ...user.value, ...updatedUser };
             localStorage.setItem('user', JSON.stringify(user.value));

@@ -136,11 +136,28 @@ module.exports = async (req, res) => {
         avatar_url
       };
 
-      const { data, error } = await supabase
+      // Check if user already exists in public.users
+      const { data: existingUser, error: checkErr } = await supabase
         .from('users')
-        .upsert({ id, ...safeData })
-        .select()
-        .single();
+        .select('id')
+        .eq('id', id)
+        .maybeSingle();
+
+      if (checkErr) throw checkErr;
+
+      let query;
+      if (existingUser) {
+        query = supabase
+          .from('users')
+          .update(safeData)
+          .eq('id', id);
+      } else {
+        query = supabase
+          .from('users')
+          .insert([{ id, ...safeData }]);
+      }
+
+      const { data, error } = await query.select().single();
 
       if (error) {
         console.error("Supabase UPSERT Error:", error);
