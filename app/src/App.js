@@ -287,6 +287,8 @@ export default {
         const errorMsg = e.response?.data?.message || "Erreur lors de l'envoi";
         notify(errorMsg, "error");
         console.error("Détails de l'erreur API:", e.response?.data || e.message);
+      } finally {
+        if (wordData.onComplete) wordData.onComplete();
       }
     };
 

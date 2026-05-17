@@ -33,6 +33,26 @@ module.exports = async (req, res) => {
     
     if (action === 'approve') {
       const { id } = req.body;
+
+      // Check current status to prevent double-approval
+      const { data: currentWord, error: getError } = await supabase
+        .from('words')
+        .select('french, fon, status')
+        .eq('id', id)
+        .maybeSingle();
+
+      if (getError) throw getError;
+      if (!currentWord) {
+        return res.status(404).json({ success: false, message: "Ce mot n'existe pas." });
+      }
+      
+      if (currentWord.status === 'approved') {
+        return res.status(400).json({ 
+          success: false, 
+          message: `Le mot ('${currentWord.french}' - '${currentWord.fon}') a déjà été approuvé et publié !` 
+        });
+      }
+
       const { data, error } = await supabase
         .from('words')
         .update({ status: 'approved' })

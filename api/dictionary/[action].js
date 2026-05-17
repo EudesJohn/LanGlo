@@ -47,10 +47,39 @@ module.exports = async (req, res) => {
         ...cleanRecord 
       } = wordData;
 
+      const frenchWord = cleanRecord.french?.trim();
+      const fonWord = cleanRecord.fon?.trim();
+
+      if (!frenchWord || !fonWord) {
+        return res.status(400).json({ success: false, message: "Les champs Français et Fon sont obligatoires." });
+      }
+
+      // Check for duplicate French & Fon case-insensitive
+      const { data: existingWord, error: checkError } = await supabase
+        .from('words')
+        .select('id, status')
+        .ilike('french', frenchWord)
+        .ilike('fon', fonWord)
+        .maybeSingle();
+
+      if (checkError) {
+        console.error("Duplicate check error:", checkError.message);
+      }
+
+      if (existingWord) {
+        const state = existingWord.status === 'approved' ? "déjà approuvé et publié" : "déjà suggéré et en attente de validation";
+        return res.status(400).json({
+          success: false,
+          message: `Ce mot ('${frenchWord}' - '${fonWord}') est ${state} dans le dictionnaire.`
+        });
+      }
+
       const { data, error } = await supabase
         .from('words')
         .insert([{
           ...cleanRecord,
+          french: frenchWord,
+          fon: fonWord,
           audio_url,
           example_audio_url,
           status: 'pending'

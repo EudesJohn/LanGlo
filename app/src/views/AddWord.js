@@ -14,11 +14,15 @@ export default {
       example: '',
       phonetic: '',
       wordAudioBlob: null,
-      phraseAudioBlob: null
+      phraseAudioBlob: null,
+      submitting: false
     }
   },
   methods: {
     async handleFormSubmit() {
+      if (this.submitting) return;
+      this.submitting = true;
+
       const blobToBase64 = (blob) => {
         return new Promise((resolve, reject) => {
           if (!blob) return resolve(null);
@@ -40,10 +44,14 @@ export default {
           example: this.example,
           phonetic: this.phonetic,
           audio_base64,
-          example_audio_base64
+          example_audio_base64,
+          onComplete: () => {
+            this.submitting = false;
+          }
         });
       } catch (err) {
         console.error("Conversion error:", err);
+        this.submitting = false;
       }
     }
   },
@@ -110,8 +118,13 @@ export default {
               <label>Exemple d'utilisation (Phrase complète)</label>
               <textarea v-model="example" class="input-field" rows="3" placeholder="Une phrase d'exemple pour illustrer le sens..."></textarea>
             </div>
-            <button type="submit" class="btn-premium wide" style="padding: 20px; font-size: 1.2rem;">
-              <lucide-icon name="send" /> Envoyer pour validation
+            <button type="submit" class="btn-premium wide" :disabled="submitting" style="padding: 20px; font-size: 1.2rem;">
+              <template v-if="submitting">
+                <lucide-icon name="loader" class="spin" /> Envoi en cours...
+              </template>
+              <template v-else>
+                <lucide-icon name="send" /> Envoyer pour validation
+              </template>
             </button>
           </form>
         </div>
