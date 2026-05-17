@@ -1,5 +1,5 @@
 // app/sw.js - Service Worker for offline PWA installation
-const CACHE_NAME = 'gbe-tche-v1.1';
+const CACHE_NAME = 'gbe-tche-v1.2';
 const ASSETS = [
   '/',
   '/index.html',
@@ -49,12 +49,26 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('fetch', (e) => {
   if (!e.request.url.startsWith('http')) return;
   
+  // Skip intercepting Supabase / Auth / External API dynamic requests
+  if (e.request.url.includes('/api/') || e.request.url.includes('supabase.co')) {
+    return;
+  }
+
   e.respondWith(
-    caches.match(e.request).then((cachedResponse) => {
-      if (cachedResponse) return cachedResponse;
-      return fetch(e.request);
-    }).catch(() => {
-      // Fail gracefully
-    })
+    fetch(e.request)
+      .then((networkResponse) => {
+        // Cache the updated version if it is a successful local resource
+        if (networkResponse && networkResponse.status === 200) {
+          const responseClone = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(e.request, responseClone);
+          });
+        }
+        return networkResponse;
+      })
+      .catch(() => {
+        // Network failed (offline): return cached resource if available
+        return caches.match(e.request);
+      })
   );
 });
