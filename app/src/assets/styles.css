@@ -666,9 +666,27 @@ td { padding: 15px; border-bottom: 1px solid var(--glass-border); }
   .footer-grid { grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 600px) {
-  .footer { margin: 40px 20px; padding: 40px 20px; }
-  .footer-grid { grid-template-columns: 1fr; gap: 40px; }
-  .footer-bottom { flex-direction: column; gap: 20px; text-align: center; }
+  .footer {
+    width: auto !important;
+    margin: 40px 15px !important;
+    padding: 40px 20px !important;
+  }
+  .footer-grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    text-align: center;
+  }
+  .social-links {
+    justify-content: center;
+  }
+  .footer-links ul {
+    padding: 0;
+  }
+  .footer-bottom {
+    flex-direction: column;
+    gap: 20px;
+    text-align: center;
+  }
 }
 
 /* ABOUT PAGE */
