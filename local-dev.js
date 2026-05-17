@@ -60,3 +60,5 @@ app.use((req, res, next) => {
 app.listen(PORT, () => {
   console.log(`\x1b[32m%s\x1b[0m`, `🚀 Gbé Tché local server running at http://localhost:${PORT}`);
 });
+// Trigger Vercel redeploy
+
