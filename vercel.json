@@ -1,8 +1,8 @@
 {
   "version": 2,
   "cleanUrls": true,
+  "outputDirectory": "app",
   "rewrites": [
-    { "source": "/api/:path*", "destination": "/api/:path*" },
-    { "source": "/(.*)", "destination": "/app/$1" }
+    { "source": "/api/:path*", "destination": "/api/:path*" }
   ]
 }
