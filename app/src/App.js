@@ -358,16 +358,19 @@ export default {
           };
         }
 
-        // Sync role from database (Source of Truth for Admin role)
+        // Sync full profile from database (Source of Truth)
         const { data: dbUser } = await supabaseClient.value
           .from('users')
-          .select('role')
+          .select('*')
           .eq('email', authUser.email)
           .single();
 
         if (dbUser) {
           if (user.value.role !== dbUser.role) navbarKey.value++;
-          user.value.role = dbUser.role;
+          user.value = {
+            ...user.value,
+            ...dbUser
+          };
         } else {
           // If the user is new (not in public.users), create them automatically
           await supabaseClient.value.from('users').insert([{

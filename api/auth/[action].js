@@ -41,6 +41,7 @@ module.exports = async (req, res) => {
         user: {
           ...userRef,
           ...userRef.user_metadata,
+          ...dbUser,
           db_id: dbUser?.id,
           contributions_count: contributions_count || 0
         }
