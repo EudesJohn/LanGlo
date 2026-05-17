@@ -898,7 +898,6 @@ td { padding: 15px; border-bottom: 1px solid var(--glass-border); }
 .mod-card-v3.validated { border-left: 4px solid #00ff88; }
 .status-badge { font-weight: bold; text-transform: uppercase; font-size: 0.6rem; color: var(--primary); }
 
-@media (max-width: 900px) {
 /* MOBILE RESPONSIVE OVERHAUL (FINAL FIX) */
 @media (max-width: 768px) {
   .navbar {
