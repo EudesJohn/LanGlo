@@ -94,7 +94,7 @@ export default {
                   </div>
                   <div class="detail-item">
                     <span class="detail-label">Niveau Fon</span>
-                    <span class="badge" style="background: var(--human-accent); color: white;">{{ user?.fon_level || 'Non spécifié' }}</span>
+                    <span class="detail-value">{{ user?.fon_level || 'Non spécifié' }}</span>
                   </div>
                 </div>
   
