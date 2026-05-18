@@ -212,6 +212,7 @@ export default {
             pseudo: newData.pseudo || null,
             nationality: newData.nationality || "Béninoise",
             ethnicity: newData.ethnicity || "Fon",
+            fon_level: newData.fon_level || "Aucune maitrise",
             avatar_url: newData.avatar_url || user.value.avatar_url || null
           };
           
