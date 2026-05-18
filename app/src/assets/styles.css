@@ -918,6 +918,106 @@ td { padding: 15px; border-bottom: 1px solid var(--glass-border); }
 
 .mod-card-v3.validated { border-left: 4px solid #00ff88; }
 .status-badge { font-weight: bold; text-transform: uppercase; font-size: 0.6rem; color: var(--primary); }
+.status-badge.pending  { color: #ff9f43; }
+.status-badge.approved { color: #00ff88; }
+
+/* ── NEW ADMIN: MAIN TABS ─────────────────────────────── */
+.admin-main-tabs {
+  display: flex; gap: 12px; padding-top: 20px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+.main-tab-btn {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 28px; border-radius: 9999px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  color: #777; cursor: pointer; font-weight: 700;
+  font-size: 0.95rem; transition: all 0.3s;
+}
+.main-tab-btn:hover { background: rgba(255,255,255,0.08); color: #fff; }
+.main-tab-btn.active {
+  background: rgba(255,107,107,0.12);
+  border-color: var(--primary);
+  color: var(--primary);
+  box-shadow: 0 8px 24px rgba(255,107,107,0.15);
+}
+.main-tab-btn.studio-tab.active {
+  background: rgba(255,159,67,0.12);
+  border-color: #ff9f43;
+  color: #ff9f43;
+  box-shadow: 0 8px 24px rgba(255,159,67,0.15);
+}
+.tab-count {
+  background: rgba(255,255,255,0.08); border-radius: 9999px;
+  padding: 2px 10px; font-size: 0.8rem; font-weight: 800;
+}
+.tab-count.accent { background: rgba(255,159,67,0.2); color: #ff9f43; }
+
+/* ── STAT PILL VARIANTS ────────────────────────────────── */
+.stat-pill.secondary { background: rgba(255,159,67,0.1); border-color: rgba(255,159,67,0.2); }
+.stat-pill.secondary .stat-label { color: #ff9f43; }
+.stat-pill.tertiary { background: rgba(99,179,237,0.1); border-color: rgba(99,179,237,0.2); }
+.stat-pill.tertiary .stat-label { color: #63b3ed; }
+
+/* ── LIBRARY FILTER CHIPS ──────────────────────────────── */
+.filter-chip {
+  padding: 8px 18px; border-radius: 9999px; border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.03); color: #888; cursor: pointer;
+  font-size: 0.85rem; font-weight: 600; transition: all 0.25s;
+  display: flex; align-items: center; gap: 6px;
+}
+.filter-chip:hover { background: rgba(255,255,255,0.08); color: #fff; }
+.filter-chip.chip-active {
+  background: rgba(255,107,107,0.15); border-color: rgba(255,107,107,0.4);
+  color: var(--primary);
+}
+.chip-badge {
+  background: rgba(255,107,107,0.2); color: var(--primary);
+  border-radius: 9999px; padding: 2px 8px; font-size: 0.75rem;
+}
+.chip-badge.warn { background: rgba(255,159,67,0.2); color: #ff9f43; }
+
+/* ── NO-AUDIO BADGE ────────────────────────────────────── */
+.no-audio-badge {
+  font-size: 0.65rem; opacity: 0.5; margin-left: 8px;
+  background: rgba(255,159,67,0.1); border: 1px solid rgba(255,159,67,0.2);
+  color: #ff9f43; border-radius: 9999px; padding: 2px 8px;
+}
+
+/* ── AUDIO PREVIEW STRIP ───────────────────────────────── */
+.audio-preview-strip { display: flex; gap: 10px; }
+.audio-pill {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  padding: 8px 14px; border-radius: 9999px; font-size: 0.8rem;
+  background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
+  color: #555;
+}
+.audio-pill.active { color: #00ff88; border-color: rgba(0,255,136,0.2); background: rgba(0,255,136,0.05); }
+
+/* ── AUDIO STUDIO ZONE ─────────────────────────────────── */
+.studio-zone { animation: fadeIn 0.4s ease; }
+.studio-layout { max-width: 800px; margin: 0 auto; }
+.studio-card { border-radius: 30px; overflow: hidden; }
+
+/* ── UPCOMING WORD CHIPS ───────────────────────────────── */
+.upcoming-chip {
+  padding: 6px 14px; border-radius: 9999px; font-size: 0.85rem; font-weight: 700;
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07);
+  color: #999; transition: all 0.2s;
+}
+.upcoming-chip:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.current-chip { background: rgba(255,107,107,0.15) !important; border-color: rgba(255,107,107,0.4) !important; color: var(--primary) !important; }
+
+/* ── MODERATION GRID ───────────────────────────────────── */
+.moderation-grid-v3 { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 25px; }
+@media (max-width: 768px) {
+  .moderation-grid-v3 { grid-template-columns: 1fr; }
+  .admin-main-tabs { flex-direction: column; }
+  .main-tab-btn { justify-content: center; }
+  .library-toolbar { flex-direction: column; align-items: stretch; }
+  .studio-controls-grid { grid-template-columns: 1fr !important; }
+}
+
 
 /* MOBILE RESPONSIVE OVERHAUL (FINAL FIX) */
 @media (max-width: 768px) {
