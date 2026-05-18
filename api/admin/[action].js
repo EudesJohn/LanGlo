@@ -13,13 +13,42 @@ module.exports = async (req, res) => {
 
   try {
     if (action === 'all') {
-      const { data, error } = await supabase
+      const page   = Math.max(1, parseInt(req.query.page  || '1', 10));
+      const limit  = Math.min(100, parseInt(req.query.limit || '50', 10));
+      const q      = (req.query.q || '').trim();
+      const filter = req.query.filter || 'all'; // all | pending | approved | no-audio
+
+      const from = (page - 1) * limit;
+      const to   = from + limit - 1;
+
+      let query = supabase
         .from('words')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('*', { count: 'exact' })
+        .order('created_at', { ascending: false })
+        .range(from, to);
+
+      // Apply status filter
+      if (filter === 'pending')  query = query.eq('status', 'pending');
+      if (filter === 'approved') query = query.eq('status', 'approved');
+      if (filter === 'no-audio') query = query.is('audio_url', null);
+
+      // Apply text search
+      if (q) {
+        query = query.or(`french.ilike.%${q}%,fon.ilike.%${q}%`);
+      }
+
+      const { data, error, count } = await query;
       if (error) throw error;
-      return res.status(200).json(data);
-    } 
+
+      return res.status(200).json({
+        data,
+        total: count || 0,
+        page,
+        totalPages: Math.ceil((count || 0) / limit),
+        limit
+      });
+    }
+
     
     if (action === 'pending') {
       const { data, error } = await supabase

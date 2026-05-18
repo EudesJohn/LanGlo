@@ -1018,6 +1018,21 @@ td { padding: 15px; border-bottom: 1px solid var(--glass-border); }
   .studio-controls-grid { grid-template-columns: 1fr !important; }
 }
 
+/* ── ADMIN PAGINATION ──────────────────────────────────── */
+.admin-pagination {
+  display: flex; align-items: center; justify-content: center; gap: 16px;
+  margin-top: 40px; padding: 20px;
+}
+.page-btn {
+  width: 42px; height: 42px; border-radius: 50%;
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+  color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+}
+.page-btn:hover:not(:disabled) { background: var(--primary); border-color: var(--primary); }
+.page-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.page-info { font-size: 0.95rem; color: rgba(255,255,255,0.7); }
+
 
 /* MOBILE RESPONSIVE OVERHAUL (FINAL FIX) */
 @media (max-width: 768px) {

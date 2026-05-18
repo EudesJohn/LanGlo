@@ -291,12 +291,9 @@ export default {
 
     const fetchAdminData = async () => {
       try {
-        const [pendingRes, allRes] = await Promise.all([
-          axios.get(`${API}/admin/pending`),
-          axios.get(`${API}/admin/all`)
-        ]);
+        const pendingRes = await axios.get(`${API}/admin/pending`);
         pendingWords.value = pendingRes.data;
-        allWords.value = allRes.data;
+        allWords.value = []; // Admin.js gère sa propre pagination
       } catch (e) {
         console.error("Erreur de chargement Admin:", e);
       }
