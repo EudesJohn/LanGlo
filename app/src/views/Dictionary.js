@@ -50,6 +50,18 @@ export default {
               </div>
             </div>
 
+            <!-- EXACT MATCHES -->
+            <div class="dictionary-grid" v-if="words.length > 0" style="margin-bottom: 30px;">
+              <word-card 
+                v-for="word in words" 
+                :key="word.id" 
+                :word="word" 
+                :query="query"
+                :favorites="favorites"
+                @navigate="$emit('navigate', $event)"
+              />
+            </div>
+
             <!-- GLOSBE WORD-BY-WORD INTERLINEAR CARD -->
             <div v-if="searchResult?.isSentence && searchResult?.wordByWord?.length > 0" class="glass-card scale-in" style="border-radius: 30px; padding: 25px 30px; margin-bottom: 30px; border: 1px solid rgba(255,255,255,0.12); background: linear-gradient(135deg, rgba(255,215,0,0.03) 0%, rgba(255,255,255,0.03) 100%);">
               <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
@@ -78,18 +90,6 @@ export default {
                   </div>
                 </div>
               </div>
-            </div>
-
-            <!-- EXACT MATCHES -->
-            <div class="dictionary-grid" v-if="words.length > 0">
-              <word-card 
-                v-for="word in words" 
-                :key="word.id" 
-                :word="word" 
-                :query="query"
-                :favorites="favorites"
-                @navigate="$emit('navigate', $event)"
-              />
             </div>
 
             <!-- EXAMPLE SENTENCES CONCORDANCE (TRANSLATION MEMORY) -->
