@@ -132,11 +132,23 @@ module.exports = async (req, res) => {
             .or(orQuery);
 
           const wordByWord = wordsArray.map(word => {
-            const match = wordTranslations?.find(t => 
-              t.french.toLowerCase() === word || t.fon.toLowerCase() === word
-            );
-            if (match) {
-              const isFrenchWord = match.french.toLowerCase() === word;
+            const matches = wordTranslations?.filter(t => 
+              (t.french && t.french.toLowerCase() === word) || (t.fon && t.fon.toLowerCase() === word)
+            ) || [];
+
+            if (matches.length > 0) {
+              // Smart sort:
+              // 1. Prefer Vocabulaire category first
+              // 2. Prefer shorter translations (single words) over long phrase matches
+              matches.sort((a, b) => {
+                const scoreA = a.category === 'Vocabulaire' ? 0 : 1;
+                const scoreB = b.category === 'Vocabulaire' ? 0 : 1;
+                if (scoreA !== scoreB) return scoreA - scoreB;
+                return (a.fon || '').length - (b.fon || '').length;
+              });
+
+              const match = matches[0];
+              const isFrenchWord = match.french && match.french.toLowerCase() === word;
               return {
                 original: word,
                 translation: isFrenchWord ? match.fon : match.french,
@@ -152,27 +164,63 @@ module.exports = async (req, res) => {
             }
           });
 
-          // 3. Find example sentences containing the words
-          const significantWords = wordsArray.filter(w => w.length > 2);
+          // 3. Find example sentences containing the words (excluding grammatical noise)
+          const COMMON_GRAMMAR_WORDS = new Set([
+            'je', 'tu', 'il', 'elle', 'on', 'nous', 'vous', 'ils', 'elles',
+            'me', 'te', 'se', 'le', 'la', 'les', 'un', 'une', 'des', 'du',
+            'mon', 'ton', 'son', 'ma', 'ta', 'sa', 'mes', 'tes', 'ses',
+            'notre', 'votre', 'leur', 'nos', 'vos', 'leurs',
+            'ce', 'cet', 'cette', 'ces', 'et', 'ou', 'mais', 'donc', 'or', 'ni', 'car',
+            'qui', 'que', 'quoi', 'dont', 'ou', 'où', 'qu', 'dans', 'sur', 'sous', 'pour',
+            'avec', 'par', 'pour', 'dans', 'en', 'aux', 'des', 'les', 'au', 'aux', 'a', 'est', 'ont', 'sont'
+          ]);
+
+          const significantWords = wordsArray.filter(w => w.length > 2 && !COMMON_GRAMMAR_WORDS.has(w));
           let exampleSentences = [];
 
           if (significantWords.length > 0) {
-            const sentenceOrQuery = significantWords
-              .map(w => `french.ilike.%${w}%,fon.ilike.%${w}%`)
-              .join(',');
+            // Query Supabase for each significant word in parallel to avoid common terms dominating the results
+            const queries = significantWords.map(w => 
+              supabase
+                .from('words')
+                .select('*')
+                .eq('status', 'approved')
+                .or(`french.ilike.%${w}%,fon.ilike.%${w}%`)
+                .limit(20)
+            );
 
-            const { data: sentences } = await supabase
-              .from('words')
-              .select('*')
-              .eq('status', 'approved')
-              .or(sentenceOrQuery)
-              .limit(30);
+            const queryResults = await Promise.all(queries);
+            let allSentences = [];
+            const seenIds = new Set();
 
-            if (sentences) {
-              // Filter out exactMatches duplicates
-              exampleSentences = sentences.filter(s => 
-                !exactMatches.some(em => em.id === s.id)
-              );
+            // Interleave query results (round-robin) to guarantee equal representation of all search terms
+            const maxLength = Math.max(...queryResults.map(r => r.data ? r.data.length : 0));
+            for (let i = 0; i < maxLength; i++) {
+              queryResults.forEach(res => {
+                if (res.data && res.data[i]) {
+                  const s = res.data[i];
+                  if (!seenIds.has(s.id)) {
+                    seenIds.add(s.id);
+                    allSentences.push(s);
+                  }
+                }
+              });
+            }
+
+            if (allSentences.length > 0) {
+              // Filter out exactMatches duplicates, then rank by relevance score (number of matched significant words)
+              exampleSentences = allSentences
+                .filter(s => !exactMatches.some(em => em.id === s.id))
+                .map(s => {
+                  const content = `${s.french || ''} ${s.fon || ''}`.toLowerCase();
+                  let score = 0;
+                  significantWords.forEach(w => {
+                    if (content.includes(w)) score++;
+                  });
+                  return { ...s, relevanceScore: score };
+                })
+                .sort((a, b) => b.relevanceScore - a.relevanceScore)
+                .slice(0, 30); // Return top 30 most relevant sentences
             }
           }
 
