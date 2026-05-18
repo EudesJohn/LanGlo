@@ -434,21 +434,20 @@ module.exports = async (req, res) => {
     // NOUVELLES ACTIONS POUR LE STUDIO D'ENREGISTREMENT
     // ============================================================
     if (action === 'studio-list') {
-      // Obtenir le nombre total de mots sans audio dans Vocabulaire
+      // Obtenir le nombre total de mots sans audio (toutes catégories)
       const { count, error: countErr } = await supabase
         .from('words')
         .select('*', { count: 'exact', head: true })
-        .eq('category', 'Vocabulaire')
         .is('audio_url', null);
 
       if (countErr) throw countErr;
 
-      // Obtenir les 20 premiers mots sans audio
+      // Obtenir les 20 premiers mots sans audio (Priorité au Vocabulaire, puis alphabétique)
       const { data, error } = await supabase
         .from('words')
         .select('*')
-        .eq('category', 'Vocabulaire')
         .is('audio_url', null)
+        .order('category', { ascending: false }) // 'Vocabulaire' vient avant 'Phrase' et 'Bible'
         .order('french', { ascending: true })
         .limit(20);
 
