@@ -27,6 +27,13 @@ html { font-size: 14px; }
 .premium-gradient { background: linear-gradient(135deg, var(--primary) 0%, #ff8e8e 100%); }
 .glass-effect { background: var(--glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); }
 .glow-on-hover:hover { box-shadow: 0 0 30px var(--primary-glow); transform: translateY(-3px); }
+.highlight-premium {
+  background: rgba(255, 193, 7, 0.25);
+  color: #ffc107;
+  border-bottom: 2px solid #ffc107;
+  padding: 0 4px;
+  border-radius: 4px;
+}
 
 /* LAYOUT SYSTEM */
 .app-shell { display: flex; flex-direction: column; min-height: 100vh; }

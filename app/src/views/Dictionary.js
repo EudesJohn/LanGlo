@@ -55,6 +55,7 @@ export default {
                 v-for="word in words" 
                 :key="word.id" 
                 :word="word" 
+                :query="query"
                 :favorites="favorites"
                 @navigate="$emit('navigate', $event)"
               />
@@ -65,7 +66,7 @@ export default {
                 <lucide-icon name="search-x" :size="64" />
               </div>
               <h3 style="font-size: 2rem; margin-bottom: 10px;">Aucun résultat exact</h3>
-              <p style="opacity: 0.6; margin-bottom: 30px;">La langue Fon est vaste. Si ce mot manque, vous pouvez aider la communauté en l'ajoutant !</p>
+              <p style="opacity: 0.6; margin-bottom: 30px;">La langue Fon est vaste. Si ce mot manque dans notre base de 31 000 phrases, aidez la communauté en le suggérant !</p>
               <button @click="$emit('navigate', 'add-word')" class="btn-premium">
                 Suggérer ce mot
               </button>

@@ -2,7 +2,7 @@
 import LucideIcon from './LucideIcon.js'
 
 export default {
-  props: ['word', 'favorites'],
+  props: ['word', 'query', 'favorites'],
   emits: ['navigate'],
   components: { LucideIcon },
   template: `
@@ -18,8 +18,8 @@ export default {
         
         <!-- SECTION FON -->
         <div class="detail-section">
-          <span class="detail-label">Mot en Fon</span>
-          <h2 class="fon-heading font-fon">{{ word.fon }}</h2>
+          <span class="detail-label">{{ word.category === 'Bible' ? 'Verset en Fon' : (word.category === 'Phrase' ? 'Phrase en Fon' : 'Mot en Fon') }}</span>
+          <h2 class="fon-heading font-fon" v-html="highlight(word.fon)"></h2>
           <div class="phonetic-detail" v-if="word.phonetic">
             <lucide-icon name="music-2" :size="14" />
             <span>Prononciation : <strong>[{{ word.phonetic }}]</strong></span>
@@ -28,9 +28,9 @@ export default {
 
         <!-- SECTION FRANCAIS -->
         <div class="detail-section mt-20">
-          <span class="detail-label">Traduction Française</span>
+          <span class="detail-label">{{ word.category === 'Bible' ? 'Traduction (Français)' : 'Traduction Française' }}</span>
           <div class="translation-box-v2">
-            <p class="value">{{ word.french }}</p>
+            <p class="value" v-html="highlight(word.french)"></p>
           </div>
         </div>
 
@@ -43,7 +43,7 @@ export default {
         </div>
 
         <!-- SECTION AUDIO AVEC TITRES CLAIRS -->
-        <div class="detail-section mt-25">
+        <div class="detail-section mt-25" v-if="word.audio_url || word.example_audio_url || (word.category !== 'Bible' && word.category !== 'Phrase')">
           <span class="detail-label">Audio & Prononciation</span>
           <div class="luxury-audio-grid">
             
@@ -73,5 +73,14 @@ export default {
 
       </div>
     </div>
-  `
+  `,
+  methods: {
+    highlight(text) {
+      if (!this.query || !text) return text;
+      // Échapper les caractères spéciaux du regex
+      const escaped = this.query.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+      const regex = new RegExp(`(${escaped})`, 'gi');
+      return text.replace(regex, '<mark class="highlight-premium">$1</mark>');
+    }
+  }
 }
