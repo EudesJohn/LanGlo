@@ -418,6 +418,89 @@ module.exports = async (req, res) => {
     }
 
     // ============================================================
+    // NOUVELLES ACTIONS POUR LE STUDIO D'ENREGISTREMENT
+    // ============================================================
+    if (action === 'studio-list') {
+      // Obtenir le nombre total de mots sans audio dans Vocabulaire
+      const { count, error: countErr } = await supabase
+        .from('words')
+        .select('*', { count: 'exact', head: true })
+        .eq('category', 'Vocabulaire')
+        .is('audio_url', null);
+
+      if (countErr) throw countErr;
+
+      // Obtenir les 20 premiers mots sans audio
+      const { data, error } = await supabase
+        .from('words')
+        .select('*')
+        .eq('category', 'Vocabulaire')
+        .is('audio_url', null)
+        .order('french', { ascending: true })
+        .limit(20);
+
+      if (error) throw error;
+
+      return res.status(200).json({
+        words: data || [],
+        totalRemaining: count || 0
+      });
+    }
+
+    if (action === 'studio-update') {
+      if (req.method !== 'POST') return res.status(405).json({ message: 'Method Not Allowed' });
+      const { id, phonetic, audio_base64 } = req.body;
+
+      if (!id) {
+        return res.status(400).json({ success: false, message: "ID du mot manquant" });
+      }
+
+      let audio_url = null;
+      if (audio_base64) {
+        try {
+          const cleanBase64 = audio_base64.replace(/^data:.*?;base64,/, '');
+          const buffer = Buffer.from(cleanBase64, 'base64');
+          const fileName = `${Date.now()}_studio_${id}.ogg`;
+
+          const { error: uploadError } = await supabase.storage
+            .from('audios')
+            .upload(fileName, buffer, { contentType: 'audio/ogg' });
+
+          if (uploadError) {
+            console.error(`Storage Upload Error (studio):`, uploadError.message);
+            return res.status(500).json({ success: false, message: `Storage Error: ${uploadError.message}` });
+          }
+
+          const { data: { publicUrl } } = supabase.storage
+            .from('audios')
+            .getPublicUrl(fileName);
+
+          audio_url = publicUrl;
+        } catch (err) {
+          console.error("Audio recording conversion/upload failed:", err);
+          return res.status(500).json({ success: false, message: "Échec de conversion de l'audio." });
+        }
+      }
+
+      const updatePayload = {
+        status: 'approved' // Automatiquement approuvé puisqu'il passe par le studio
+      };
+      if (phonetic) updatePayload.phonetic = phonetic;
+      if (audio_url) updatePayload.audio_url = audio_url;
+
+      const { error: updateError } = await supabase
+        .from('words')
+        .update(updatePayload)
+        .eq('id', id);
+
+      if (updateError) {
+        return res.status(500).json({ success: false, message: updateError.message });
+      }
+
+      return res.status(200).json({ success: true, audio_url });
+    }
+
+    // ============================================================
     // 3. RANDOM WORD
     // ============================================================
     if (action === 'random') {

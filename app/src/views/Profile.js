@@ -101,6 +101,11 @@ export default {
                 <button @click="startEdit" class="btn-premium mini wide" style="margin-top: 20px;">
                   <lucide-icon name="edit-3" /> Modifier le profil
                 </button>
+                
+                <!-- BOUTON ACCES STUDIO (ADMIN) -->
+                <button v-if="user?.role === 'admin'" @click="$emit('navigate', 'studio')" class="btn-premium mini wide" style="margin-top: 10px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-color: #10b981;">
+                  <lucide-icon name="mic" /> Studio Enregistrement
+                </button>
               </div>
   
               <div v-else class="profile-info editing">
