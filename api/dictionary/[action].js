@@ -149,7 +149,7 @@ module.exports = async (req, res) => {
       // ----------------------------------------------------------
       // ÉTAPE 1 : Recherche exacte de la phrase ou du mot complet
       // ----------------------------------------------------------
-      const { data: exactMatches, error } = await supabase
+      const { data: exactMatchesRaw, error } = await supabase
         .from('words')
         .select('*')
         .eq('status', 'approved')
@@ -157,6 +157,26 @@ module.exports = async (req, res) => {
         .limit(50);
 
       if (error) throw error;
+
+      // Tri intelligent des exactMatches pour mettre les VRAIES correspondances exactes en premier
+      const exactMatches = (exactMatchesRaw || []).sort((a, b) => {
+        const aFr = (a.french || '').toLowerCase().trim();
+        const bFr = (b.french || '').toLowerCase().trim();
+        const searchLow = searchTerm.toLowerCase().trim();
+        
+        // 1. Correspondance exacte absolue (ex: taper "moto" trouve "moto")
+        const aExact = aFr === searchLow ? 1 : 0;
+        const bExact = bFr === searchLow ? 1 : 0;
+        if (aExact !== bExact) return bExact - aExact;
+        
+        // 2. Vocabulaire en priorité
+        const aVocab = a.category === 'Vocabulaire' ? 1 : 0;
+        const bVocab = b.category === 'Vocabulaire' ? 1 : 0;
+        if (aVocab !== bVocab) return bVocab - aVocab;
+        
+        // 3. Plus court en premier
+        return aFr.length - bFr.length;
+      });
 
       // ----------------------------------------------------------
       // ÉTAPE 2 : Si phrase → traduction mot-à-mot (style Glosbe)
