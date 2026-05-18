@@ -201,10 +201,25 @@ module.exports = async (req, res) => {
       const { data, error } = await supabase
         .from('words')
         .select('*')
-        .eq('status', 'approved');
+        .eq('status', 'approved')
+        .not('category', 'in', '("Bible","Phrase")');
 
       if (error) throw error;
-      if (!data || data.length === 0) return res.status(200).json(null);
+      
+      if (!data || data.length === 0) {
+        // Fallback to any approved entry if no short words found
+        const { data: fallbackData, error: fallbackErr } = await supabase
+          .from('words')
+          .select('*')
+          .eq('status', 'approved')
+          .limit(100);
+          
+        if (fallbackErr) throw fallbackErr;
+        if (!fallbackData || fallbackData.length === 0) return res.status(200).json(null);
+        
+        const randomWord = fallbackData[Math.floor(Math.random() * fallbackData.length)];
+        return res.status(200).json(randomWord);
+      }
       
       const randomWord = data[Math.floor(Math.random() * data.length)];
       return res.status(200).json(randomWord);
