@@ -123,8 +123,8 @@ module.exports = async (req, res) => {
       // If the query is a multi-word phrase
       if (wordsArray.length > 1) {
         try {
-          // 2. Look up translations for individual words
-          const orQuery = wordsArray.map(w => `french.eq.${w},fon.eq.${w}`).join(',');
+          // 2. Look up translations for individual words (case-insensitive)
+          const orQuery = wordsArray.map(w => `french.ilike.${w},fon.ilike.${w}`).join(',');
           const { data: wordTranslations } = await supabase
             .from('words')
             .select('french, fon, phonetic, category')
