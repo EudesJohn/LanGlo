@@ -3,7 +3,7 @@ import LucideIcon from './LucideIcon.js'
 
 export default {
   props: ['user', 'currentPage', 'isProfileComplete'],
-  emits: ['navigate', 'logout'],
+  emits: ['navigate', 'logout', 'search'],
   components: { LucideIcon },
   data() {
     return {
@@ -30,6 +30,9 @@ export default {
         </button>
   
         <nav class="nav-links" :class="{ 'mobile-open': isMenuOpen }">
+          <button @click="$emit('search', ''); isMenuOpen = false" class="nav-btn">
+            <lucide-icon name="book-open" /> <span>Dictionnaire</span>
+          </button>
           <template v-if="user">
             <button @click="handleNav('add-word')" class="nav-btn">
               <lucide-icon name="plus" /> <span>Suggérer</span>

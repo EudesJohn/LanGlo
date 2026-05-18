@@ -1,7 +1,7 @@
 // app/src/views/Home.js
 import LucideIcon from '../components/LucideIcon.js'
 export default {
-  props: ['stats'],
+  props: ['stats', 'wordOfDay'],
   emits: ['search'],
   components: { LucideIcon },
   data() {
@@ -49,14 +49,23 @@ export default {
           <div class="hero-visual-right glass-card" style="padding: 40px; border-radius: 40px;">
             <div class="word-of-day-pro">
               <span class="badge-luxury premium-gradient" style="margin-bottom: 20px; display: inline-block;">Mot du jour</span>
-              <h2 class="fon-text" style="font-size: 3.5rem; margin-bottom: 10px;">Dahomè</h2>
-              <p class="french-text" style="opacity: 0.8;">Ancien nom du Bénin, signifiant "Dans le ventre de Dan".</p>
-              <div class="example" style="margin-top: 20px;">
-                "Dahomè nyí tò ɖaxó ɖé." (Le Dahomey était un grand pays.)
-              </div>
-              <button @click="$emit('search', 'Dahomè')" class="btn-premium mini" style="margin-top: 30px;">
-                En savoir plus <lucide-icon name="arrow-up-right" :size="16" />
-              </button>
+              
+              <template v-if="wordOfDay">
+                <h2 class="fon-text" style="font-size: 3.5rem; margin-bottom: 10px;">{{ wordOfDay.fon }}</h2>
+                <p class="french-text" style="opacity: 0.8;">{{ wordOfDay.french }}</p>
+                <div v-if="wordOfDay.example" class="example" style="margin-top: 20px;">
+                  "{{ wordOfDay.example }}"
+                </div>
+                <button @click="$emit('search', wordOfDay.fon)" class="btn-premium mini" style="margin-top: 30px;">
+                  En savoir plus <lucide-icon name="arrow-up-right" :size="16" />
+                </button>
+              </template>
+              
+              <template v-else>
+                <div style="padding: 40px 0; display: flex; justify-content: center;">
+                  <div class="spinner"></div>
+                </div>
+              </template>
             </div>
           </div>
 

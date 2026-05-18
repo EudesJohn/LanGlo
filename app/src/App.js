@@ -32,6 +32,16 @@ export default {
     const stats = ref({ words: 0, contributors: 0 });
     const notification = ref(null);
     const navbarKey = ref(0);
+    const wordOfDay = ref(null);
+
+    const fetchWordOfDay = async () => {
+      try {
+        const res = await axios.get(`${API}/dictionary/random`);
+        if (res.data) wordOfDay.value = res.data;
+      } catch (e) {
+        console.error("Erreur chargement Mot du Jour:", e);
+      }
+    };
 
     const API = '/api';
     const supabaseClient = ref(null);
@@ -358,6 +368,7 @@ export default {
 
     onMounted(async () => {
       console.log('App Mounted');
+      fetchWordOfDay();
       
       // PWA listeners
       window.addEventListener('beforeinstallprompt', handleInstallPrompt);
@@ -463,7 +474,7 @@ export default {
     });
 
     return {
-      currentPage, user, words, favorites, pendingWords, allWords, searchQuery, notification, stats, navbarKey,
+      currentPage, user, words, favorites, pendingWords, allWords, searchQuery, notification, stats, navbarKey, wordOfDay,
       showInstallBanner, isIOS, triggerInstall,
       navigate, handleSearch, handleLogin, handleLogout, notify, isProfileComplete,
       handleRegister, handleUpdateProfile, adminApprove, adminDelete, handleUpdateWord, fetchAdminData,
@@ -483,11 +494,12 @@ export default {
         :currentPage="currentPage" 
         :isProfileComplete="isProfileComplete"
         @navigate="navigate" 
-        @logout="handleLogout" 
+        @logout="handleLogout"
+        @search="handleSearch" 
       />
 
       <main class="main-content">
-        <home v-if="currentPage === 'home'" :stats="stats" @search="handleSearch" />
+        <home v-if="currentPage === 'home'" :stats="stats" :wordOfDay="wordOfDay" @search="handleSearch" />
         <dictionary 
           v-if="currentPage === 'dictionary'" 
           :words="words" 

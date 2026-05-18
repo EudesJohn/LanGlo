@@ -94,10 +94,45 @@ module.exports = async (req, res) => {
     } 
     
     if (action === 'update') {
-      const { id, french, fon, phonetic, category, example } = req.body;
+      const { id, french, fon, phonetic, category, example, audio_base64, example_audio_base64 } = req.body;
+      
+      const uploadAudio = async (base64, name) => {
+        if (!base64) return null;
+        try {
+          const cleanBase64 = base64.replace(/^data:.*?;base64,/, '');
+          const buffer = Buffer.from(cleanBase64, 'base64');
+          const fileName = `${Date.now()}_${name}.ogg`;
+          
+          const { error } = await supabase.storage
+            .from('audios')
+            .upload(fileName, buffer, { contentType: 'audio/ogg' });
+          
+          if (error) {
+            console.error(`Storage Upload Error (${name}):`, error.message);
+            return null;
+          }
+          
+          const { data: { publicUrl } } = supabase.storage
+            .from('audios')
+            .getPublicUrl(fileName);
+          
+          return publicUrl;
+        } catch (uploadErr) {
+          console.error("Critical Upload Error:", uploadErr.message);
+          return null;
+        }
+      };
+
+      const new_audio_url = await uploadAudio(audio_base64, 'word');
+      const new_example_audio_url = await uploadAudio(example_audio_base64, 'example');
+
+      const updatePayload = { french, fon, phonetic, category, example };
+      if (new_audio_url) updatePayload.audio_url = new_audio_url;
+      if (new_example_audio_url) updatePayload.example_audio_url = new_example_audio_url;
+
       const { data, error } = await supabase
         .from('words')
-        .update({ french, fon, phonetic, category, example })
+        .update(updatePayload)
         .eq('id', id);
       if (error) throw error;
       return res.status(200).json({ success: true, data });

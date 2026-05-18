@@ -108,6 +108,20 @@ module.exports = async (req, res) => {
       if (error) throw error;
       return res.status(200).json(data);
     }
+    
+    // 3. RANDOM WORD
+    if (action === 'random') {
+      const { data, error } = await supabase
+        .from('words')
+        .select('*')
+        .eq('status', 'approved');
+
+      if (error) throw error;
+      if (!data || data.length === 0) return res.status(200).json(null);
+      
+      const randomWord = data[Math.floor(Math.random() * data.length)];
+      return res.status(200).json(randomWord);
+    }
 
     return res.status(404).json({ error: `Dictionary action '${action}' not found` });
   } catch (e) {
