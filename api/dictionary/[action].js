@@ -360,7 +360,6 @@ module.exports = async (req, res) => {
       // ----------------------------------------------------------
       let singleWordExamples = [];
       let exactWord = null;
-      let leftoverExactAsExamples = [];
 
       // Si le tri a trouvé une vraie correspondance (Vocabulaire et mot français ou fon exact)
       if (exactMatches.length > 0) {
@@ -371,14 +370,21 @@ module.exports = async (req, res) => {
 
         if ((firstFr === searchLow || firstFon === searchLow) && first.category === 'Vocabulaire') {
           exactWord = first;
-          leftoverExactAsExamples = exactMatches.slice(1);
         } else if (firstFr === searchLow || firstFon === searchLow) {
           exactWord = first; // Même si c'est Phrase, c'est exactement le mot
-          leftoverExactAsExamples = exactMatches.slice(1);
-        } else {
-          leftoverExactAsExamples = exactMatches;
         }
       }
+
+      // Trouver tous les mots de vocabulaire qui correspondent (pour ne pas cacher les mots dérivés ou proches)
+      const allMatchingVocab = exactMatches.filter(item => item.category === 'Vocabulaire');
+      if (exactWord && !allMatchingVocab.some(x => x.id === exactWord.id)) {
+        allMatchingVocab.unshift(exactWord);
+      }
+
+      // Ce qui n'est pas dans le vocabulaire principal va dans les exemples
+      const leftoverExactAsExamples = exactMatches.filter(item => {
+        return !allMatchingVocab.some(v => v.id === item.id);
+      });
 
       if (wordsArray.length === 1 && wordsArray[0].length >= 2) {
         const w = wordsArray[0];
@@ -397,28 +403,28 @@ module.exports = async (req, res) => {
           .limit(30);
 
         if (exData) {
-          singleWordExamples = exData
-            .filter(s => {
-              // Exclure si déjà présent dans leftoverExactAsExamples ou exactWord
-              if (exactWord && exactWord.id === s.id) return false;
-              if (leftoverExactAsExamples.some(em => em.id === s.id)) return false;
-              return (s.french || '').trim().split(/\s+/).length >= 2;
-            })
-            .slice(0, 20);
+          const filteredEx = exData.filter(s => {
+            // Exclure si déjà affiché dans les cartes de vocabulaire en haut
+            if (allMatchingVocab.some(em => em.id === s.id)) return false;
+            return (s.french || '').trim().split(/\s+/).length >= 2;
+          });
+          singleWordExamples = [...singleWordExamples, ...filteredEx];
         }
       }
 
       // Concaténer tous les exemples et appliquer le surlignage
-      const allExamplesForSingleWord = [...leftoverExactAsExamples, ...singleWordExamples].filter(s => {
-        return (s.french || '').trim().split(/\s+/).length >= 2; // Ne garder que de vraies phrases en exemple
-      }).map(s => {
-        return highlightCrossLingual(s, searchTerm, exactWord ? exactWord.fon : null);
-      });
+      const allExamplesForSingleWord = [...leftoverExactAsExamples, ...singleWordExamples]
+        .filter(s => {
+          return (s.french || '').trim().split(/\s+/).length >= 2; // Ne garder que de vraies phrases en exemple
+        })
+        .map(s => {
+          return highlightCrossLingual(s, searchTerm, exactWord ? exactWord.fon : null);
+        });
 
       return res.status(200).json({
         isSentence: false,
         exactWord: exactWord, // Le mot isolé et traduit parfaitement
-        exactMatches: exactWord ? [exactWord] : [], // Rétro-compatibilité
+        exactMatches: allMatchingVocab, // Liste complète des mots de vocabulaire trouvés
         wordByWord: [],
         exampleSentences: allExamplesForSingleWord
       });
