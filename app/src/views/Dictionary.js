@@ -54,8 +54,17 @@ export default {
             <div v-if="searchResult?.isSentence && searchResult?.wordByWord?.length > 0" class="glass-card scale-in" style="border-radius: 30px; padding: 25px 30px; margin-bottom: 30px; border: 1px solid rgba(255,255,255,0.12); background: linear-gradient(135deg, rgba(255,215,0,0.03) 0%, rgba(255,255,255,0.03) 100%);">
               <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
                 <lucide-icon name="sparkles" style="color: var(--primary);" />
-                <span class="detail-label" style="margin: 0; text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em; color: var(--primary);">Analyse mot-à-mot (Style Glosbe)</span>
+                <span class="detail-label" style="margin: 0; text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em; color: var(--primary);">Traduction Recomposée & Analyse mot-à-mot</span>
               </div>
+              
+              <!-- ASSEMBLED SENTENCE (Grammar engine output) -->
+              <div v-if="searchResult.assembledSentence" style="margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <div style="font-size: 0.85rem; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">Génération Automatique</div>
+                <div class="font-fon" style="font-size: 1.5rem; font-weight: 800; color: white;">
+                  {{ searchResult.assembledSentence }}
+                </div>
+              </div>
+
               <div style="display: flex; gap: 15px; flex-wrap: wrap;">
                 <div v-for="item in searchResult.wordByWord" :key="item.original" class="glass-card" style="border-radius: 18px; padding: 12px 18px; background: rgba(0,0,0,0.15); border: 1px solid var(--glass-border); min-width: 90px; text-align: center; transition: transform 0.2s;" :style="item.found ? 'border-color: rgba(255, 215, 0, 0.25);' : 'opacity: 0.6;'">
                   <div class="original-word" style="font-size: 1.15rem; font-weight: 700; color: white; margin-bottom: 4px; text-transform: capitalize;">
