@@ -178,6 +178,7 @@ module.exports = async (req, res) => {
         .select('*')
         .eq('status', 'approved')
         .or(`french.ilike.%${searchTerm}%,fon.ilike.%${searchTerm}%`)
+        .order('category', { ascending: false }) // Prioritize Vocabulaire > Phrase > Bible
         .limit(50);
 
       if (error) throw error;
@@ -186,11 +187,13 @@ module.exports = async (req, res) => {
       const exactMatches = (exactMatchesRaw || []).sort((a, b) => {
         const aFr = (a.french || '').toLowerCase().trim();
         const bFr = (b.french || '').toLowerCase().trim();
+        const aFon = (a.fon || '').toLowerCase().trim();
+        const bFon = (b.fon || '').toLowerCase().trim();
         const searchLow = searchTerm.toLowerCase().trim();
         
-        // 1. Correspondance exacte absolue (ex: taper "moto" trouve "moto")
-        const aExact = aFr === searchLow ? 1 : 0;
-        const bExact = bFr === searchLow ? 1 : 0;
+        // 1. Correspondance exacte absolue (Français ou Fon)
+        const aExact = (aFr === searchLow || aFon === searchLow) ? 1 : 0;
+        const bExact = (bFr === searchLow || bFon === searchLow) ? 1 : 0;
         if (aExact !== bExact) return bExact - aExact;
         
         // 2. Vocabulaire en priorité
@@ -359,13 +362,17 @@ module.exports = async (req, res) => {
       let exactWord = null;
       let leftoverExactAsExamples = [];
 
-      // Si le tri a trouvé une vraie correspondance (Vocabulaire et mot français exact)
+      // Si le tri a trouvé une vraie correspondance (Vocabulaire et mot français ou fon exact)
       if (exactMatches.length > 0) {
         const first = exactMatches[0];
-        if (first.french.toLowerCase().trim() === searchTerm.toLowerCase().trim() && first.category === 'Vocabulaire') {
+        const firstFr = (first.french || '').toLowerCase().trim();
+        const firstFon = (first.fon || '').toLowerCase().trim();
+        const searchLow = searchTerm.toLowerCase().trim();
+
+        if ((firstFr === searchLow || firstFon === searchLow) && first.category === 'Vocabulaire') {
           exactWord = first;
           leftoverExactAsExamples = exactMatches.slice(1);
-        } else if (first.french.toLowerCase().trim() === searchTerm.toLowerCase().trim()) {
+        } else if (firstFr === searchLow || firstFon === searchLow) {
           exactWord = first; // Même si c'est Phrase, c'est exactement le mot
           leftoverExactAsExamples = exactMatches.slice(1);
         } else {
