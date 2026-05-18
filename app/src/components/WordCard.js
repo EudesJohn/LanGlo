@@ -65,9 +65,24 @@ export default {
 
           </div>
           
-          <div v-if="!word.audio_url && !word.example_audio_url" class="no-audio-premium">
-            <lucide-icon name="volume-x" />
-            <span>Aucun enregistrement disponible pour ce mot</span>
+          <div v-if="!word.audio_url && !word.example_audio_url" class="luxury-audio-grid">
+            <div class="audio-control-card tts-card">
+              <span class="audio-title" style="color: var(--primary); display: flex; align-items: center; gap: 5px;">
+                <lucide-icon name="sparkles" :size="12" /> Synthèse Vocale (Fon)
+              </span>
+              <button @click="speakText(word.fon, 'fon')" class="btn-audio-action tts-btn">
+                <lucide-icon name="volume-2" /> Prononcer Fon
+              </button>
+            </div>
+
+            <div class="audio-control-card tts-card">
+              <span class="audio-title" style="opacity: 0.8; display: flex; align-items: center; gap: 5px;">
+                <lucide-icon name="sparkles" :size="12" /> Synthèse Vocale (Français)
+              </span>
+              <button @click="speakText(word.french, 'fr')" class="btn-audio-action secondary tts-btn">
+                <lucide-icon name="volume-2" /> Prononcer Français
+              </button>
+            </div>
           </div>
         </div>
 
@@ -81,6 +96,38 @@ export default {
       const escaped = this.query.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
       const regex = new RegExp(`(${escaped})`, 'gi');
       return text.replace(regex, '<mark class="highlight-premium">$1</mark>');
+    },
+    speakText(text, lang) {
+      if (!('speechSynthesis' in window)) {
+        alert("La synthèse vocale n'est pas supportée par votre navigateur.");
+        return;
+      }
+      
+      // Cancel any ongoing speech
+      window.speechSynthesis.cancel();
+      
+      // Clean up text and standardise Fon accents to approximate pronunciations
+      let cleanText = text;
+      if (lang === 'fon') {
+        cleanText = cleanText
+          .replace(/ɖ/g, 'd')
+          .replace(/ɔ/g, 'o')
+          .replace(/ɛ/g, 'e')
+          .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?\"']/g, ' ');
+      }
+      
+      const utterance = new SpeechSynthesisUtterance(cleanText);
+      
+      if (lang === 'fr') {
+        utterance.lang = 'fr-FR';
+      } else {
+        // Fon shares basic phonetic rules with French (like "ou", "on", "an")
+        utterance.lang = 'fr-FR';
+        utterance.rate = 0.82; // read slightly slower to capture tones
+        utterance.pitch = 1.05; // slightly higher pitch
+      }
+      
+      window.speechSynthesis.speak(utterance);
     }
   }
 }
