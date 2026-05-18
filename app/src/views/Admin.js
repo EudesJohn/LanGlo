@@ -39,6 +39,7 @@ export default {
   computed: {
     pendingCount() { return this.pendingWords.length; },
     noAudioCount() { return this.studioTotal; },
+    studioCurrentWord() { return this.studioWords[this.studioIndex] || null; }
   },
   watch: {
     activeTab(tab) {
@@ -135,7 +136,6 @@ export default {
       this.studioAudioBlob = null;
       if (this.$refs.studioRecorder) this.$refs.studioRecorder.resetAudio();
     },
-    get studioCurrentWord() { return this.studioWords[this.studioIndex] || null; },
     studioSkip() {
       if (this.studioWords.length <= 1) return;
       this.studioIndex = (this.studioIndex + 1) % this.studioWords.length;
