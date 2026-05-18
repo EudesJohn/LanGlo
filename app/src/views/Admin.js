@@ -306,7 +306,8 @@ export default {
               <div v-else class="audio-preview-strip mt-15">
                 <div class="audio-pill" :class="{ active: !!w.audio_url }">
                   <lucide-icon :name="w.audio_url ? 'volume-2' : 'volume-x'" />
-                  <span>{{ w.audio_url ? 'Audio mot' : 'Pas d\'audio' }}</span>
+                  <span v-if="w.audio_url">Audio mot</span>
+                  <span v-else>Pas d'audio</span>
                   <audio v-if="w.audio_url" :src="w.audio_url" controls class="premium-mini-player" />
                 </div>
               </div>
