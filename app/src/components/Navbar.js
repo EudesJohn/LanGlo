@@ -34,7 +34,7 @@ export default {
             <lucide-icon name="book-open" /> <span>Dictionnaire</span>
           </button>
           <template v-if="user">
-            <button @click="handleNav('add-word')" class="nav-btn">
+            <button v-if="user?.fon_level === 'Intermediaire' || user?.fon_level === 'Avancé'" @click="handleNav('add-word')" class="nav-btn">
               <lucide-icon name="plus" /> <span>Suggérer</span>
             </button>
             <button v-if="user?.role === 'admin'" @click="handleNav('admin')" class="nav-btn admin-btn">

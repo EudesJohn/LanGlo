@@ -9,7 +9,7 @@ export default {
     return {
       isEditing: false,
       isSaving: false,
-      editForm: { name: '', pseudo: '', nationality: '', ethnicity: '' },
+      editForm: { name: '', pseudo: '', nationality: '', ethnicity: '', fon_level: '' },
       customEthnicity: '',
       avatar_base64: null,
       previewAvatar: null
@@ -18,7 +18,7 @@ export default {
   methods: {
     startEdit() {
       this.isEditing = true;
-      this.editForm = { ...this.user };
+      this.editForm = { ...this.user, fon_level: this.user.fon_level || 'Aucune maitrise' };
       this.previewAvatar = this.user.avatar_url;
       if (!['Fon', 'Goun', 'Yoruba', 'Mina', 'Nago', 'Bariba', 'Dendi'].includes(this.user.ethnicity)) {
         this.editForm.ethnicity = 'Autre';
@@ -92,6 +92,10 @@ export default {
                     <span class="detail-label">Nationalité</span>
                     <span class="detail-value">{{ user?.nationality || 'Non spécifié' }}</span>
                   </div>
+                  <div class="detail-item">
+                    <span class="detail-label">Niveau Fon</span>
+                    <span class="badge" style="background: var(--human-accent); color: white;">{{ user?.fon_level || 'Non spécifié' }}</span>
+                  </div>
                 </div>
   
                 <button @click="startEdit" class="btn-premium mini wide" style="margin-top: 20px;">
@@ -127,6 +131,15 @@ export default {
                 <div class="form-group">
                   <label>Nationalité</label>
                   <input v-model="editForm.nationality" class="input-field mini" />
+                </div>
+                <div class="form-group">
+                  <label>Niveau en Fon</label>
+                  <select v-model="editForm.fon_level" class="input-field mini" style="padding-left: 15px;">
+                    <option value="Aucune maitrise">Aucune maîtrise</option>
+                    <option value="Débutant">Débutant</option>
+                    <option value="Intermediaire">Intermédiaire</option>
+                    <option value="Avancé">Avancé</option>
+                  </select>
                 </div>
                 
                 <div style="display:flex; gap:10px; margin-top:20px;">

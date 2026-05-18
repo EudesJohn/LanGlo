@@ -64,7 +64,14 @@ export default {
 
     const isProfileComplete = computed(() => {
       if (!user.value) return true;
-      return Boolean(user.value.nationality && user.value.ethnicity && String(user.value.nationality).trim() !== '' && String(user.value.ethnicity).trim() !== '');
+      return Boolean(
+        user.value.nationality && 
+        user.value.ethnicity && 
+        user.value.fon_level && 
+        String(user.value.nationality).trim() !== '' && 
+        String(user.value.ethnicity).trim() !== '' &&
+        String(user.value.fon_level).trim() !== ''
+      );
     });
 
     const notify = (msg, type = 'success') => {

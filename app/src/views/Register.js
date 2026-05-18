@@ -8,6 +8,7 @@ export default {
     return { 
       name: '', email: '', password: '', 
       nationality: 'Béninoise', ethnicity: 'Fon',
+      fon_level: 'Aucune maitrise',
       customEthnicity: '',
       loading: false,
       showPassword: false
@@ -23,6 +24,7 @@ export default {
         password: this.password,
         nationality: this.nationality,
         ethnicity: finalEthnicity,
+        fon_level: this.fon_level,
         onComplete: () => this.loading = false
       });
     }
@@ -88,6 +90,19 @@ export default {
                   <option value="Yoa">Yoa</option>
                   <option value="Lokpa">Lokpa</option>
                   <option value="Autre">Autre (Saisir manuellement)</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="auth-field-group full-width">
+              <label class="auth-label">NIVEAU EN LANGUE FON</label>
+              <div class="input-wrapper-v2">
+                <lucide-icon name="book" />
+                <select v-model="fon_level" class="input-v2" style="padding-left: 50px;" required>
+                  <option value="Aucune maitrise">Aucune maîtrise</option>
+                  <option value="Débutant">Débutant</option>
+                  <option value="Intermediaire">Intermédiaire</option>
+                  <option value="Avancé">Avancé</option>
                 </select>
               </div>
             </div>

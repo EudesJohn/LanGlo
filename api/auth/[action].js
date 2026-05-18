@@ -51,13 +51,13 @@ module.exports = async (req, res) => {
     // 2. REGISTER
     if (action === 'register') {
       if (req.method !== 'POST') return res.status(405).json({ message: 'Method Not Allowed' });
-      const { name, email, password, nationality, ethnicity } = req.body;
+      const { name, email, password, nationality, ethnicity, fon_level } = req.body;
       
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          data: { name, nationality, ethnicity, role: 'user' }
+          data: { name, nationality, ethnicity, fon_level, role: 'user' }
         }
       });
 
@@ -71,7 +71,8 @@ module.exports = async (req, res) => {
           email,
           role: 'user',
           nationality,
-          ethnicity
+          ethnicity,
+          fon_level: fon_level || 'Aucune maitrise'
         }])
         .select();
 
@@ -101,7 +102,7 @@ module.exports = async (req, res) => {
     // 3. PROFILE UPDATE
     if (action === 'profile-update') {
       if (req.method !== 'POST') return res.status(405).json({ message: 'Method Not Allowed' });
-      const { id, email, name, pseudo, nationality, ethnicity, role, avatar_base64 } = req.body;
+      const { id, email, name, pseudo, nationality, ethnicity, fon_level, role, avatar_base64 } = req.body;
       
       if (!id) return res.status(400).json({ success: false, message: "Échec : Identifiant utilisateur manquant." });
       if (!email) return res.status(400).json({ success: false, message: "Échec : Adresse Email manquante." });
@@ -143,6 +144,7 @@ module.exports = async (req, res) => {
         pseudo: pseudo || null,
         nationality: nationality || "Béninoise",
         ethnicity: ethnicity || "Fon",
+        fon_level: fon_level || "Aucune maitrise",
         role: role || 'user',
         avatar_url
       };
