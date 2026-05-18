@@ -29,6 +29,7 @@ export default {
     const pendingWords = ref([]);
     const allWords = ref([]);
     const searchQuery = ref('');
+    const searchResult = ref({ isSentence: false, exactMatches: [], wordByWord: [], exampleSentences: [] });
     const stats = ref({ words: 0, contributors: 0 });
     const notification = ref(null);
     const navbarKey = ref(0);
@@ -128,13 +129,16 @@ export default {
     const handleSearch = async (q) => {
       try {
         const res = await axios.get(`${API}/dictionary/search?q=${q}`);
-        words.value = res.data;
         searchQuery.value = q;
-        if (res.data.length === 0 && q.trim() !== '') {
-          notify("Mot non trouvé. Suggérez-le !", "info");
-          navigate('add-word');
-          return;
+        
+        if (res.data && typeof res.data === 'object' && 'exactMatches' in res.data) {
+          searchResult.value = res.data;
+          words.value = res.data.exactMatches; // backwards-compatible standard list
+        } else {
+          searchResult.value = { isSentence: false, exactMatches: res.data || [], wordByWord: [], exampleSentences: [] };
+          words.value = res.data || [];
         }
+        
         navigate('dictionary');
       } catch (e) {
         notify("Erreur de recherche", "error");
@@ -482,7 +486,7 @@ export default {
     });
 
     return {
-      currentPage, user, words, favorites, pendingWords, allWords, searchQuery, notification, stats, navbarKey, wordOfDay,
+      currentPage, user, words, favorites, pendingWords, allWords, searchQuery, searchResult, notification, stats, navbarKey, wordOfDay,
       showInstallBanner, isIOS, triggerInstall,
       navigate, handleSearch, handleLogin, handleLogout, notify, isProfileComplete,
       handleRegister, handleUpdateProfile, adminApprove, adminDelete, handleUpdateWord, fetchAdminData,
@@ -513,6 +517,7 @@ export default {
           :words="words" 
           :query="searchQuery" 
           :favorites="favorites"
+          :search-result="searchResult"
           @navigate="navigate"
         />
         <login v-if="currentPage === 'login'" @login="handleLogin" @google-login="handleGoogleLogin" @navigate="navigate" />

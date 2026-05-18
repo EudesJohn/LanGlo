@@ -97,16 +97,103 @@ module.exports = async (req, res) => {
     // 2. SEARCH WORDS
     if (action === 'search') {
       const { q } = req.query;
-      const searchTerm = q || '';
+      const searchTerm = (q || '').trim();
 
-      const { data, error } = await supabase
+      if (!searchTerm) {
+        return res.status(200).json({ isSentence: false, exactMatches: [], wordByWord: [], exampleSentences: [] });
+      }
+
+      // 1. Fetch exact or substring matches
+      const { data: exactMatches, error } = await supabase
         .from('words')
         .select('*')
         .eq('status', 'approved')
-        .or(`french.ilike.%${searchTerm}%,fon.ilike.%${searchTerm}%`);
+        .or(`french.ilike.%${searchTerm}%,fon.ilike.%${searchTerm}%`)
+        .limit(50);
 
       if (error) throw error;
-      return res.status(200).json(data);
+
+      // Clean and tokenize the search term
+      const wordsArray = searchTerm
+        .toLowerCase()
+        .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?"]/g, "") // remove punctuation
+        .split(/\s+/)
+        .filter(w => w.trim().length > 0);
+
+      // If the query is a multi-word phrase
+      if (wordsArray.length > 1) {
+        try {
+          // 2. Look up translations for individual words
+          const orQuery = wordsArray.map(w => `french.eq.${w},fon.eq.${w}`).join(',');
+          const { data: wordTranslations } = await supabase
+            .from('words')
+            .select('french, fon, phonetic, category')
+            .eq('status', 'approved')
+            .or(orQuery);
+
+          const wordByWord = wordsArray.map(word => {
+            const match = wordTranslations?.find(t => 
+              t.french.toLowerCase() === word || t.fon.toLowerCase() === word
+            );
+            if (match) {
+              const isFrenchWord = match.french.toLowerCase() === word;
+              return {
+                original: word,
+                translation: isFrenchWord ? match.fon : match.french,
+                phonetic: match.phonetic || null,
+                found: true
+              };
+            } else {
+              return {
+                original: word,
+                translation: null,
+                found: false
+              };
+            }
+          });
+
+          // 3. Find example sentences containing the words
+          const significantWords = wordsArray.filter(w => w.length > 2);
+          let exampleSentences = [];
+
+          if (significantWords.length > 0) {
+            const sentenceOrQuery = significantWords
+              .map(w => `french.ilike.%${w}%,fon.ilike.%${w}%`)
+              .join(',');
+
+            const { data: sentences } = await supabase
+              .from('words')
+              .select('*')
+              .eq('status', 'approved')
+              .or(sentenceOrQuery)
+              .limit(30);
+
+            if (sentences) {
+              // Filter out exactMatches duplicates
+              exampleSentences = sentences.filter(s => 
+                !exactMatches.some(em => em.id === s.id)
+              );
+            }
+          }
+
+          return res.status(200).json({
+            isSentence: true,
+            exactMatches: exactMatches || [],
+            wordByWord,
+            exampleSentences
+          });
+        } catch (innerErr) {
+          console.error("Glosbe Fallback Error:", innerErr);
+        }
+      }
+
+      // Default single-word return
+      return res.status(200).json({
+        isSentence: false,
+        exactMatches: exactMatches || [],
+        wordByWord: [],
+        exampleSentences: []
+      });
     }
     
     // 3. RANDOM WORD
