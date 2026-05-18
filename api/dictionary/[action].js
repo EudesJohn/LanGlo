@@ -32,6 +32,30 @@ function applyFonGrammarRules(wordByWordArray) {
     .join(' ');
 }
 
+// Fonction utilitaire pour le surlignage croisé
+function highlightCrossLingual(sentenceObj, frenchTarget, fonTarget) {
+  let fr = sentenceObj.french || '';
+  let fo = sentenceObj.fon || '';
+
+  if (frenchTarget) {
+    const regexFr = new RegExp(`(${frenchTarget})`, 'gi');
+    fr = fr.replace(regexFr, '<mark class="highlight-premium">$1</mark>');
+  }
+  
+  if (fonTarget) {
+    // Échapper les caractères spéciaux du mot fon si nécessaire
+    const safeFonTarget = fonTarget.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regexFo = new RegExp(`(${safeFonTarget})`, 'gi');
+    fo = fo.replace(regexFo, '<mark class="highlight-premium">$1</mark>');
+  }
+
+  return { 
+    ...sentenceObj, 
+    french_highlighted: fr, 
+    fon_highlighted: fo 
+  };
+}
+
 module.exports = async (req, res) => {
   const action = req.params?.action || req.query?.action || req.url.split('/').pop().split('?')[0];
 
@@ -329,10 +353,26 @@ module.exports = async (req, res) => {
       }
 
       // ----------------------------------------------------------
-      // Recherche d'un seul mot : retourner aussi des phrases d'exemples
-      // (comme Glosbe qui montre toujours des exemples même pour un seul mot)
+      // Recherche d'un seul mot : isolation & surlignage croisé
       // ----------------------------------------------------------
       let singleWordExamples = [];
+      let exactWord = null;
+      let leftoverExactAsExamples = [];
+
+      // Si le tri a trouvé une vraie correspondance (Vocabulaire et mot français exact)
+      if (exactMatches.length > 0) {
+        const first = exactMatches[0];
+        if (first.french.toLowerCase().trim() === searchTerm.toLowerCase().trim() && first.category === 'Vocabulaire') {
+          exactWord = first;
+          leftoverExactAsExamples = exactMatches.slice(1);
+        } else if (first.french.toLowerCase().trim() === searchTerm.toLowerCase().trim()) {
+          exactWord = first; // Même si c'est Phrase, c'est exactement le mot
+          leftoverExactAsExamples = exactMatches.slice(1);
+        } else {
+          leftoverExactAsExamples = exactMatches;
+        }
+      }
+
       if (wordsArray.length === 1 && wordsArray[0].length >= 2) {
         const w = wordsArray[0];
         const { data: exData } = await supabase
@@ -352,18 +392,28 @@ module.exports = async (req, res) => {
         if (exData) {
           singleWordExamples = exData
             .filter(s => {
-              if (exactMatches.some(em => em.id === s.id)) return false;
+              // Exclure si déjà présent dans leftoverExactAsExamples ou exactWord
+              if (exactWord && exactWord.id === s.id) return false;
+              if (leftoverExactAsExamples.some(em => em.id === s.id)) return false;
               return (s.french || '').trim().split(/\s+/).length >= 2;
             })
             .slice(0, 20);
         }
       }
 
+      // Concaténer tous les exemples et appliquer le surlignage
+      const allExamplesForSingleWord = [...leftoverExactAsExamples, ...singleWordExamples].filter(s => {
+        return (s.french || '').trim().split(/\s+/).length >= 2; // Ne garder que de vraies phrases en exemple
+      }).map(s => {
+        return highlightCrossLingual(s, searchTerm, exactWord ? exactWord.fon : null);
+      });
+
       return res.status(200).json({
         isSentence: false,
-        exactMatches: exactMatches || [],
+        exactWord: exactWord, // Le mot isolé et traduit parfaitement
+        exactMatches: exactWord ? [exactWord] : [], // Rétro-compatibilité
         wordByWord: [],
-        exampleSentences: singleWordExamples
+        exampleSentences: allExamplesForSingleWord
       });
     }
 

@@ -19,7 +19,7 @@ export default {
         <!-- SECTION FON -->
         <div class="detail-section">
           <span class="detail-label">{{ word.category === 'Bible' ? 'Verset en Fon' : (word.category === 'Phrase' ? 'Phrase en Fon' : 'Mot en Fon') }}</span>
-          <h2 class="fon-heading font-fon" v-html="highlight(word.fon)"></h2>
+          <h2 class="fon-heading font-fon" v-html="word.fon_highlighted ? word.fon_highlighted : highlight(word.fon)"></h2>
           <div class="phonetic-detail" v-if="word.phonetic">
             <lucide-icon name="music-2" :size="14" />
             <span>Prononciation : <strong>[{{ word.phonetic }}]</strong></span>
@@ -30,7 +30,7 @@ export default {
         <div class="detail-section mt-20">
           <span class="detail-label">{{ word.category === 'Bible' ? 'Traduction (Français)' : 'Traduction Française' }}</span>
           <div class="translation-box-v2">
-            <p class="value" v-html="highlight(word.french)"></p>
+            <p class="value" v-html="word.french_highlighted ? word.french_highlighted : highlight(word.french)"></p>
           </div>
         </div>
 
