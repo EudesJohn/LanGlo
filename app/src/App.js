@@ -35,6 +35,7 @@ export default {
     const notification = ref(null);
     const navbarKey = ref(0);
     const wordOfDay = ref(null);
+    const isSearching = ref(false);
 
     const fetchWordOfDay = async () => {
       try {
@@ -129,6 +130,7 @@ export default {
 
     const handleSearch = async (q) => {
       try {
+        isSearching.value = true;
         const res = await axios.get(`${API}/dictionary/search?q=${q}`);
         searchQuery.value = q;
         
@@ -143,6 +145,8 @@ export default {
         navigate('dictionary');
       } catch (e) {
         notify("Erreur de recherche", "error");
+      } finally {
+        isSearching.value = false;
       }
     };
 
@@ -484,7 +488,7 @@ export default {
     });
 
     return {
-      currentPage, user, words, favorites, pendingWords, allWords, searchQuery, searchResult, notification, stats, navbarKey, wordOfDay,
+      currentPage, user, words, favorites, pendingWords, allWords, searchQuery, searchResult, notification, stats, navbarKey, wordOfDay, isSearching,
       showInstallBanner, isIOS, triggerInstall,
       navigate, handleSearch, handleLogin, handleLogout, notify, isProfileComplete,
       handleRegister, handleUpdateProfile, adminApprove, adminDelete, handleUpdateWord, fetchAdminData,
@@ -509,7 +513,7 @@ export default {
       />
 
       <main class="main-content">
-        <home v-if="currentPage === 'home'" :stats="stats" :wordOfDay="wordOfDay" @search="handleSearch" />
+        <home v-if="currentPage === 'home'" :stats="stats" :wordOfDay="wordOfDay" :isSearching="isSearching" @search="handleSearch" />
         <dictionary 
           v-if="currentPage === 'dictionary'" 
           :words="words" 

@@ -1,7 +1,7 @@
 // app/src/views/Home.js
 import LucideIcon from '../components/LucideIcon.js'
 export default {
-  props: ['stats', 'wordOfDay'],
+  props: ['stats', 'wordOfDay', 'isSearching'],
   emits: ['search'],
   components: { LucideIcon },
   data() {
@@ -26,9 +26,11 @@ export default {
                   type="text" 
                   placeholder="Rechercher un mot, une expression..." 
                   class="search-elite-input"
+                  :disabled="isSearching"
                 />
-                <button type="submit" class="btn-search-premium premium-gradient glow-on-hover">
-                  <lucide-icon name="arrow-right" />
+                <button type="submit" class="btn-search-premium premium-gradient glow-on-hover" :disabled="isSearching" :style="isSearching ? 'opacity: 0.7; cursor: not-allowed;' : ''">
+                  <div v-if="isSearching" class="spinner" style="border-width: 2px; width: 18px; height: 18px;"></div>
+                  <lucide-icon v-else name="arrow-right" />
                 </button>
               </div>
             </form>
