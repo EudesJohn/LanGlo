@@ -71,7 +71,10 @@ export default {
               
               <!-- ASSEMBLED SENTENCE -->
               <div v-if="searchResult.assembledSentence" style="margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                <div style="font-size: 0.85rem; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">Génération Automatique</div>
+                <div style="font-size: 0.85rem; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px;">
+                  <span>Génération Automatique</span>
+                  <span style="font-size: 0.75rem; text-transform: none; opacity: 0.7; font-style: italic; color: var(--primary);">(Seules les expressions courtes et leurs mots individuels peuvent être traduits et assemblés)</span>
+                </div>
                 <div class="font-fon" style="font-size: 1.5rem; font-weight: 800; color: white;">
                   {{ searchResult.assembledSentence }}
                 </div>
