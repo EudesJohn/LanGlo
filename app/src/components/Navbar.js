@@ -30,7 +30,7 @@ export default {
         </button>
   
         <nav class="nav-links" :class="{ 'mobile-open': isMenuOpen }">
-          <button v-if="user?.role === 'admin'" @click="$emit('search', ''); isMenuOpen = false" class="nav-btn">
+          <button @click="$emit('search', ''); isMenuOpen = false" class="nav-btn">
             <lucide-icon name="book-open" /> <span>Dictionnaire</span>
           </button>
           <template v-if="user">

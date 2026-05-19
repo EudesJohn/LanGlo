@@ -103,6 +103,69 @@ function highlightCrossLingual(sentenceObj, frenchTarget, fonTarget) {
   };
 }
 
+// Seeded random generator
+function getSeededRandom(seed) {
+  const x = Math.sin(seed) * 10000;
+  return x - Math.floor(x);
+}
+
+// Function to get deterministic daily words indices
+function getDailyIndices(count, numWords = 5) {
+  const todayStr = new Date().toISOString().split('T')[0]; // e.g. "2026-05-19"
+  let seed = 0;
+  for (let i = 0; i < todayStr.length; i++) {
+    seed += todayStr.charCodeAt(i);
+  }
+
+  const indices = [];
+  for (let i = 0; i < numWords; i++) {
+    const rand = getSeededRandom(seed + i * 17); // spread seeds
+    const idx = Math.floor(rand * count);
+    if (!indices.includes(idx)) {
+      indices.push(idx);
+    } else {
+      indices.push((idx + 1) % count);
+    }
+  }
+  return indices;
+}
+
+async function getDailyWords(numWords = 5) {
+  try {
+    const { count, error: countErr } = await supabase
+      .from('words')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'approved')
+      .eq('category', 'Vocabulaire');
+
+    if (countErr || !count) {
+      const { data } = await supabase
+        .from('words')
+        .select('*')
+        .eq('status', 'approved')
+        .limit(numWords);
+      return data || [];
+    }
+
+    const indices = getDailyIndices(count, numWords);
+    const queries = indices.map(idx =>
+      supabase
+        .from('words')
+        .select('*')
+        .eq('status', 'approved')
+        .eq('category', 'Vocabulaire')
+        .range(idx, idx)
+        .maybeSingle()
+    );
+
+    const results = await Promise.all(queries);
+    return results.map(r => r.data).filter(Boolean);
+  } catch (err) {
+    console.error("Error in getDailyWords:", err);
+    return [];
+  }
+}
+
 module.exports = async (req, res) => {
   const action = req.params?.action || req.query?.action || req.url.split('/').pop().split('?')[0];
 
@@ -207,7 +270,13 @@ module.exports = async (req, res) => {
       const searchTerm = (q || '').trim();
 
       if (!searchTerm) {
-        return res.status(200).json({ isSentence: false, exactMatches: [], wordByWord: [], exampleSentences: [] });
+        const dailyWords = await getDailyWords(5);
+        return res.status(200).json({ 
+          isSentence: false, 
+          exactMatches: dailyWords, 
+          wordByWord: [], 
+          exampleSentences: [] 
+        });
       }
 
       // Tokenize ALL words (including grammatical words — Glosbe les traduit aussi !)
@@ -565,30 +634,11 @@ module.exports = async (req, res) => {
     // 3. RANDOM WORD
     // ============================================================
     if (action === 'random') {
-      const { data, error } = await supabase
-        .from('words')
-        .select('*')
-        .eq('status', 'approved')
-        .not('category', 'in', '("Bible","Phrase")');
-
-      if (error) throw error;
-
-      if (!data || data.length === 0) {
-        const { data: fallbackData, error: fallbackErr } = await supabase
-          .from('words')
-          .select('*')
-          .eq('status', 'approved')
-          .limit(100);
-
-        if (fallbackErr) throw fallbackErr;
-        if (!fallbackData || fallbackData.length === 0) return res.status(200).json(null);
-
-        const randomWord = fallbackData[Math.floor(Math.random() * fallbackData.length)];
-        return res.status(200).json(randomWord);
+      const dailyWords = await getDailyWords(1);
+      if (dailyWords.length > 0) {
+        return res.status(200).json(dailyWords[0]);
       }
-
-      const randomWord = data[Math.floor(Math.random() * data.length)];
-      return res.status(200).json(randomWord);
+      return res.status(200).json(null);
     }
 
     return res.status(404).json({ error: `Dictionary action '${action}' not found` });

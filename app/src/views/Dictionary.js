@@ -44,7 +44,7 @@ export default {
                 </button>
                 <div class="header-titles">
                   <h2 v-if="query" style="font-size: 2.5rem;">Résultats pour "{{ query }}"</h2>
-                  <h2 v-else style="font-size: 2.5rem;">Tous les mots du dictionnaire</h2>
+                  <h2 v-else style="font-size: 2.5rem;">Sélection du jour (5 mots toutes les 24h)</h2>
                   <p class="results-count" style="opacity: 0.6; margin-top: 5px;">{{ words.length }} mot(s) trouvé(s) dans le dictionnaire</p>
                 </div>
               </div>
