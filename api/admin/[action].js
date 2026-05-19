@@ -1,4 +1,5 @@
 const supabase = require('../lib/supabase');
+const { verifyAdmin } = require('../lib/auth');
 
 module.exports = async (req, res) => {
   const action = req.params?.action || req.query?.action || req.url.split('/').pop().split('?')[0];
@@ -8,6 +9,15 @@ module.exports = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Erreur de configuration : la clé secrète SUPABASE_SERVICE_ROLE_KEY est manquante dans les variables d'environnement de Vercel. Cette clé est indispensable pour valider, supprimer ou modifier des mots en tant qu'administrateur en contournant les politiques de sécurité (RLS) de Supabase."
+    });
+  }
+
+  // SECURITÉ: Vérifier que l'utilisateur est authentifié en tant qu'administrateur
+  const adminUser = await verifyAdmin(req);
+  if (!adminUser) {
+    return res.status(403).json({
+      success: false,
+      message: "Accès refusé. Vous devez être connecté en tant qu'administrateur pour effectuer cette action."
     });
   }
 

@@ -551,6 +551,17 @@ module.exports = async (req, res) => {
     // ============================================================
     // NOUVELLES ACTIONS POUR LE STUDIO D'ENREGISTREMENT
     // ============================================================
+    if (action === 'studio-list' || action === 'studio-update') {
+      const { verifyAdmin } = require('../lib/auth');
+      const adminUser = await verifyAdmin(req);
+      if (!adminUser) {
+        return res.status(403).json({
+          success: false,
+          message: "Accès refusé. Vous devez être connecté en tant qu'administrateur pour effectuer cette action."
+        });
+      }
+    }
+
     if (action === 'studio-list') {
       // Obtenir le nombre total de mots sans audio (toutes catégories)
       const { count, error: countErr } = await supabase
