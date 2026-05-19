@@ -117,21 +117,6 @@ html { font-size: 14px; }
 
 .luxury-audio-player audio { display: none; }
 
-/* Custom Premium Scrollbars */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-::-webkit-scrollbar-track {
-  background: var(--bg);
-}
-::-webkit-scrollbar-thumb {
-  background: rgba(255, 107, 53, 0.4);
-  border-radius: 10px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 107, 53, 0.8);
-}
 
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; -webkit-tap-highlight-color: transparent; }
 html {
@@ -1191,16 +1176,9 @@ td { padding: 15px; border-bottom: 1px solid var(--glass-border); }
     background: rgba(20, 24, 45, 0.97) !important;
   }
   
-  /* Disable animated background blobs to save massive CPU/GPU repaints on scroll */
   .bg-blobs, .blob {
     display: none !important;
     animation: none !important;
-  }
-
-  /* Force hardware accelerated touch scrolling */
-  html, body {
-    -webkit-overflow-scrolling: touch;
-    scroll-behavior: smooth;
   }
 }
 
