@@ -1,6 +1,83 @@
 const supabase = require('../lib/supabase');
 
+function applyFonGrammarRules(wordByWordArray) {
+  const POSSESSIVES_MAP = {
+    'mon': 'ce', 'ma': 'ce', 'mes': 'ce',
+    'ton': 'towe', 'ta': 'towe', 'tes': 'towe',
+    'son': 'tɔn', 'sa': 'tɔn', 'ses': 'tɔn',
+    'notre': 'mitɔn', 'nos': 'mitɔn',
+    'votre': 'mitɔn', 'vos': 'mitɔn',
+    'leur': 'yetɔn', 'leurs': 'yetɔn'
+  };
 
+  const ARTICLES_MAP = {
+    'le': 'ɔ', 'la': 'ɔ', 'les': 'lɛ',
+    'ce': 'élɔ', 'cet': 'élɔ', 'cette': 'élɔ', 'ces': 'élɔ lɛ',
+    'un': 'ɖokpo', 'une': 'ɖokpo', 'des': 'ɖé lɛ'
+  };
+
+  const LINKING_MAP = {
+    'et': 'kpo',
+    'ou': 'aloo',
+    'avec': 'kpɔdo',
+    'dans': 'mɛ',
+    'sur': 'jí',
+    'sous': 'glɔ',
+    'pour': 'nú',
+    'est': 'nyí',
+    'sont': 'nyí',
+    'mais': 'ka',
+    'de': 'sin'
+  };
+
+  let assembled = wordByWordArray.map(w => {
+    let wordLower = w.original.toLowerCase();
+    let translation = w.translation;
+    let found = w.found;
+
+    // Si on a un mot de liaison directement traduisible localement
+    if (!found && LINKING_MAP[wordLower]) {
+      translation = LINKING_MAP[wordLower];
+      found = true;
+    }
+
+    return {
+      original: w.original,
+      translation: translation || w.original,
+      found: found,
+      isPossessive: POSSESSIVES_MAP.hasOwnProperty(wordLower),
+      isArticle: ARTICLES_MAP.hasOwnProperty(wordLower),
+      fonGrammarWord: POSSESSIVES_MAP[wordLower] || ARTICLES_MAP[wordLower] || null
+    };
+  });
+
+  // Appliquer les inversions Fon (le déterminant se place APRÈS le nom)
+  for (let i = 0; i < assembled.length - 1; i++) {
+    if (assembled[i].isPossessive || assembled[i].isArticle) {
+      // Le mot de grammaire prend sa traduction Fon spécifique
+      assembled[i].translation = assembled[i].fonGrammarWord;
+      
+      // On l'inversera avec le mot suivant
+      const temp = assembled[i];
+      assembled[i] = assembled[i+1];
+      assembled[i+1] = temp;
+      
+      i++; // Sauter le mot suivant puisqu'il a déjà été traité
+    }
+  }
+
+  // Si le dernier mot est un possessif/article non inversé
+  if (assembled.length > 0) {
+    let last = assembled[assembled.length - 1];
+    if ((last.isPossessive || last.isArticle) && last.translation === last.original) {
+      last.translation = last.fonGrammarWord;
+    }
+  }
+
+  return assembled
+    .map(w => w.translation)
+    .join(' ');
+}
 
 // Fonction utilitaire pour le surlignage croisé
 function highlightCrossLingual(sentenceObj, frenchTarget, fonTarget) {
@@ -289,7 +366,7 @@ module.exports = async (req, res) => {
               .filter(s => {
                 if (exactMatches.some(em => em.id === s.id)) return false;
                 const frWordCount = (s.french || '').trim().split(/\s+/).length;
-                return frWordCount >= 2;
+                return frWordCount >= 2 && frWordCount <= 15 && (s.french || '').length <= 100;
               })
               .map(s => {
                 const frContent = (s.french || '').toLowerCase();
@@ -316,6 +393,7 @@ module.exports = async (req, res) => {
             isSentence: true,
             exactMatches: exactMatches || [],
             wordByWord,
+            assembledSentence: applyFonGrammarRules(wordByWord),
             exampleSentences
           });
 
@@ -375,7 +453,8 @@ module.exports = async (req, res) => {
           const filteredEx = exData.filter(s => {
             // Exclure si déjà affiché dans les cartes de vocabulaire en haut
             if (allMatchingVocab.some(em => em.id === s.id)) return false;
-            return (s.french || '').trim().split(/\s+/).length >= 2;
+            const frWordCount = (s.french || '').trim().split(/\s+/).length;
+            return frWordCount >= 2 && frWordCount <= 15 && (s.french || '').length <= 100;
           });
           singleWordExamples = [...singleWordExamples, ...filteredEx];
         }
@@ -384,7 +463,8 @@ module.exports = async (req, res) => {
       // Concaténer tous les exemples et appliquer le surlignage
       const allExamplesForSingleWord = [...leftoverExactAsExamples, ...singleWordExamples]
         .filter(s => {
-          return (s.french || '').trim().split(/\s+/).length >= 2; // Ne garder que de vraies phrases en exemple
+          const frWordCount = (s.french || '').trim().split(/\s+/).length;
+          return frWordCount >= 2 && frWordCount <= 15 && (s.french || '').length <= 100; // Ne garder que de vraies phrases courtes en exemple
         })
         .map(s => {
           return highlightCrossLingual(s, searchTerm, exactWord ? exactWord.fon : null);
