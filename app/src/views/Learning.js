@@ -59,24 +59,24 @@ export default {
                 {
                   type: "qcm",
                   question: "Comment dit-on 'Bonjour' en Fon ?",
-                  options: ["A bɔ̀ à?", "Awanú", "Ò dábò", "Sin"],
-                  answer: "Awanú",
-                  hint: "C'est l'expression la plus courante au Bénin pour saluer en Fon."
+                  options: ["A ɖó ali ó?", "Àlo", "Àhwán", "Dò"],
+                  answer: "Àlo",
+                  hint: "Dans le dictionnaire, Bonjour se traduit par 'Àlo'."
                 },
                 {
                   type: "qcm",
-                  question: "Que signifie l'expression de bienvenue 'Kú dábò' ?",
+                  question: "Que signifie l'expression de bienvenue 'Mi wá' ?",
                   options: ["Bonjour", "Merci", "Bienvenue", "Au revoir"],
                   answer: "Bienvenue",
-                  hint: "Cette expression est employée pour accueillir chaleureusement un visiteur."
+                  hint: "Cette expression est employée pour accueillir chaleureusement quelqu'un."
                 },
                 {
                   type: "audio",
                   question: "Écoute et sélectionne la bonne transcription :",
-                  word: "Awanú",
-                  options: ["A bɔ̀ à?", "Kú dábò", "Awanú", "É nyɔ́"],
-                  answer: "Awanú",
-                  hint: "Le mot commence par 'A' et se termine par un accent tonique haut sur 'nù'."
+                  word: "Àlo",
+                  options: ["A ɖó ali ó?", "Mi wá", "Àlo", "Àhwán"],
+                  answer: "Àlo",
+                  hint: "Écoute bien la prononciation de Àlo (Bonjour)."
                 }
               ]
             },
@@ -88,24 +88,24 @@ export default {
               questions: [
                 {
                   type: "qcm",
-                  question: "Comment demande-t-on 'Comment ça va ?' en Fon ?",
-                  options: ["A bɔ̀ à?", "Awanú", "É nyɔ́", "Lan"],
-                  answer: "A bɔ̀ à?",
-                  hint: "Littéralement, cela s'apparente à demander si tout se passe bien."
+                  question: "Comment demande-t-on 'Comment vas-tu ?' en Fon ?",
+                  options: ["A ɖó ali ó?", "Àlo", "Un ɖó ali ganji", "Dò"],
+                  answer: "A ɖó ali ó?",
+                  hint: "Dans le dictionnaire, Comment vas-tu ? se dit 'A ɖó ali ó?'."
                 },
                 {
                   type: "qcm",
-                  question: "Quelle est la réponse courante 'Ça va bien / merci' ?",
-                  options: ["Awanú", "Ò dábò", "É nyɔ́", "Sin"],
-                  answer: "É nyɔ́",
-                  hint: "Cela exprime que la situation est bonne ou agréable."
+                  question: "Quelle est la réponse courante 'Je vais bien' ?",
+                  options: ["Àwáló", "Àhwán", "Un ɖó ali ganji", "Àlo"],
+                  answer: "Un ɖó ali ganji",
+                  hint: "Cette expression signifie 'Je vais bien' dans le dictionnaire."
                 },
                 {
                   type: "qcm",
                   question: "Comment dit-on 'Au revoir' ?",
-                  options: ["Awanú", "Ò dábò", "Kú dábò", "Weli"],
-                  answer: "Ò dábò",
-                  hint: "Utilisé pour prendre congé."
+                  options: ["Àwǎnú", "Àhwán", "Mi wá", "Bùlu"],
+                  answer: "Àhwán",
+                  hint: "Utilisé pour prendre congé, 'Au revoir' se traduit par 'Àhwán'."
                 }
               ]
             }
@@ -125,32 +125,32 @@ export default {
               questions: [
                 {
                   type: "qcm",
-                  question: "Quel nombre correspond à 'Ðokpó' ?",
-                  options: ["Deux", "Un", "Trois", "Zéro"],
+                  question: "Quel nombre correspond à 'Ɖókpó' ?",
+                  options: ["Deux", "Un", "Trois", "Cinq"],
                   answer: "Un",
-                  hint: "C'est le tout premier chiffre cardinal."
+                  hint: "C'est le chiffre Un (1) dans le dictionnaire."
                 },
                 {
                   type: "qcm",
-                  question: "Que signifie le mot 'We' ou 'Weé' en Fon ?",
+                  question: "Que signifie le mot 'Evè' en Fon ?",
                   options: ["Deux", "Quatre", "Trois", "Un"],
                   answer: "Deux",
-                  hint: "C'est le chiffre qui suit immédiatement le un."
+                  hint: "C'est le chiffre Deux (2) dans le dictionnaire."
                 },
                 {
                   type: "qcm",
-                  question: "Quel nombre se dit 'Atɔn' ?",
+                  question: "Quel nombre se dit 'Etɔ̃' ?",
                   options: ["Cinq", "Quatre", "Trois", "Deux"],
                   answer: "Trois",
-                  hint: "Ce mot désigne le chiffre 3."
+                  hint: "Ce mot désigne le chiffre Trois (3) dans le dictionnaire."
                 },
                 {
                   type: "pairs",
                   question: "Associe chaque nombre avec sa traduction :",
                   pairs: [
-                    { fon: "Ðokpó", fr: "Un" },
-                    { fon: "We", fr: "Deux" },
-                    { fon: "Atɔn", fr: "Trois" }
+                    { fon: "Ɖókpó", fr: "Un" },
+                    { fon: "Evè", fr: "Deux" },
+                    { fon: "Etɔ̃", fr: "Trois" }
                   ]
                 }
               ]
@@ -164,25 +164,25 @@ export default {
                 {
                   type: "qcm",
                   question: "Comment dit-on le chiffre 4 ?",
-                  options: ["Enɛ", "Atɔ́n", "Atɔn", "Ayizén"],
+                  options: ["Enɛ", "Atɔ̃n", "Etɔ̃", "Evè"],
                   answer: "Enɛ",
-                  hint: "Il s'écrit avec un 'E' ouvert à la fin : 'Enɛ'."
+                  hint: "Dans le dictionnaire, Quatre (4) se dit 'Enɛ'."
                 },
                 {
                   type: "qcm",
                   question: "Comment dit-on le chiffre 5 ?",
-                  options: ["Ðokpó", "Atɔ́n", "Enɛ", "Wǒ"],
-                  answer: "Atɔ́n",
-                  hint: "Prenez garde à l'accent tonique aigu sur la fin : 'Atɔ́n'."
+                  options: ["Ɖókpó", "Atɔ̃n", "Enɛ", "Evè"],
+                  answer: "Atɔ̃n",
+                  hint: "Dans le dictionnaire, Cinq (5) se dit 'Atɔ̃n'."
                 },
                 {
                   type: "pairs",
                   question: "Associe chaque nombre avec sa traduction :",
                   pairs: [
                     { fon: "Enɛ", fr: "Quatre" },
-                    { fon: "Atɔ́n", fr: "Cinq" },
-                    { fon: "Atɔn", fr: "Trois" },
-                    { fon: "We", fr: "Deux" }
+                    { fon: "Atɔ̃n", fr: "Cinq" },
+                    { fon: "Etɔ̃", fr: "Trois" },
+                    { fon: "Evè", fr: "Deux" }
                   ]
                 }
               ]
@@ -204,24 +204,24 @@ export default {
                 {
                   type: "qcm",
                   question: "Comment dit-on 'Eau' en Fon ?",
-                  options: ["Lan", "Weli", "Sin", "Xwé"],
-                  answer: "Sin",
-                  hint: "L'eau est l'élément vital le plus important, appelée 'Sin'."
+                  options: ["Wèsò", "Bùlu", "Dò", "Xwé"],
+                  answer: "Dò",
+                  hint: "L'eau se dit 'Dò' dans le dictionnaire."
                 },
                 {
                   type: "qcm",
-                  question: "Que signifie le verbe 'Nu' ?",
+                  question: "Que signifie le verbe 'Nù' ?",
                   options: ["Manger", "Boire", "Dormir", "Parler"],
                   answer: "Boire",
-                  hint: "Il est couramment associé au mot 'Sin' pour exprimer le fait de se désaltérer."
+                  hint: "Dans le dictionnaire, le verbe Boire se traduit par 'Nù'."
                 },
                 {
                   type: "audio",
                   question: "Écoute et sélectionne la bonne transcription :",
-                  word: "Sin",
-                  options: ["Sin", "Lan", "Weli", "Nu"],
-                  answer: "Sin",
-                  hint: "S-i-n."
+                  word: "Dò",
+                  options: ["Dò", "Wèsò", "Bùlu", "Nù"],
+                  answer: "Dò",
+                  hint: "Ce mot désigne l'Eau."
                 }
               ]
             },
@@ -233,34 +233,34 @@ export default {
               questions: [
                 {
                   type: "qcm",
-                  question: "Quelle est la traduction de 'Weli' ?",
+                  question: "Quelle est la traduction de 'Bùlu' ?",
                   options: ["Viande", "Pain", "Eau", "Riz"],
                   answer: "Pain",
-                  hint: "Le pain moderne ou traditionnel s'exprime par 'Weli'."
+                  hint: "Le pain est désigné par le mot 'Bùlu' dans le dictionnaire."
                 },
                 {
                   type: "qcm",
-                  question: "Quelle est la traduction de 'Lan' ?",
+                  question: "Quelle est la traduction de 'Wèsò' ?",
                   options: ["Poisson", "Pain", "Viande", "Légume"],
                   answer: "Viande",
-                  hint: "Désigne la viande animale."
+                  hint: "Dans le dictionnaire, Viande se dit 'Wèsò'."
                 },
                 {
                   type: "qcm",
                   question: "Quel verbe signifie 'Manger' ?",
-                  options: ["Nu", "Dù", "Kplɔ́n", "Xwé"],
-                  answer: "Dù",
-                  hint: "Se prononce 'dou'."
+                  options: ["Nù", "Ɖú", "Yì", "Wá"],
+                  answer: "Ɖú",
+                  hint: "Dans le dictionnaire, Manger se traduit par 'Ɖú'."
                 },
                 {
                   type: "pairs",
                   question: "Associe chaque élément alimentaire :",
                   pairs: [
-                    { fon: "Weli", fr: "Pain" },
-                    { fon: "Lan", fr: "Viande" },
-                    { fon: "Sin", fr: "Eau" },
-                    { fon: "Dù", fr: "Manger" },
-                    { fon: "Nu", fr: "Boire" }
+                    { fon: "Bùlu", fr: "Pain" },
+                    { fon: "Wèsò", fr: "Viande" },
+                    { fon: "Dò", fr: "Eau" },
+                    { fon: "Ɖú", fr: "Manger" },
+                    { fon: "Nù", fr: "Boire" }
                   ]
                 }
               ]
@@ -282,23 +282,23 @@ export default {
                 {
                   type: "qcm",
                   question: "Comment dit-on 'Mère' en Fon ?",
-                  options: ["Tɔ́", "Nɔ́", "Vǐ", "Nɔví"],
-                  answer: "Nɔ́",
-                  hint: "Se prononce 'nɔ' avec un ton haut."
+                  options: ["Tá", "Nɔ̌", "Vǐ", "Asì"],
+                  answer: "Nɔ̌",
+                  hint: "Mère se dit 'Nɔ̌' dans le dictionnaire."
                 },
                 {
                   type: "qcm",
                   question: "Comment dit-on 'Père' ?",
-                  options: ["Tɔ́", "Nɔ́", "Vǐ", "Kplɔ́n"],
-                  answer: "Tɔ́",
-                  hint: "Se prononce 'tɔ' avec un ton haut."
+                  options: ["Tá", "Nɔ̌", "Vǐ", "Asì"],
+                  answer: "Tá",
+                  hint: "Père se dit 'Tá' dans le dictionnaire."
                 },
                 {
                   type: "qcm",
                   question: "Que signifie le mot 'Vǐ' ?",
                   options: ["Père", "Enfant", "Frère", "Mère"],
                   answer: "Enfant",
-                  hint: "Désigne un fils ou une fille."
+                  hint: "Vǐ désigne l'Enfant dans le dictionnaire."
                 }
               ]
             },
@@ -310,24 +310,24 @@ export default {
               questions: [
                 {
                   type: "qcm",
-                  question: "Que signifie littéralement 'Nɔví' ?",
-                  options: ["Enfant de la mère (Frère/Sœur)", "Père de famille", "Oncle", "Ami"],
-                  answer: "Enfant de la mère (Frère/Sœur)",
-                  hint: "Nɔ́ (Mère) + Vǐ (Enfant) = Frère ou Sœur."
+                  question: "Que signifie 'Nɔví' ?",
+                  options: ["Frère/Sœur (littéralement Enfant de la mère)", "Père", "Grand-mère", "Ami"],
+                  answer: "Frère/Sœur (littéralement Enfant de la mère)",
+                  hint: "Nɔví désigne un frère ou une sœur (littéralement Nɔ̌ (Mère) + Vǐ (Enfant))."
                 },
                 {
                   type: "qcm",
-                  question: "Comment distingue-t-on un 'Frère' (homme) ?",
-                  options: ["Nɔví nyɔnu", "Nɔví súnnu", "Vǐ súnnu", "Tɔ́ súnnu"],
-                  answer: "Nɔví súnnu",
-                  hint: "Nɔví (Frère/Sœur) + Súnnu (Homme)."
+                  question: "Comment dit-on 'Frère' (homme) ?",
+                  options: ["Nɔví nyɔnu", "Nɔví sunɔ", "Vǐ sunɔ", "Tá"],
+                  answer: "Nɔví sunɔ",
+                  hint: "Frère se dit 'Nɔví sunɔ' dans le dictionnaire."
                 },
                 {
                   type: "qcm",
-                  question: "Comment distingue-t-on une 'Sœur' (femme) ?",
-                  options: ["Nɔví súnnu", "Nɔví nyɔnu", "Vǐ nyɔnu", "Nɔ́ nyɔnu"],
+                  question: "Comment dit-on 'Sœur' (femme) ?",
+                  options: ["Nɔví sunɔ", "Nɔví nyɔnu", "Vǐ nyɔnu", "Nɔ̌"],
                   answer: "Nɔví nyɔnu",
-                  hint: "Nɔví (Frère/Sœur) + Nyɔnu (Femme)."
+                  hint: "Sœur se dit 'Nɔví nyɔnu' dans le dictionnaire."
                 }
               ]
             }
