@@ -163,6 +163,34 @@ export default {
         } else alert(result.data.message || 'Erreur');
       } catch { alert('Erreur lors de la sauvegarde.'); }
       finally { this.studioSubmitting = false; }
+    },
+    async studioDelete() {
+      if (!this.studioCurrentWord) return;
+      if (!confirm(`Supprimer définitivement le mot "${this.studioCurrentWord.fon}" ?`)) return;
+      
+      this.studioSubmitting = true;
+      try {
+        const res = await axios.post(`${API}/admin/delete`, { id: this.studioCurrentWord.id });
+        if (res.data.success) {
+          this.studioWords.splice(this.studioIndex, 1);
+          this.studioTotal--;
+          
+          if (this.studioWords.length === 0 && this.studioTotal > 0) {
+            await this.fetchStudioWords();
+          } else {
+            if (this.studioIndex >= this.studioWords.length) {
+              this.studioIndex = 0;
+            }
+            this.resetStudio();
+          }
+        } else {
+          alert(res.data.message || 'Erreur');
+        }
+      } catch (err) {
+        alert('Erreur lors de la suppression.');
+      } finally {
+        this.studioSubmitting = false;
+      }
     }
   },
   template: `
@@ -396,7 +424,10 @@ export default {
               </div>
             </div>
 
-            <div style="padding:0 40px 40px;display:flex;gap:16px;justify-content:flex-end;align-items:center;">
+            <div style="padding:0 40px 40px;display:flex;gap:16px;align-items:center;">
+              <button @click="studioDelete" class="btn-delete" :disabled="studioSubmitting" style="margin-right: auto;">
+                <lucide-icon name="trash-2" /> Supprimer ce mot
+              </button>
               <button @click="studioSkip" class="btn-skip" :disabled="studioWords.length <= 1">Passer <lucide-icon name="chevrons-right" /></button>
               <button @click="studioSubmit" class="btn-save-next" :disabled="studioSubmitting || !studioAudioBlob" :style="(!studioAudioBlob||studioSubmitting)?'opacity:0.5;':''">
                 <span v-if="studioSubmitting" style="display:flex;align-items:center;gap:8px;">Enregistrement... <div class="spinner mini"></div></span>

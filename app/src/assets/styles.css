@@ -1544,6 +1544,29 @@ td { padding: 15px; border-bottom: 1px solid var(--glass-border); }
   transform: translateX(3px);
 }
 
+.btn-delete {
+  background: transparent;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #ef4444;
+  opacity: 0.8;
+  padding: 14px 28px;
+  border-radius: 16px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.3s;
+}
+
+.btn-delete:hover:not(:disabled) {
+  opacity: 1;
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.7);
+  transform: translateY(-1px);
+}
+
 .btn-save-next {
   background: linear-gradient(135deg, var(--primary) 0%, var(--human-accent) 100%);
   color: white;

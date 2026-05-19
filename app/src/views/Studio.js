@@ -120,6 +120,36 @@ export default {
       if (this.words.length <= 1) return;
       this.currentIndex = (this.currentIndex + 1) % this.words.length;
       this.resetFields();
+    },
+    async deleteWord() {
+      if (!this.currentWord) return;
+      if (!confirm(`Supprimer définitivement le mot "${this.currentWord.fon}" ?`)) return;
+      
+      this.submitting = true;
+      try {
+        const API = '/api';
+        const res = await axios.post(`${API}/admin/delete`, { id: this.currentWord.id });
+        if (res.data.success) {
+          this.words.splice(this.currentIndex, 1);
+          this.totalRemaining--;
+          
+          if (this.words.length === 0 && this.totalRemaining > 0) {
+            await this.fetchWords();
+          } else {
+            if (this.currentIndex >= this.words.length) {
+              this.currentIndex = 0;
+            }
+            this.resetFields();
+          }
+        } else {
+          alert(res.data.message || "Erreur de suppression");
+        }
+      } catch (err) {
+        console.error("Studio delete error:", err);
+        alert("Erreur lors de la suppression du mot.");
+      } finally {
+        this.submitting = false;
+      }
     }
   },
   mounted() {
@@ -198,6 +228,10 @@ export default {
 
           <!-- ACTIONS FOOTER -->
           <div class="studio-footer-actions">
+            <button @click="deleteWord" class="btn-delete" :disabled="submitting" style="margin-right: auto;">
+              <lucide-icon name="trash-2" /> Supprimer ce mot
+            </button>
+
             <button @click="skipWord" class="btn-skip" :disabled="words.length <= 1">
               Passer ce mot <lucide-icon name="chevrons-right" />
             </button>
