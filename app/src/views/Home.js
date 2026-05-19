@@ -34,6 +34,9 @@ export default {
                 </button>
               </div>
             </form>
+            <p style="font-size: 0.78rem; opacity: 0.6; margin-top: 10px; font-style: italic; color: var(--primary);">
+              * Note : Seuls les mots individuels et les expressions courtes peuvent être traduits et assemblés.
+            </p>
 
             <div class="quick-stats-centered fade-in" style="justify-content: flex-start; margin-top: 40px;">
               <div class="luxury-stat-box" style="align-items: flex-start; min-width: auto;">
