@@ -20,6 +20,7 @@ export default {
       // Active Quiz State
       quizQuestions: [],
       currentQuestionIndex: 0,
+      isLessonFinished: false,
       userAnswer: null, // can be string for QCM, array of strings for Chips, or pairing selections
       pairingSelectedFon: null,
       pairingSelectedFr: null,
@@ -331,50 +332,13 @@ export default {
               ]
             }
           ]
-        },
-        {
-          id: 5,
-          title: "Unité 5 : Phrases Courtes",
-          desc: "Assemble des mots pour former tes premières propositions.",
-          color: "#4361ee",
-          lessons: [
-            {
-              id: "5-1",
-              name: "Phrases d'actions",
-              desc: "Sujet, Verbe et Objet",
-              xp: 30,
-              questions: [
-                {
-                  type: "chips",
-                  question: "Traduis la phrase : 'Je mange du pain'",
-                  chips: ["Ngo", "dù", "weli", "sin", "nu", "Awanú", "Tɔ́"],
-                  answer: ["Ngo", "dù", "weli"],
-                  hint: "Je (Ngo) + mange (dù) + pain (weli)."
-                },
-                {
-                  type: "chips",
-                  question: "Traduis la phrase : 'Tu bois de l'eau'",
-                  chips: ["We", "nu", "sin", "dù", "weli", "Ngo", "Nɔ́"],
-                  answer: ["We", "nu", "sin"],
-                  hint: "Tu (We) + bois (nu) + eau (sin)."
-                },
-                {
-                  type: "chips",
-                  question: "Traduis la phrase : 'Maman mange de la viande'",
-                  chips: ["Nɔ́", "dù", "lan", "nu", "sin", "We", "weli"],
-                  answer: ["Nɔ́", "dù", "lan"],
-                  hint: "Maman (Nɔ́) + mange (dù) + viande (lan)."
-                }
-              ]
-            }
-          ]
         }
       ]
     };
   },
   computed: {
     activeQuestion() {
-      if (!this.currentLesson) return null;
+      if (!this.currentLesson || this.isLessonFinished) return null;
       return this.quizQuestions[this.currentQuestionIndex] || null;
     },
     lessonProgress() {
@@ -438,6 +402,7 @@ export default {
       }
 
       this.currentLesson = lesson;
+      this.isLessonFinished = false;
       // Copy and randomize questions to keep it fresh
       this.quizQuestions = JSON.parse(JSON.stringify(lesson.questions));
       this.currentQuestionIndex = 0;
@@ -686,12 +651,14 @@ export default {
       }
 
       this.saveLearningData();
+      this.isLessonFinished = true;
       this.mascotMood = 'celebrate';
       this.mascotText = `Félicitations ! Tu as complété la leçon "${this.currentLesson.name}" avec succès ! Tu remportes +${xpEarned} XP ! ✨`;
       this.startConfetti();
     },
     closeLesson() {
       this.currentLesson = null;
+      this.isLessonFinished = false;
       this.stopConfetti();
     },
     startConfetti() {
@@ -801,7 +768,7 @@ export default {
         <!-- MASCOT DIALOG -->
         <div class="learning-mascot-row glass-card">
           <div class="mascot-img-wrap">
-            <img src="/app/src/assets/gbebe_mascot.png" class="mascot-avatar" />
+            <img src="./src/assets/gbebe_mascot.png" class="mascot-avatar" />
           </div>
           <div class="speech-bubble">
             <p>{{ mascotText }}</p>
@@ -876,7 +843,7 @@ export default {
           
           <!-- MASCOT FEEDBACK AREA -->
           <div class="quiz-mascot-bubble-area">
-            <img src="/app/src/assets/gbebe_mascot.png" class="quiz-mascot-img" :class="'mood-' + mascotMood" />
+            <img src="./src/assets/gbebe_mascot.png" class="quiz-mascot-img" :class="'mood-' + mascotMood" />
             <div class="quiz-speech-bubble">
               <p>{{ mascotText }}</p>
             </div>
