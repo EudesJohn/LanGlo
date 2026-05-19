@@ -30,7 +30,10 @@ export default {
         </button>
   
         <nav class="nav-links" :class="{ 'mobile-open': isMenuOpen }">
-          <button @click="$emit('search', ''); isMenuOpen = false" class="nav-btn">
+          <button @click="handleNav('learning')" class="nav-btn" :class="{ 'active': currentPage === 'learning' }">
+            <lucide-icon name="graduation-cap" /> <span>Apprendre</span>
+          </button>
+          <button @click="$emit('search', ''); isMenuOpen = false" class="nav-btn" :class="{ 'active': currentPage === 'dictionary' }">
             <lucide-icon name="book-open" /> <span>Dictionnaire</span>
           </button>
           <template v-if="user">

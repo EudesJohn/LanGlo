@@ -14,6 +14,7 @@ import LinkInvalid from './views/LinkInvalid.js'
 import About from './views/About.js'
 import Ethnicities from './views/Ethnicities.js'
 import Studio from './views/Studio.js'
+import Learning from './views/Learning.js'
 import Footer from './components/Footer.js'
 import LucideIcon from './components/LucideIcon.js'
 
@@ -31,7 +32,7 @@ axios.interceptors.request.use(config => {
 });
 
 export default {
-  components: { Navbar, Home, Login, Register, Dictionary, Profile, Admin, AddWord, ForgotPassword, ResetPassword, LinkInvalid, About, Ethnicities, Studio, Toast, AppFooter: Footer, LucideIcon },
+  components: { Navbar, Home, Login, Register, Dictionary, Profile, Admin, AddWord, ForgotPassword, ResetPassword, LinkInvalid, About, Ethnicities, Studio, Learning, Toast, AppFooter: Footer, LucideIcon },
   setup() {
     const currentPage = ref('home');
     const user = ref(JSON.parse(localStorage.getItem('user')) || null);
@@ -542,6 +543,7 @@ export default {
         <admin v-if="currentPage === 'admin'" :pendingWords="pendingWords" :allWords="allWords" @approve="adminApprove" @delete="adminDelete" @updateWord="handleUpdateWord" @refresh="fetchAdminData" />
         <add-word v-if="currentPage === 'add-word'" :prefill="searchQuery" @navigate="navigate" @addWord="handleAddWord" />
         <studio v-if="currentPage === 'studio'" @navigate="navigate" />
+        <learning v-if="currentPage === 'learning'" @navigate="navigate" />
         <about v-if="currentPage === 'about'" @navigate="navigate" />
         <ethnicities v-if="currentPage === 'ethnicities'" @navigate="navigate" />
       </main>
