@@ -9,7 +9,7 @@ export default {
     <div class="word-card-luxury glass-effect glow-on-hover scale-in">
       <!-- HEADER: CATEGORY & STATUS -->
       <div class="card-luxury-header-detail">
-        <div class="badge-luxury premium-gradient">{{ word.category || 'Général' }}</div>
+        <div class="badge-luxury premium-gradient">{{ word.category === 'Bible' ? 'Référence' : (word.category || 'Général') }}</div>
         <div class="word-id-label">Réf #{{ word.id }}</div>
       </div>
 
@@ -18,7 +18,7 @@ export default {
         
         <!-- SECTION FON -->
         <div class="detail-section">
-          <span class="detail-label">{{ word.category === 'Bible' ? 'Verset en Fon' : (word.category === 'Phrase' ? 'Phrase en Fon' : 'Mot en Fon') }}</span>
+          <span class="detail-label">{{ word.category === 'Phrase' ? 'Phrase en Fon' : (word.category === 'Bible' ? 'Expression en Fon' : 'Mot en Fon') }}</span>
           <h2 class="fon-heading font-fon" v-html="word.fon_highlighted ? word.fon_highlighted : highlight(word.fon)"></h2>
           <div class="phonetic-detail" v-if="word.phonetic">
             <lucide-icon name="music-2" :size="14" />
@@ -28,7 +28,7 @@ export default {
 
         <!-- SECTION FRANCAIS -->
         <div class="detail-section mt-20">
-          <span class="detail-label">{{ word.category === 'Bible' ? 'Traduction (Français)' : 'Traduction Française' }}</span>
+          <span class="detail-label">Traduction Française</span>
           <div class="translation-box-v2">
             <p class="value" v-html="word.french_highlighted ? word.french_highlighted : highlight(word.french)"></p>
           </div>

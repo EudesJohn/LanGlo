@@ -1,36 +1,6 @@
 const supabase = require('../lib/supabase');
 
-// ============================================================
-// Moteur de Règles Grammaticales (Fon Rule-Based Syntax)
-// ============================================================
-function applyFonGrammarRules(wordByWordArray) {
-  // Règle 1 : Adjectifs possessifs en français
-  const POSSESSIVES = new Set(['mon', 'ton', 'son', 'ma', 'ta', 'sa', 'mes', 'tes', 'ses', 'notre', 'votre', 'leur', 'nos', 'vos', 'leurs']);
-  // Règle 2 : Articles et quantités
-  const ARTICLES_QUANTITIES = new Set(['un', 'une', 'des', 'le', 'la', 'les', 'ce', 'cet', 'cette', 'ces', 'deux', 'trois', 'quatre', 'cinq', 'plusieurs', 'quelques']);
 
-  // Copie pour ne pas muter l'original pendant le traitement
-  let assembled = [...wordByWordArray];
-
-  for (let i = 0; i < assembled.length - 1; i++) {
-    const currentWord = assembled[i].original.toLowerCase();
-    
-    if (POSSESSIVES.has(currentWord) || ARTICLES_QUANTITIES.has(currentWord)) {
-      // Inverser avec le mot suivant (ex: "mon" [i] "papa" [i+1] -> "papa" "mon")
-      const temp = assembled[i];
-      assembled[i] = assembled[i+1];
-      assembled[i+1] = temp;
-      
-      i++; // Sauter le mot suivant puisqu'il a déjà été traité
-    }
-  }
-
-  // Joindre les traductions valides
-  return assembled
-    .filter(w => w.found && w.translation)
-    .map(w => w.translation)
-    .join(' ');
-}
 
 // Fonction utilitaire pour le surlignage croisé
 function highlightCrossLingual(sentenceObj, frenchTarget, fonTarget) {
@@ -346,7 +316,6 @@ module.exports = async (req, res) => {
             isSentence: true,
             exactMatches: exactMatches || [],
             wordByWord,
-            assembledSentence: applyFonGrammarRules(wordByWord),
             exampleSentences
           });
 
