@@ -19,6 +19,17 @@ import LucideIcon from './components/LucideIcon.js'
 
 const { ref, onMounted, nextTick, computed } = Vue;
 
+// Configure axios interceptor to automatically attach authorization header
+axios.interceptors.request.use(config => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+}, error => {
+  return Promise.reject(error);
+});
+
 export default {
   components: { Navbar, Home, Login, Register, Dictionary, Profile, Admin, AddWord, ForgotPassword, ResetPassword, LinkInvalid, About, Ethnicities, Studio, Toast, AppFooter: Footer, LucideIcon },
   setup() {
