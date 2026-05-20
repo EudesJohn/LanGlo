@@ -293,8 +293,9 @@ module.exports = async (req, res) => {
         .from('words')
         .select('*')
         .eq('status', 'approved')
+        .neq('category', 'Bible') // Les phrases bibliques ne sont pas affichées comme résultats directs
         .or(`french.ilike.%${searchTerm}%,fon.ilike.%${searchTerm}%`)
-        .order('category', { ascending: false }) // Prioritize Vocabulaire > Phrase > Bible
+        .order('category', { ascending: false }) // Prioritize Vocabulaire > Phrase
         .limit(50);
 
       if (error) throw error;
@@ -334,8 +335,9 @@ module.exports = async (req, res) => {
               .from('words')
               .select('french, fon, phonetic, category')
               .eq('status', 'approved')
+              .neq('category', 'Bible') // Exclure la Bible pour les traductions mot-à-mot directes
               .ilike('french', w)
-              .order('category', { ascending: false })  // Vocabulaire > Phrase > Bible (V > P > B)
+              .order('category', { ascending: false })  // Vocabulaire > Phrase
               .order('created_at', { ascending: false }) // entrées récentes (corrigées) en priorité
               .limit(20)
           );
