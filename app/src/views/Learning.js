@@ -22,7 +22,7 @@ export default {
   },
   data() {
     return {
-      // User Learning Stats (synchronized with localStorage)
+      // User Learning Stats (synchronized with Supabase DB or managed in-memory)
       xp: 0,
       hearts: 5,
       streak: 0,
@@ -785,43 +785,20 @@ export default {
   },
   methods: {
     loadLearningData() {
-      // 1. First load from localStorage as base fallback
-      let localXp = parseInt(localStorage.getItem('learning_xp')) || 0;
-      let localHearts = parseInt(localStorage.getItem('learning_hearts')) || 5;
-      let localStreak = parseInt(localStorage.getItem('learning_streak')) || 0;
-      let localCompleted = JSON.parse(localStorage.getItem('learning_completed')) || [];
-      let localLastDate = localStorage.getItem('learning_last_date') || null;
-
-      // 2. If user is logged in and has profile data, we should merge the profile data!
+      // 1. If user is logged in, load directly from their profile data (Source of Truth)
       if (this.user) {
-        const dbXp = this.user.learning_xp || 0;
-        const dbHearts = this.user.learning_hearts !== undefined && this.user.learning_hearts !== null ? this.user.learning_hearts : 5;
-        const dbStreak = this.user.learning_streak || 0;
-        const dbCompleted = this.user.learning_completed || [];
-        const dbLastDate = this.user.learning_last_date || null;
-
-        // Merge: Take max of XP, Hearts, Streak, and union of completed lessons
-        this.xp = Math.max(localXp, dbXp);
-        this.hearts = Math.min(5, Math.max(localHearts, dbHearts));
-        this.streak = Math.max(localStreak, dbStreak);
-        this.completedLessons = Array.from(new Set([...localCompleted, ...dbCompleted]));
-        
-        if (localLastDate && dbLastDate) {
-          this.lastActivityDate = new Date(localLastDate) > new Date(dbLastDate) ? localLastDate : dbLastDate;
-        } else {
-          this.lastActivityDate = localLastDate || dbLastDate;
-        }
-
-        // If local data had more/newer progress, trigger a sync to database
-        if (localXp > dbXp || this.completedLessons.length > dbCompleted.length) {
-          this.saveLearningData();
-        }
+        this.xp = this.user.learning_xp || 0;
+        this.hearts = this.user.learning_hearts !== undefined && this.user.learning_hearts !== null ? this.user.learning_hearts : 5;
+        this.streak = this.user.learning_streak || 0;
+        this.completedLessons = this.user.learning_completed || [];
+        this.lastActivityDate = this.user.learning_last_date || null;
       } else {
-        this.xp = localXp;
-        this.hearts = localHearts;
-        this.streak = localStreak;
-        this.completedLessons = localCompleted;
-        this.lastActivityDate = localLastDate;
+        // 2. Guest defaults (strictly in-memory, resets on page refresh)
+        this.xp = 0;
+        this.hearts = 5;
+        this.streak = 0;
+        this.completedLessons = [];
+        this.lastActivityDate = null;
       }
 
       // Heart recovery check: If less than 5 hearts, recover 1 heart per 24 hours
@@ -837,19 +814,13 @@ export default {
       }
     },
     async saveLearningData() {
-      localStorage.setItem('learning_xp', this.xp);
-      localStorage.setItem('learning_hearts', this.hearts);
-      localStorage.setItem('learning_streak', this.streak);
-      localStorage.setItem('learning_completed', JSON.stringify(this.completedLessons));
-      
       const nowStr = new Date().toISOString();
-      localStorage.setItem('learning_last_date', nowStr);
       this.lastActivityDate = nowStr;
 
       // Dispatch event to sync to profile properties locally
       window.dispatchEvent(new CustomEvent('learning-data-updated', { detail: { xp: this.xp } }));
 
-      // If user logged in, try to sync to database!
+      // If user logged in, sync directly to the remote database
       if (this.user && this.user.id) {
         try {
           const res = await axios.post('/api/auth/sync-learning', {
@@ -1244,7 +1215,7 @@ export default {
       <!-- TOP LEARNING SUBNAV / STATS -->
       <div v-if="!currentLesson" class="container" style="max-width: 800px; margin-top: 10px;">
         <div class="learning-stats-bar glass-card">
-          <div class="stat-bubble clickable" @click="handleNav('profile')" title="Vos points XP accumulés">
+          <div class="stat-bubble clickable" @click="$emit('navigate', 'profile')" title="Vos points XP accumulés">
             <span class="stat-icon">✨</span>
             <span class="stat-val font-fon">{{ xp }} XP</span>
           </div>
@@ -1265,6 +1236,17 @@ export default {
       <!-- MAIN ROADMAP PATH VIEW -->
       <div v-if="!currentLesson" class="container" style="max-width: 800px; padding: 20px 10px;">
         
+        <!-- GUEST REMINDER BANNER -->
+        <div v-if="!user" class="guest-reminder-banner glass-card" style="margin-bottom: 20px; border-left: 4px solid #ef4444; background: rgba(239, 68, 68, 0.1); padding: 15px 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+          <div style="display: flex; justify-content: space-between; align-items: center; gap: 15px; width: 100%; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 10px; min-width: 250px;">
+              <span style="font-size: 20px;">⚠️</span>
+              <p style="margin: 0; font-size: 0.95rem; font-weight: 500; color: var(--text-color);">Vous jouez en mode invité. <strong>Connectez-vous</strong> pour sauvegarder votre progression d'un appareil à l'autre !</p>
+            </div>
+            <button @click="$emit('navigate', 'login')" class="btn-premium mini" style="white-space: nowrap; padding: 6px 15px; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); border-color: #ef4444; color: #fff; cursor: pointer;">Se connecter</button>
+          </div>
+        </div>
+
         <!-- MASCOT DIALOG -->
         <div class="learning-mascot-row glass-card">
           <div class="mascot-img-wrap">

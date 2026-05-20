@@ -178,73 +178,11 @@ export default {
       }
     };
 
-    const mergeAndSyncProgress = async (dbUser) => {
-      const guestXp = parseInt(localStorage.getItem('learning_xp')) || 0;
-      const guestHearts = parseInt(localStorage.getItem('learning_hearts')) || 5;
-      const guestStreak = parseInt(localStorage.getItem('learning_streak')) || 0;
-      const guestCompleted = JSON.parse(localStorage.getItem('learning_completed')) || [];
-      const guestLastDate = localStorage.getItem('learning_last_date') || null;
-
-      const dbXp = dbUser.learning_xp || 0;
-      const dbHearts = dbUser.learning_hearts !== undefined && dbUser.learning_hearts !== null ? dbUser.learning_hearts : 5;
-      const dbStreak = dbUser.learning_streak || 0;
-      const dbCompleted = dbUser.learning_completed || [];
-      const dbLastDate = dbUser.learning_last_date || null;
-
-      const mergedXp = Math.max(guestXp, dbXp);
-      const mergedHearts = Math.min(5, Math.max(guestHearts, dbHearts));
-      const mergedStreak = Math.max(guestStreak, dbStreak);
-      const mergedCompleted = Array.from(new Set([...guestCompleted, ...dbCompleted]));
-      const mergedLastDate = (guestLastDate && dbLastDate) 
-        ? (new Date(guestLastDate) > new Date(dbLastDate) ? guestLastDate : dbLastDate)
-        : (guestLastDate || dbLastDate);
-
-      localStorage.setItem('learning_xp', mergedXp);
-      localStorage.setItem('learning_hearts', mergedHearts);
-      localStorage.setItem('learning_streak', mergedStreak);
-      localStorage.setItem('learning_completed', JSON.stringify(mergedCompleted));
-      if (mergedLastDate) {
-        localStorage.setItem('learning_last_date', mergedLastDate);
-      }
-
-      const updatedProgress = {
-        learning_xp: mergedXp,
-        learning_hearts: mergedHearts,
-        learning_streak: mergedStreak,
-        learning_completed: mergedCompleted,
-        learning_last_date: mergedLastDate
-      };
-
-      try {
-        const res = await axios.post(`${API}/auth/sync-learning`, {
-          id: dbUser.id,
-          xp: mergedXp,
-          hearts: mergedHearts,
-          streak: mergedStreak,
-          completed_lessons: mergedCompleted,
-          last_activity_date: mergedLastDate
-        });
-        
-        if (res.data.success) {
-          console.log("Merged progress synced to database successfully.");
-          return { ...dbUser, ...updatedProgress };
-        }
-      } catch (e) {
-        console.error("Failed to sync merged progress to DB:", e);
-      }
-
-      return { ...dbUser, ...updatedProgress };
-    };
-
     const handleLogin = async (creds) => {
       try {
         const res = await axios.post(`${API}/auth/login`, creds);
         if (res.data.success) {
-          let loggedInUser = res.data.user;
-          // Sync and merge learning progress
-          loggedInUser = await mergeAndSyncProgress(loggedInUser);
-          
-          user.value = loggedInUser;
+          user.value = res.data.user;
           token.value = res.data.token;
           localStorage.setItem('user', JSON.stringify(user.value));
           localStorage.setItem('token', token.value);
@@ -362,11 +300,6 @@ export default {
       token.value = null;
       localStorage.removeItem('user');
       localStorage.removeItem('token');
-      localStorage.removeItem('learning_xp');
-      localStorage.removeItem('learning_hearts');
-      localStorage.removeItem('learning_streak');
-      localStorage.removeItem('learning_completed');
-      localStorage.removeItem('learning_last_date');
       navbarKey.value++;
       notify("Déconnexion réussie");
       navigate('home');
@@ -539,11 +472,9 @@ export default {
 
         if (dbUser) {
           if (user.value.role !== dbUser.role) navbarKey.value++;
-          // Merge and sync learning progress!
-          const mergedUser = await mergeAndSyncProgress(dbUser);
           user.value = {
             ...user.value,
-            ...mergedUser
+            ...dbUser
           };
         }
 
