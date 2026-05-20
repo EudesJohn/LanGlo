@@ -402,6 +402,7 @@ module.exports = async (req, res) => {
                 .from('words')
                 .select('*')
                 .eq('status', 'approved')
+                .neq('category', 'Bible') // Censure des phrases bibliques pour laïcité
                 .or(
                   `french.ilike.% ${w} %,` +
                   `french.ilike.${w} %,` +
@@ -510,6 +511,7 @@ module.exports = async (req, res) => {
           .from('words')
           .select('*')
           .eq('status', 'approved')
+          .neq('category', 'Bible') // Censure des phrases bibliques pour laïcité
           .or(
             `french.ilike.% ${w} %,` +
             `french.ilike.${w} %,` +
