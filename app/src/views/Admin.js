@@ -122,10 +122,10 @@ export default {
       setTimeout(() => this.fetchLibrary(), 800);
     },
     cancelEdit() { this.editingId = null; },
-    async confirmDeleteBible() {
-      if (!confirm("⚠️ ATTENTION : Vous êtes sur le point de supprimer DEFINITIVEMENT tous les versets et phrases de la catégorie 'Bible' de la base de données. Cette action est irréversible !\n\nVoulez-vous continuer ?")) return;
+    async confirmDeleteBibleNames() {
+      if (!confirm("⚠️ ATTENTION : Vous êtes sur le point de supprimer DEFINITIVEMENT tous les noms propres bibliques (ex: Adam, Noé, Moïse, Jésus...) et les versets de généalogies (X engendra Y, etc.) de la base de données.\n\nLes autres versets bibliques de la base de données seront conservés intacts. Cette action est irréversible !\n\nVoulez-vous continuer ?")) return;
       
-      const typed = prompt("Sécurité : Pour confirmer la suppression complète de la Bible, veuillez saisir le mot 'SUPPRIMER' ci-dessous :");
+      const typed = prompt("Sécurité : Pour confirmer la suppression des noms et prénoms bibliques, veuillez saisir le mot 'SUPPRIMER' ci-dessous :");
       if (typed !== 'SUPPRIMER') {
         alert('Action annulée.');
         return;
@@ -133,9 +133,9 @@ export default {
 
       this.libLoading = true;
       try {
-        const res = await axios.post(`${API}/admin/delete-category`, { category: 'Bible' });
+        const res = await axios.post(`${API}/admin/delete-biblical-names`);
         if (res.data.success) {
-          alert(`✅ Succès : ${res.data.countDeleted || 0} versets de la Bible ont été supprimés.`);
+          alert(`✅ Succès : ${res.data.countDeleted || 0} noms propres et généalogies ont été supprimés de la base de données.`);
           this.libPage = 1;
           this.fetchLibrary();
           this.$emit('refresh'); // Refresh parent stats
@@ -144,7 +144,7 @@ export default {
         }
       } catch (err) {
         console.error(err);
-        alert("Erreur lors de la suppression de la Bible.");
+        alert("Erreur lors du nettoyage des noms bibliques.");
       } finally {
         this.libLoading = false;
       }
@@ -294,14 +294,14 @@ export default {
             </div>
             
             <button 
-              @click="confirmDeleteBible" 
+              @click="confirmDeleteBibleNames" 
               class="btn-delete-bible"
               style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.25); color: #ef4444; padding: 7px 14px; border-radius: 10px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px;"
               onmouseover="this.style.background='rgba(239, 68, 68, 0.22)'; this.style.borderColor='rgba(239, 68, 68, 0.5)';"
               onmouseout="this.style.background='rgba(239, 68, 68, 0.12)'; this.style.borderColor='rgba(239, 68, 68, 0.25)';"
             >
               <lucide-icon name="trash-2" :size="14" />
-              <span>Vider la Bible</span>
+              <span>Nettoyer les noms bibliques</span>
             </button>
           </div>
         </div>

@@ -185,6 +185,88 @@ module.exports = async (req, res) => {
       return res.status(200).json({ success: true, data });
     }
 
+    if (action === 'delete-biblical-names') {
+      const BIBLICAL_PROPER_NAMES = [
+        'adam', 'eve', 'éve', 'caïn', 'cain', 'abel', 'seth', 'énosch', 'enosch', 'kénan', 'kenan',
+        'mahalaleel', 'jered', 'hénoc', 'henoc', 'metuschélah', 'lémec', 'lemec', 'noé', 'sem', 'cham',
+        'japhet', 'abraham', 'isaac', 'jacob', 'ruben', 'siméon', 'simeon', 'lévi', 'levi', 'juda',
+        'issacar', 'zabulon', 'dan', 'nephthali', 'gad', 'aser', 'benjamin', 'dinah', 'joseph',
+        'pharaon', 'moïse', 'moise', 'aaron', 'marie', 'josué', 'josue', 'gédéon', 'gedeon', 'samson',
+        'ruth', 'samuel', 'saül', 'saul', 'david', 'salomon', 'roboam', 'abia', 'asa', 'josaphat',
+        'joram', 'ozias', 'joatham', 'achaz', 'ézéchias', 'ezechias', 'manassé', 'manasse', 'amon',
+        'josias', 'jéchonias', 'jechonias', 'salathiel', 'zorobabel', 'abiud', 'éliakim', 'eliakim',
+        'azor', 'sadok', 'achim', 'éliud', 'eliud', 'éléazar', 'eleazar', 'matthan', 'jésus', 'jesus',
+        'christ', 'paul', 'pierre', 'jean', 'jacques', 'andré', 'andre', 'philippe', 'barthélemy',
+        'barthelemy', 'thomas', 'thaddée', 'thaddee', 'simon', 'judas', 'étienne', 'etienne',
+        'corneille', 'barnabé', 'barnabe', 'timothée', 'timothee', 'tite', 'silas', 'apollos',
+        'lazare', 'marthe', 'zacharie', 'élisabeth', 'elisabeth', 'jean-baptiste', 'gabriel',
+        'michel', 'satan', 'diable', 'hérode', 'herode', 'pilate', 'barabbas', 'sara', 'agar',
+        'ismaël', 'ismael', 'rebecca', 'rachel', 'léa', 'lea', 'esau', 'ésaú', 'jézabel', 'jezabel',
+        'élie', 'elie', 'élisée', 'elisee', 'isaïe', 'isaie', 'jérémie', 'jeremie', 'ézéchiel',
+        'ezechiel', 'daniel', 'osée', 'osee', 'joël', 'joel', 'amos', 'abdias', 'jonas', 'michée',
+        'michee', 'nahum', 'habacuc', 'sophonie', 'aggée', 'aggee', 'zacharie', 'malachie',
+        'goliath', 'israël', 'israel', 'égypte', 'egypte', 'jérusalem', 'jerusalem', 'bethléem',
+        'bethleem', 'nazareth', 'sinai', 'samarie', 'judée', 'judee', 'babylone', 'sodome', 'gomorrhe',
+        'melchisédek', 'melchisedek', 'taanac', 'meguiddo'
+      ];
+
+      // Build unique variations (lowercase, capitalized, uppercase)
+      const namesArray = [];
+      BIBLICAL_PROPER_NAMES.forEach(name => {
+        namesArray.push(name.toLowerCase());
+        namesArray.push(name.charAt(0).toUpperCase() + name.slice(1).toLowerCase());
+        namesArray.push(name.toUpperCase());
+      });
+      const uniqueNamesArray = [...new Set(namesArray)];
+
+      let totalDeleted = 0;
+
+      // 1. Delete exact matching proper names across all categories
+      const { count: countExact, error: errExact } = await supabase
+        .from('words')
+        .delete({ count: 'exact' })
+        .in('french', uniqueNamesArray);
+      
+      if (errExact) throw errExact;
+      totalDeleted += (countExact || 0);
+
+      // 2. Delete genealogy verses with "engendra" in Bible category
+      const { count: countEngendra, error: errEngendra } = await supabase
+        .from('words')
+        .delete({ count: 'exact' })
+        .eq('category', 'Bible')
+        .ilike('french', '%engendra%');
+      
+      if (errEngendra) throw errEngendra;
+      totalDeleted += (countEngendra || 0);
+
+      // 3. Delete kings list verses in Bible category
+      const { count: countKings, error: errKings } = await supabase
+        .from('words')
+        .delete({ count: 'exact' })
+        .eq('category', 'Bible')
+        .ilike('french', '%roi de%un;%');
+      
+      if (errKings) throw errKings;
+      totalDeleted += (countKings || 0);
+
+      // 4. Delete sons lists with colon in Bible category
+      const { count: countSons, error: errSons } = await supabase
+        .from('words')
+        .delete({ count: 'exact' })
+        .eq('category', 'Bible')
+        .or('french.ilike.Les fils de %:%,french.ilike.Fils de %:%');
+      
+      if (errSons) throw errSons;
+      totalDeleted += (countSons || 0);
+
+      return res.status(200).json({
+        success: true,
+        message: `${totalDeleted} noms propres et versets de généalogie ont été supprimés avec succès de la base de données.`,
+        countDeleted: totalDeleted
+      });
+    }
+
     if (action === 'delete-category') {
       const { category } = req.body;
       if (!category) {
