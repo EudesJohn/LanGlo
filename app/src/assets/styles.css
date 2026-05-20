@@ -1076,20 +1076,21 @@ td { padding: 15px; border-bottom: 1px solid var(--glass-border); }
     width: 100%;
     height: auto;
     background: rgba(11, 19, 43, 0.98);
-    backdrop-filter: blur(40px);
-    -webkit-backdrop-filter: blur(40px);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     flex-direction: column;
     padding: 0;
     gap: 0;
     opacity: 0;
     visibility: hidden;
-    transform: translateY(-20px);
+    transform: translateY(-10px);
     pointer-events: none;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: opacity 0.25s ease-out, transform 0.25s ease-out, visibility 0.25s;
+    will-change: transform, opacity;
     z-index: 999;
     border-bottom: 2px solid var(--glass-border);
     border-radius: 0 0 32px 32px !important;
-    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
     overflow: hidden;
   }
   .nav-links.mobile-open {
@@ -1097,8 +1098,7 @@ td { padding: 15px; border-bottom: 1px solid var(--glass-border); }
     visibility: visible;
     transform: translateY(0);
     pointer-events: auto;
-    padding: 30px 0;
-    height: auto;
+    padding: 20px 0;
   }
   
   .nav-links .nav-btn, .nav-links .btn-premium, .nav-links .logout-btn {
