@@ -253,10 +253,15 @@ export default {
         </div>
 
         <div class="admin-main-tabs">
-          <button @click="activeTab = 'library'" :class="{ active: activeTab === 'library' }" class="main-tab-btn">
+          <button @click="activeTab = 'library'; libType = 'word'" :class="{ active: activeTab === 'library' && libType === 'word' }" class="main-tab-btn">
             <lucide-icon name="library" />
-            <span>Bibliothèque des mots</span>
-            <span class="tab-count">{{ libTotal.toLocaleString() }}</span>
+            <span>Mots du Dico</span>
+            <span v-if="libType === 'word'" class="tab-count">{{ libTotal.toLocaleString() }}</span>
+          </button>
+          <button @click="activeTab = 'library'; libType = 'phrase'" :class="{ active: activeTab === 'library' && libType === 'phrase' }" class="main-tab-btn">
+            <lucide-icon name="book-open" />
+            <span>Phrases & Textes</span>
+            <span v-if="libType === 'phrase'" class="tab-count">{{ libTotal.toLocaleString() }}</span>
           </button>
           <button @click="activeTab = 'audio-studio'" :class="{ active: activeTab === 'audio-studio' }" class="main-tab-btn studio-tab">
             <lucide-icon name="mic" />
@@ -283,16 +288,7 @@ export default {
               <input v-model="libSearch" placeholder="Rechercher..." class="admin-search-input" />
             </div>
           </div>
-          <div style="display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(255,255,255,0.05);padding-top:12px;flex-wrap:wrap;gap:12px;width:100%;">
-            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-              <span style="font-size:0.85rem;opacity:0.6;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-color);">Filtrer par type :</span>
-              <div class="filter-chips" style="display:flex;gap:8px;flex-wrap:wrap;">
-                <button @click="libType='all'"     :class="{'chip-active':libType==='all'}"     class="filter-chip mini" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 10px;">Tous (Mots &amp; Phrases)</button>
-                <button @click="libType='word'"    :class="{'chip-active':libType==='word'}"    class="filter-chip mini" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 10px;">Mots uniquement</button>
-                <button @click="libType='phrase'"  :class="{'chip-active':libType==='phrase'}"  class="filter-chip mini" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 10px;">Phrases uniquement</button>
-              </div>
-            </div>
-            
+          <div style="display:flex;align-items:center;justify-content:flex-end;border-top:1px solid rgba(255,255,255,0.05);padding-top:12px;flex-wrap:wrap;gap:12px;width:100%;">
             <button 
               @click="confirmDeleteBibleNames" 
               class="btn-delete-bible"
@@ -334,12 +330,14 @@ export default {
               <div class="field-pair">
                 <div class="f-group">
                   <label>Français</label>
-                  <input v-if="editingId===w.id" v-model="editForm.french" class="mod-input" />
+                  <textarea v-if="editingId===w.id && (w.category==='Phrase' || w.category==='Bible')" v-model="editForm.french" class="mod-textarea" style="min-height:60px;"></textarea>
+                  <input v-else-if="editingId===w.id" v-model="editForm.french" class="mod-input" />
                   <div v-else class="mod-text main">{{ w.french }}</div>
                 </div>
                 <div class="f-group">
                   <label>Fon</label>
-                  <input v-if="editingId===w.id" v-model="editForm.fon" class="mod-input font-fon" />
+                  <textarea v-if="editingId===w.id && (w.category==='Phrase' || w.category==='Bible')" v-model="editForm.fon" class="mod-textarea font-fon" style="min-height:60px;"></textarea>
+                  <input v-else-if="editingId===w.id" v-model="editForm.fon" class="mod-input font-fon" />
                   <div v-else class="mod-text main font-fon">{{ w.fon }}</div>
                 </div>
               </div>
