@@ -123,9 +123,9 @@ export default {
     },
     cancelEdit() { this.editingId = null; },
     async confirmDeleteBibleNames() {
-      if (!confirm("⚠️ ATTENTION : Vous êtes sur le point de supprimer DEFINITIVEMENT tous les noms propres bibliques (ex: Adam, Noé, Moïse, Jésus...) et les versets de généalogies (X engendra Y, etc.) de la base de données.\n\nLes autres versets bibliques de la base de données seront conservés intacts. Cette action est irréversible !\n\nVoulez-vous continuer ?")) return;
+      if (!confirm("⚠️ ATTENTION : Vous êtes sur le point de supprimer DEFINITIVEMENT tous les mots de noms et prénoms propres bibliques (ex: Adam, Noé, Moïse, Jésus...) de la base de données.\n\nTous les versets et phrases de la Bible contenant ces noms seront conservés intacts. Cette action est irréversible !\n\nVoulez-vous continuer ?")) return;
       
-      const typed = prompt("Sécurité : Pour confirmer la suppression des noms et prénoms bibliques, veuillez saisir le mot 'SUPPRIMER' ci-dessous :");
+      const typed = prompt("Sécurité : Pour confirmer la suppression des noms et prénoms propres individuels de la base de données, veuillez saisir le mot 'SUPPRIMER' ci-dessous :");
       if (typed !== 'SUPPRIMER') {
         alert('Action annulée.');
         return;

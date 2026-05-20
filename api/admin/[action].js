@@ -230,39 +230,9 @@ module.exports = async (req, res) => {
       if (errExact) throw errExact;
       totalDeleted += (countExact || 0);
 
-      // 2. Delete genealogy verses with "engendra" in Bible category
-      const { count: countEngendra, error: errEngendra } = await supabase
-        .from('words')
-        .delete({ count: 'exact' })
-        .eq('category', 'Bible')
-        .ilike('french', '%engendra%');
-      
-      if (errEngendra) throw errEngendra;
-      totalDeleted += (countEngendra || 0);
-
-      // 3. Delete kings list verses in Bible category
-      const { count: countKings, error: errKings } = await supabase
-        .from('words')
-        .delete({ count: 'exact' })
-        .eq('category', 'Bible')
-        .ilike('french', '%roi de%un;%');
-      
-      if (errKings) throw errKings;
-      totalDeleted += (countKings || 0);
-
-      // 4. Delete sons lists with colon in Bible category
-      const { count: countSons, error: errSons } = await supabase
-        .from('words')
-        .delete({ count: 'exact' })
-        .eq('category', 'Bible')
-        .or('french.ilike.Les fils de %:%,french.ilike.Fils de %:%');
-      
-      if (errSons) throw errSons;
-      totalDeleted += (countSons || 0);
-
       return res.status(200).json({
         success: true,
-        message: `${totalDeleted} noms propres et versets de généalogie ont été supprimés avec succès de la base de données.`,
+        message: `${totalDeleted} noms et prénoms propres ont été supprimés avec succès de la base de données.`,
         countDeleted: totalDeleted
       });
     }
