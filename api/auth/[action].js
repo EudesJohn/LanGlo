@@ -232,6 +232,35 @@ module.exports = async (req, res) => {
       return res.status(200).json({ success: true, message: 'Mot de passe mis à jour avec succès.' });
     }
 
+    // 6. SYNC LEARNING PROGRESS
+    if (action === 'sync-learning') {
+      if (req.method !== 'POST') return res.status(405).json({ message: 'Method Not Allowed' });
+      const { id, xp, hearts, streak, completed_lessons, last_activity_date } = req.body;
+      if (!id) return res.status(400).json({ success: false, message: "Identifiant utilisateur manquant." });
+
+      const syncData = {
+        learning_xp: xp || 0,
+        learning_hearts: hearts !== undefined && hearts !== null ? hearts : 5,
+        learning_streak: streak || 0,
+        learning_completed: completed_lessons || [],
+        learning_last_date: last_activity_date || new Date().toISOString()
+      };
+
+      const { data, error } = await supabase
+        .from('users')
+        .update(syncData)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Supabase Learning Sync Error:", error);
+        return res.status(500).json({ success: false, message: `Erreur de synchronisation Supabase : ${error.message}` });
+      }
+
+      return res.status(200).json({ success: true, user: data });
+    }
+
     return res.status(404).json({ error: `Auth action '${action}' not found` });
   } catch (e) {
     console.error(`Auth Error (${action}):`, e);

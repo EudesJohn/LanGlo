@@ -4,6 +4,22 @@ import LucideIcon from '../components/LucideIcon.js';
 export default {
   components: { LucideIcon },
   emits: ['navigate'],
+  props: {
+    user: {
+      type: Object,
+      default: null
+    }
+  },
+  watch: {
+    user: {
+      handler(newVal) {
+        if (newVal) {
+          this.loadLearningData();
+        }
+      },
+      deep: true
+    }
+  },
   data() {
     return {
       // User Learning Stats (synchronized with localStorage)
@@ -769,11 +785,44 @@ export default {
   },
   methods: {
     loadLearningData() {
-      this.xp = parseInt(localStorage.getItem('learning_xp')) || 0;
-      this.hearts = parseInt(localStorage.getItem('learning_hearts')) || 5;
-      this.streak = parseInt(localStorage.getItem('learning_streak')) || 0;
-      this.completedLessons = JSON.parse(localStorage.getItem('learning_completed')) || [];
-      this.lastActivityDate = localStorage.getItem('learning_last_date') || null;
+      // 1. First load from localStorage as base fallback
+      let localXp = parseInt(localStorage.getItem('learning_xp')) || 0;
+      let localHearts = parseInt(localStorage.getItem('learning_hearts')) || 5;
+      let localStreak = parseInt(localStorage.getItem('learning_streak')) || 0;
+      let localCompleted = JSON.parse(localStorage.getItem('learning_completed')) || [];
+      let localLastDate = localStorage.getItem('learning_last_date') || null;
+
+      // 2. If user is logged in and has profile data, we should merge the profile data!
+      if (this.user) {
+        const dbXp = this.user.learning_xp || 0;
+        const dbHearts = this.user.learning_hearts !== undefined && this.user.learning_hearts !== null ? this.user.learning_hearts : 5;
+        const dbStreak = this.user.learning_streak || 0;
+        const dbCompleted = this.user.learning_completed || [];
+        const dbLastDate = this.user.learning_last_date || null;
+
+        // Merge: Take max of XP, Hearts, Streak, and union of completed lessons
+        this.xp = Math.max(localXp, dbXp);
+        this.hearts = Math.min(5, Math.max(localHearts, dbHearts));
+        this.streak = Math.max(localStreak, dbStreak);
+        this.completedLessons = Array.from(new Set([...localCompleted, ...dbCompleted]));
+        
+        if (localLastDate && dbLastDate) {
+          this.lastActivityDate = new Date(localLastDate) > new Date(dbLastDate) ? localLastDate : dbLastDate;
+        } else {
+          this.lastActivityDate = localLastDate || dbLastDate;
+        }
+
+        // If local data had more/newer progress, trigger a sync to database
+        if (localXp > dbXp || this.completedLessons.length > dbCompleted.length) {
+          this.saveLearningData();
+        }
+      } else {
+        this.xp = localXp;
+        this.hearts = localHearts;
+        this.streak = localStreak;
+        this.completedLessons = localCompleted;
+        this.lastActivityDate = localLastDate;
+      }
 
       // Heart recovery check: If less than 5 hearts, recover 1 heart per 24 hours
       if (this.hearts < 5 && this.lastActivityDate) {
@@ -787,17 +836,47 @@ export default {
         }
       }
     },
-    saveLearningData() {
+    async saveLearningData() {
       localStorage.setItem('learning_xp', this.xp);
       localStorage.setItem('learning_hearts', this.hearts);
       localStorage.setItem('learning_streak', this.streak);
       localStorage.setItem('learning_completed', JSON.stringify(this.completedLessons));
       
-      const todayStr = new Date().toDateString();
-      localStorage.setItem('learning_last_date', new Date().toISOString());
+      const nowStr = new Date().toISOString();
+      localStorage.setItem('learning_last_date', nowStr);
+      this.lastActivityDate = nowStr;
 
-      // If user logged in, try to sync to profile properties (rank and contributions are database, but we can set XP in localStorage safely)
+      // Dispatch event to sync to profile properties locally
       window.dispatchEvent(new CustomEvent('learning-data-updated', { detail: { xp: this.xp } }));
+
+      // If user logged in, try to sync to database!
+      if (this.user && this.user.id) {
+        try {
+          const res = await axios.post('/api/auth/sync-learning', {
+            id: this.user.id,
+            xp: this.xp,
+            hearts: this.hearts,
+            streak: this.streak,
+            completed_lessons: this.completedLessons,
+            last_activity_date: nowStr
+          });
+          if (res.data.success) {
+            console.log("Learning synced to Supabase successfully.");
+            const updatedUser = {
+              ...this.user,
+              learning_xp: this.xp,
+              learning_hearts: this.hearts,
+              learning_streak: this.streak,
+              learning_completed: this.completedLessons,
+              learning_last_date: nowStr
+            };
+            // Notify App.js to update the reactive user state
+            window.dispatchEvent(new CustomEvent('user-updated', { detail: { user: updatedUser } }));
+          }
+        } catch (e) {
+          console.error("Failed to sync learning progress:", e);
+        }
+      }
     },
     isLessonCompleted(lessonId) {
       return this.completedLessons.includes(lessonId);

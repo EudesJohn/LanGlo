@@ -178,11 +178,73 @@ export default {
       }
     };
 
+    const mergeAndSyncProgress = async (dbUser) => {
+      const guestXp = parseInt(localStorage.getItem('learning_xp')) || 0;
+      const guestHearts = parseInt(localStorage.getItem('learning_hearts')) || 5;
+      const guestStreak = parseInt(localStorage.getItem('learning_streak')) || 0;
+      const guestCompleted = JSON.parse(localStorage.getItem('learning_completed')) || [];
+      const guestLastDate = localStorage.getItem('learning_last_date') || null;
+
+      const dbXp = dbUser.learning_xp || 0;
+      const dbHearts = dbUser.learning_hearts !== undefined && dbUser.learning_hearts !== null ? dbUser.learning_hearts : 5;
+      const dbStreak = dbUser.learning_streak || 0;
+      const dbCompleted = dbUser.learning_completed || [];
+      const dbLastDate = dbUser.learning_last_date || null;
+
+      const mergedXp = Math.max(guestXp, dbXp);
+      const mergedHearts = Math.min(5, Math.max(guestHearts, dbHearts));
+      const mergedStreak = Math.max(guestStreak, dbStreak);
+      const mergedCompleted = Array.from(new Set([...guestCompleted, ...dbCompleted]));
+      const mergedLastDate = (guestLastDate && dbLastDate) 
+        ? (new Date(guestLastDate) > new Date(dbLastDate) ? guestLastDate : dbLastDate)
+        : (guestLastDate || dbLastDate);
+
+      localStorage.setItem('learning_xp', mergedXp);
+      localStorage.setItem('learning_hearts', mergedHearts);
+      localStorage.setItem('learning_streak', mergedStreak);
+      localStorage.setItem('learning_completed', JSON.stringify(mergedCompleted));
+      if (mergedLastDate) {
+        localStorage.setItem('learning_last_date', mergedLastDate);
+      }
+
+      const updatedProgress = {
+        learning_xp: mergedXp,
+        learning_hearts: mergedHearts,
+        learning_streak: mergedStreak,
+        learning_completed: mergedCompleted,
+        learning_last_date: mergedLastDate
+      };
+
+      try {
+        const res = await axios.post(`${API}/auth/sync-learning`, {
+          id: dbUser.id,
+          xp: mergedXp,
+          hearts: mergedHearts,
+          streak: mergedStreak,
+          completed_lessons: mergedCompleted,
+          last_activity_date: mergedLastDate
+        });
+        
+        if (res.data.success) {
+          console.log("Merged progress synced to database successfully.");
+          return { ...dbUser, ...updatedProgress };
+        }
+      } catch (e) {
+        console.error("Failed to sync merged progress to DB:", e);
+      }
+
+      return { ...dbUser, ...updatedProgress };
+    };
+
     const handleLogin = async (creds) => {
       try {
         const res = await axios.post(`${API}/auth/login`, creds);
         if (res.data.success) {
-          user.value = res.data.user;
+          let loggedInUser = res.data.user;
+          // Sync and merge learning progress
+          loggedInUser = await mergeAndSyncProgress(loggedInUser);
+          
+          user.value = loggedInUser;
           token.value = res.data.token;
           localStorage.setItem('user', JSON.stringify(user.value));
           localStorage.setItem('token', token.value);
@@ -300,6 +362,11 @@ export default {
       token.value = null;
       localStorage.removeItem('user');
       localStorage.removeItem('token');
+      localStorage.removeItem('learning_xp');
+      localStorage.removeItem('learning_hearts');
+      localStorage.removeItem('learning_streak');
+      localStorage.removeItem('learning_completed');
+      localStorage.removeItem('learning_last_date');
       navbarKey.value++;
       notify("Déconnexion réussie");
       navigate('home');
@@ -395,6 +462,14 @@ export default {
     onMounted(async () => {
       console.log('App Mounted');
       fetchWordOfDay();
+
+      // Listen for custom learning updates
+      window.addEventListener('user-updated', (e) => {
+        if (e.detail && e.detail.user) {
+          user.value = e.detail.user;
+          localStorage.setItem('user', JSON.stringify(user.value));
+        }
+      });
       
       // PWA listeners
       window.addEventListener('beforeinstallprompt', handleInstallPrompt);
@@ -438,26 +513,38 @@ export default {
         }
 
         // Sync full profile from database (Source of Truth)
-        const { data: dbUser } = await supabaseClient.value
+        let dbUser = null;
+        const { data: fetchedDbUser } = await supabaseClient.value
           .from('users')
           .select('*')
           .eq('email', authUser.email)
           .single();
 
-        if (dbUser) {
-          if (user.value.role !== dbUser.role) navbarKey.value++;
-          user.value = {
-            ...user.value,
-            ...dbUser
-          };
+        if (fetchedDbUser) {
+          dbUser = fetchedDbUser;
         } else {
           // If the user is new (not in public.users), create them automatically
-          await supabaseClient.value.from('users').insert([{
-            id: authUser.id,
-            email: authUser.email,
-            name: user.value.name,
-            role: 'user'
-          }]);
+          const { data: newDbUser } = await supabaseClient.value
+            .from('users')
+            .insert([{
+              id: authUser.id,
+              email: authUser.email,
+              name: user.value.name,
+              role: 'user'
+            }])
+            .select()
+            .single();
+          if (newDbUser) dbUser = newDbUser;
+        }
+
+        if (dbUser) {
+          if (user.value.role !== dbUser.role) navbarKey.value++;
+          // Merge and sync learning progress!
+          const mergedUser = await mergeAndSyncProgress(dbUser);
+          user.value = {
+            ...user.value,
+            ...mergedUser
+          };
         }
 
         localStorage.setItem('user', JSON.stringify(user.value));
@@ -543,7 +630,7 @@ export default {
         <admin v-if="currentPage === 'admin'" :pendingWords="pendingWords" :allWords="allWords" @approve="adminApprove" @delete="adminDelete" @updateWord="handleUpdateWord" @refresh="fetchAdminData" />
         <add-word v-if="currentPage === 'add-word'" :prefill="searchQuery" @navigate="navigate" @addWord="handleAddWord" />
         <studio v-if="currentPage === 'studio'" @navigate="navigate" />
-        <learning v-if="currentPage === 'learning'" @navigate="navigate" />
+        <learning v-if="currentPage === 'learning'" :user="user" @navigate="navigate" />
         <about v-if="currentPage === 'about'" @navigate="navigate" />
         <ethnicities v-if="currentPage === 'ethnicities'" @navigate="navigate" />
       </main>
