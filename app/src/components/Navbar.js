@@ -33,9 +33,6 @@ export default {
           <button @click="handleNav('learning')" class="nav-btn" :class="{ 'active': currentPage === 'learning' }">
             <lucide-icon name="graduation-cap" /> <span>Apprendre</span>
           </button>
-          <button @click="$emit('search', ''); isMenuOpen = false" class="nav-btn" :class="{ 'active': currentPage === 'dictionary' }">
-            <lucide-icon name="book-open" /> <span>Dictionnaire</span>
-          </button>
           <template v-if="user">
             <button v-if="user?.fon_level === 'Intermediaire' || user?.fon_level === 'Avancé'" @click="handleNav('add-word')" class="nav-btn">
               <lucide-icon name="plus" /> <span>Suggérer</span>

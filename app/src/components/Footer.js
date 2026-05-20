@@ -38,7 +38,6 @@ export default {
             <h4>Navigation</h4>
             <ul>
               <li><a href="#" @click.prevent="$emit('navigate', 'home')">Accueil</a></li>
-              <li><a href="#" @click.prevent="$emit('navigate', 'dictionary')">Dictionnaire</a></li>
               <li><a href="#" @click.prevent="$emit('navigate', 'add-word')">Contribuer</a></li>
             </ul>
           </div>
