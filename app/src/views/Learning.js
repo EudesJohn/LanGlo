@@ -1236,17 +1236,6 @@ export default {
       <!-- MAIN ROADMAP PATH VIEW -->
       <div v-if="!currentLesson" class="container" style="max-width: 800px; padding: 20px 10px;">
         
-        <!-- GUEST REMINDER BANNER -->
-        <div v-if="!user" class="guest-reminder-banner glass-card" style="margin-bottom: 20px; border-left: 4px solid #ef4444; background: rgba(239, 68, 68, 0.1); padding: 15px 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
-          <div style="display: flex; justify-content: space-between; align-items: center; gap: 15px; width: 100%; flex-wrap: wrap;">
-            <div style="display: flex; align-items: center; gap: 10px; min-width: 250px;">
-              <span style="font-size: 20px;">⚠️</span>
-              <p style="margin: 0; font-size: 0.95rem; font-weight: 500; color: var(--text-color);">Vous jouez en mode invité. <strong>Connectez-vous</strong> pour sauvegarder votre progression d'un appareil à l'autre !</p>
-            </div>
-            <button @click="$emit('navigate', 'login')" class="btn-premium mini" style="white-space: nowrap; padding: 6px 15px; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); border-color: #ef4444; color: #fff; cursor: pointer;">Se connecter</button>
-          </div>
-        </div>
-
         <!-- MASCOT DIALOG -->
         <div class="learning-mascot-row glass-card">
           <div class="mascot-img-wrap">

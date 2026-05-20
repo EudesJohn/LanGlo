@@ -96,7 +96,10 @@ export default {
 
     const navigate = (page) => {
       const isAdmin = user.value?.role === 'admin';
-      if (user.value && !isProfileComplete.value && page !== 'profile' && !isAdmin) {
+      if (page === 'learning' && !user.value) {
+        notify("Veuillez vous connecter pour accéder au module d'apprentissage !", "info");
+        currentPage.value = 'login';
+      } else if (user.value && !isProfileComplete.value && page !== 'profile' && !isAdmin) {
         notify("Veuillez compléter votre profil pour continuer", "info");
         currentPage.value = 'profile';
       } else {
