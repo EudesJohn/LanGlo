@@ -122,6 +122,33 @@ export default {
       setTimeout(() => this.fetchLibrary(), 800);
     },
     cancelEdit() { this.editingId = null; },
+    async confirmDeleteBible() {
+      if (!confirm("⚠️ ATTENTION : Vous êtes sur le point de supprimer DEFINITIVEMENT tous les versets et phrases de la catégorie 'Bible' de la base de données. Cette action est irréversible !\n\nVoulez-vous continuer ?")) return;
+      
+      const typed = prompt("Sécurité : Pour confirmer la suppression complète de la Bible, veuillez saisir le mot 'SUPPRIMER' ci-dessous :");
+      if (typed !== 'SUPPRIMER') {
+        alert('Action annulée.');
+        return;
+      }
+
+      this.libLoading = true;
+      try {
+        const res = await axios.post(`${API}/admin/delete-category`, { category: 'Bible' });
+        if (res.data.success) {
+          alert(`✅ Succès : ${res.data.countDeleted || 0} versets de la Bible ont été supprimés.`);
+          this.libPage = 1;
+          this.fetchLibrary();
+          this.$emit('refresh'); // Refresh parent stats
+        } else {
+          alert(res.data.message || "Une erreur est survenue.");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Erreur lors de la suppression de la Bible.");
+      } finally {
+        this.libLoading = false;
+      }
+    },
 
     // ── Audio Studio ─────────────────────────────────────────────
     async fetchStudioWords() {
@@ -256,13 +283,26 @@ export default {
               <input v-model="libSearch" placeholder="Rechercher..." class="admin-search-input" />
             </div>
           </div>
-          <div style="display:flex;align-items:center;gap:12px;border-top:1px solid rgba(255,255,255,0.05);padding-top:12px;flex-wrap:wrap;">
-            <span style="font-size:0.85rem;opacity:0.6;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-color);">Filtrer par type :</span>
-            <div class="filter-chips" style="display:flex;gap:8px;flex-wrap:wrap;">
-              <button @click="libType='all'"     :class="{'chip-active':libType==='all'}"     class="filter-chip mini" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 10px;">Tous (Mots &amp; Phrases)</button>
-              <button @click="libType='word'"    :class="{'chip-active':libType==='word'}"    class="filter-chip mini" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 10px;">Mots uniquement</button>
-              <button @click="libType='phrase'"  :class="{'chip-active':libType==='phrase'}"  class="filter-chip mini" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 10px;">Phrases uniquement</button>
+          <div style="display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(255,255,255,0.05);padding-top:12px;flex-wrap:wrap;gap:12px;width:100%;">
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+              <span style="font-size:0.85rem;opacity:0.6;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-color);">Filtrer par type :</span>
+              <div class="filter-chips" style="display:flex;gap:8px;flex-wrap:wrap;">
+                <button @click="libType='all'"     :class="{'chip-active':libType==='all'}"     class="filter-chip mini" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 10px;">Tous (Mots &amp; Phrases)</button>
+                <button @click="libType='word'"    :class="{'chip-active':libType==='word'}"    class="filter-chip mini" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 10px;">Mots uniquement</button>
+                <button @click="libType='phrase'"  :class="{'chip-active':libType==='phrase'}"  class="filter-chip mini" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 10px;">Phrases uniquement</button>
+              </div>
             </div>
+            
+            <button 
+              @click="confirmDeleteBible" 
+              class="btn-delete-bible"
+              style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.25); color: #ef4444; padding: 7px 14px; border-radius: 10px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px;"
+              onmouseover="this.style.background='rgba(239, 68, 68, 0.22)'; this.style.borderColor='rgba(239, 68, 68, 0.5)';"
+              onmouseout="this.style.background='rgba(239, 68, 68, 0.12)'; this.style.borderColor='rgba(239, 68, 68, 0.25)';"
+            >
+              <lucide-icon name="trash-2" :size="14" />
+              <span>Vider la Bible</span>
+            </button>
           </div>
         </div>
 

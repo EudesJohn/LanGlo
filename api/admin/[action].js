@@ -185,6 +185,26 @@ module.exports = async (req, res) => {
       return res.status(200).json({ success: true, data });
     }
 
+    if (action === 'delete-category') {
+      const { category } = req.body;
+      if (!category) {
+        return res.status(400).json({ success: false, message: "Catégorie manquante." });
+      }
+
+      const { data, error, count } = await supabase
+        .from('words')
+        .delete({ count: 'exact' })
+        .eq('category', category);
+
+      if (error) throw error;
+
+      return res.status(200).json({
+        success: true,
+        message: `Tous les éléments de la catégorie '${category}' ont été supprimés.`,
+        countDeleted: count || 0
+      });
+    }
+
     return res.status(404).json({ error: `Admin action '${action}' not found` });
   } catch (e) {
     return res.status(500).json({ message: "Erreur", error: e.message });
