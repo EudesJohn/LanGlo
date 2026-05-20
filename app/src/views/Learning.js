@@ -78,6 +78,13 @@ export default {
                   hint: "Dans le dictionnaire, Comment vas-tu ? se dit 'a ɖò ganjí à'."
                 },
                 {
+                  type: "qcm",
+                  question: "Que signifie la réponse 'un ɖo ganji' en Français ?",
+                  options: ["Je vais bien", "Bonjour", "Au revoir", "Merci"],
+                  answer: "Je vais bien",
+                  hint: "En Fon, 'un ɖo ganji' signifie 'Je vais bien'."
+                },
+                {
                   type: "audio",
                   question: "Écoute et sélectionne la bonne transcription pour 'Bonjour' :",
                   word: "bo kudo zanzan",
@@ -86,12 +93,44 @@ export default {
                   hint: "Écoute bien la prononciation de bo kudo zanzan (Bonjour)."
                 },
                 {
+                  type: "audio",
+                  question: "Écoute et sélectionne la bonne transcription pour 'Bienvenue' :",
+                  word: "ku abɔ",
+                  options: ["ku abɔ", "a wà nŭ", "sin", "nyɔnu"],
+                  answer: "ku abɔ",
+                  hint: "Écoute bien la prononciation de ku abɔ (Bienvenue)."
+                },
+                {
+                  type: "audio",
+                  question: "Écoute et sélectionne la transcription pour 'Comment vas-tu ?' :",
+                  word: "a ɖò ganjí à",
+                  options: ["a ɖò ganjí à", "un ɖo ganji", "éɖabɔ", "kúdo gbáda"],
+                  answer: "a ɖò ganjí à",
+                  hint: "C'est la forme interrogative 'a ɖò ganjí à'."
+                },
+                {
                   type: "pairs",
                   question: "Associe chaque expression avec sa traduction :",
                   pairs: [
                     { fon: "bo kudo zanzan", fr: "Bonjour" },
                     { fon: "ku abɔ", fr: "Bienvenue" },
                     { fon: "a ɖò ganjí à", fr: "Comment vas-tu ?" }
+                  ]
+                },
+                {
+                  type: "qcm",
+                  question: "Que signifie 'bo kudo zanzan' ?",
+                  options: ["Bonjour", "Merci", "Au revoir", "Eau"],
+                  answer: "Bonjour",
+                  hint: "Bonjour se dit 'bo kudo zanzan' en Fon."
+                },
+                {
+                  type: "pairs",
+                  question: "Associe ces salutations :",
+                  pairs: [
+                    { fon: "un ɖo ganji", fr: "Je vais bien" },
+                    { fon: "ku abɔ", fr: "Bienvenue" },
+                    { font: "bo kudo zanzan", fr: "Bonjour" }
                   ]
                 }
               ]
@@ -132,12 +171,51 @@ export default {
                   hint: "Écoute bien la prononciation de a wà nŭ (Merci)."
                 },
                 {
+                  type: "audio",
+                  question: "Écoute et sélectionne la bonne transcription pour 'Bonsoir' :",
+                  word: "kúdo gbáda",
+                  options: ["kúdo gbáda", "a wà nŭ", "éɖabɔ", "vǐ"],
+                  answer: "kúdo gbáda",
+                  hint: "Écoute bien la prononciation de kúdo gbáda (Bonsoir)."
+                },
+                {
+                  type: "audio",
+                  question: "Écoute et sélectionne la transcription pour 'Au revoir' :",
+                  word: "éɖabɔ",
+                  options: ["éɖabɔ", "ku abɔ", "ɖokpó", "lan"],
+                  answer: "éɖabɔ",
+                  hint: "C'est 'éɖabɔ' pour dire Au revoir."
+                },
+                {
                   type: "pairs",
                   question: "Associe chaque mot avec sa traduction :",
                   pairs: [
                     { fon: "kúdo gbáda", fr: "Bonsoir" },
                     { fon: "a wà nŭ", fr: "Merci" },
                     { fon: "éɖabɔ", fr: "Au revoir" }
+                  ]
+                },
+                {
+                  type: "qcm",
+                  question: "Que signifie l'expression 'kúdo gbáda' ?",
+                  options: ["Bonsoir", "Bonjour", "Merci", "Mère"],
+                  answer: "Bonsoir",
+                  hint: "kúdo gbáda correspond à Bonsoir."
+                },
+                {
+                  type: "qcm",
+                  question: "Que signifie le mot 'a wà nŭ' ?",
+                  options: ["Merci", "Père", "Deux", "Eau"],
+                  answer: "Merci",
+                  hint: "Merci se dit 'a wà nŭ'."
+                },
+                {
+                  type: "pairs",
+                  question: "Associe ces formules de politesse :",
+                  pairs: [
+                    { fon: "éɖabɔ", fr: "Au revoir" },
+                    { fon: "a wà nŭ", fr: "Merci" },
+                    { fon: "kúdo gbáda", fr: "Bonsoir" }
                   ]
                 }
               ]
@@ -186,12 +264,51 @@ export default {
                   hint: "Écoute bien la prononciation de ɖokpó (Un)."
                 },
                 {
+                  type: "audio",
+                  question: "Écoute et sélectionne la bonne transcription pour 'Deux' :",
+                  word: "wè",
+                  options: ["wè", "ɖokpó", "atɔn", "atɔ́ɔ́n"],
+                  answer: "wè",
+                  hint: "C'est le chiffre wè (Deux)."
+                },
+                {
+                  type: "audio",
+                  question: "Écoute et sélectionne la bonne transcription pour 'Trois' :",
+                  word: "atɔn",
+                  options: ["atɔn", "wè", "ɛnɛ", "ɖokpó"],
+                  answer: "atɔn",
+                  hint: "C'est le chiffre atɔn (Trois)."
+                },
+                {
                   type: "pairs",
                   question: "Associe chaque nombre avec sa traduction :",
                   pairs: [
                     { fon: "ɖokpó", fr: "Un" },
                     { fon: "wè", fr: "Deux" },
                     { fon: "atɔn", fr: "Trois" }
+                  ]
+                },
+                {
+                  type: "qcm",
+                  question: "Comment dit-on 'Deux' en Fon ?",
+                  options: ["wè", "ɖokpó", "atɔn", "ɛnɛ"],
+                  answer: "wè",
+                  hint: "Deux se dit 'wè'."
+                },
+                {
+                  type: "qcm",
+                  question: "Comment dit-on 'Trois' en Fon ?",
+                  options: ["atɔn", "wè", "ɖokpó", "atɔ́ɔ́n"],
+                  answer: "atɔn",
+                  hint: "Trois se dit 'atɔn'."
+                },
+                {
+                  type: "pairs",
+                  question: "Réassocie les chiffres pour validation :",
+                  pairs: [
+                    { fon: "atɔn", fr: "Trois" },
+                    { fon: "wè", fr: "Deux" },
+                    { fon: "ɖokpó", fr: "Un" }
                   ]
                 }
               ]
@@ -225,12 +342,58 @@ export default {
                   hint: "Écoute bien la prononciation de atɔ́ɔ́n (Cinq)."
                 },
                 {
+                  type: "audio",
+                  question: "Écoute et sélectionne la bonne transcription pour 'Quatre' :",
+                  word: "ɛnɛ",
+                  options: ["ɛnɛ", "atɔ́ɔ́n", "atɔn", "ɖokpó"],
+                  answer: "ɛnɛ",
+                  hint: "Écoute bien la prononciation de ɛnɛ (Quatre)."
+                },
+                {
+                  type: "qcm",
+                  question: "Que signifie 'ɛnɛ' ?",
+                  options: ["Quatre", "Un", "Trois", "Cinq"],
+                  answer: "Quatre",
+                  hint: "ɛnɛ correspond à Quatre."
+                },
+                {
+                  type: "qcm",
+                  question: "Que signifie le nombre 'atɔ́ɔ́n' ?",
+                  options: ["Cinq", "Deux", "Quatre", "Trois"],
+                  answer: "Cinq",
+                  hint: "atɔ́ɔ́n correspond à Cinq."
+                },
+                {
                   type: "pairs",
                   question: "Associe chaque nombre avec sa traduction :",
                   pairs: [
                     { fon: "ɛnɛ", fr: "Quatre" },
                     { fon: "atɔ́ɔ́n", fr: "Cinq" },
                     { fon: "atɔn", fr: "Trois" },
+                    { fon: "wè", fr: "Deux" }
+                  ]
+                },
+                {
+                  type: "qcm",
+                  question: "Quel nombre correspond à 'ɛnɛ' ?",
+                  options: ["Quatre", "Deux", "Un", "Maison"],
+                  answer: "Quatre",
+                  hint: "ɛnɛ veut dire Quatre."
+                },
+                {
+                  type: "qcm",
+                  question: "Quel nombre correspond à 'atɔ́ɔ́n' ?",
+                  options: ["Cinq", "Trois", "Frère", "Bonjour"],
+                  answer: "Cinq",
+                  hint: "atɔ́ɔ́n veut dire Cinq."
+                },
+                {
+                  type: "pairs",
+                  question: "Associe les chiffres restants :",
+                  pairs: [
+                    { fon: "atɔ́ɔ́n", fr: "Cinq" },
+                    { fon: "ɛnɛ", fr: "Quatre" },
+                    { fon: "ɖokpó", fr: "Un" },
                     { fon: "wè", fr: "Deux" }
                   ]
                 }
@@ -273,11 +436,55 @@ export default {
                   hint: "Ce mot désigne l'Eau."
                 },
                 {
+                  type: "audio",
+                  question: "Écoute et sélectionne la bonne transcription pour 'Boire' :",
+                  word: "nù",
+                  options: ["nù", "sin", "ɖu", "wɔ̌xúxú"],
+                  answer: "nù",
+                  hint: "Écoute bien la prononciation de nù (Boire)."
+                },
+                {
+                  type: "qcm",
+                  question: "Comment dit-on le verbe 'Boire' en Fon ?",
+                  options: ["nù", "ɖu", "tɔ́", "ku abɔ"],
+                  answer: "nù",
+                  hint: "Boire se dit 'nù'."
+                },
+                {
+                  type: "qcm",
+                  question: "Que signifie le mot 'sin' ?",
+                  options: ["Eau", "Pain", "Viande", "Père"],
+                  answer: "Eau",
+                  hint: "sin signifie Eau."
+                },
+                {
+                  type: "qcm",
+                  question: "Quelle est la traduction de 'sin' ?",
+                  options: ["Eau", "Manger", "Bienvenue", "Au revoir"],
+                  answer: "Eau",
+                  hint: "sin est l'Eau."
+                },
+                {
+                  type: "qcm",
+                  question: "Quelle est la traduction de 'nù' ?",
+                  options: ["Boire", "Maison", "Deux", "Trois"],
+                  answer: "Boire",
+                  hint: "nù est Boire."
+                },
+                {
                   type: "pairs",
                   question: "Associe chaque élément avec sa traduction :",
                   pairs: [
                     { fon: "sin", fr: "Eau" },
                     { fon: "nù", fr: "Boire" }
+                  ]
+                },
+                {
+                  type: "pairs",
+                  question: "Réassocie les mots liés à la boisson :",
+                  pairs: [
+                    { fon: "nù", fr: "Boire" },
+                    { fon: "sin", fr: "Eau" }
                   ]
                 }
               ]
@@ -318,12 +525,51 @@ export default {
                   hint: "Écoute bien la prononciation de wɔ̌xúxú (Pain)."
                 },
                 {
+                  type: "audio",
+                  question: "Écoute et sélectionne la bonne transcription pour 'Viande' :",
+                  word: "lan",
+                  options: ["lan", "wɔ̌xúxú", "ɖu", "sin"],
+                  answer: "lan",
+                  hint: "Écoute bien la prononciation de lan (Viande)."
+                },
+                {
+                  type: "audio",
+                  question: "Écoute et sélectionne la bonne transcription pour 'Manger' :",
+                  word: "ɖu",
+                  options: ["ɖu", "nù", "lan", "wɔ̌xúxú"],
+                  answer: "ɖu",
+                  hint: "Écoute bien la prononciation de ɖu (Manger)."
+                },
+                {
                   type: "pairs",
                   question: "Associe chaque élément alimentaire :",
                   pairs: [
                     { fon: "wɔ̌xúxú", fr: "Pain" },
                     { fon: "lan", fr: "Viande" },
                     { fon: "ɖu", fr: "Manger" }
+                  ]
+                },
+                {
+                  type: "qcm",
+                  question: "Comment dit-on 'Manger' en Fon ?",
+                  options: ["ɖu", "nù", "tɔ́", "nɔ̂"],
+                  answer: "ɖu",
+                  hint: "Manger se dit 'ɖu'."
+                },
+                {
+                  type: "qcm",
+                  question: "Comment dit-on 'Viande' en Fon ?",
+                  options: ["lan", "wɔ̌xúxú", "sin", "atɔn"],
+                  answer: "lan",
+                  hint: "Viande se dit 'lan'."
+                },
+                {
+                  type: "pairs",
+                  question: "Réassocie les aliments :",
+                  pairs: [
+                    { fon: "ɖu", fr: "Manger" },
+                    { fon: "lan", fr: "Viande" },
+                    { fon: "wɔ̌xúxú", fr: "Pain" }
                   ]
                 }
               ]
@@ -372,12 +618,51 @@ export default {
                   hint: "Écoute bien la prononciation de nɔ̂ (Mère)."
                 },
                 {
+                  type: "audio",
+                  question: "Écoute et sélectionne la bonne transcription pour 'Père' :",
+                  word: "tɔ́",
+                  options: ["tɔ́", "nɔ̂", "vǐ", "nyɔnu"],
+                  answer: "tɔ́",
+                  hint: "Écoute bien la prononciation de tɔ́ (Père)."
+                },
+                {
+                  type: "audio",
+                  question: "Écoute et sélectionne la bonne transcription pour 'Enfant' :",
+                  word: "vǐ",
+                  options: ["vǐ", "tɔ́", "nɔ̂", "nɔví"],
+                  answer: "vǐ",
+                  hint: "Écoute bien la prononciation de vǐ (Enfant)."
+                },
+                {
                   type: "pairs",
                   question: "Associe chaque parent avec sa traduction :",
                   pairs: [
                     { fon: "nɔ̂", fr: "Mère" },
-                    { fon: "tɔ́", fr: "Père" },
+                    { font: "tɔ́", fr: "Père" },
                     { fon: "vǐ", fr: "Enfant" }
+                  ]
+                },
+                {
+                  type: "qcm",
+                  question: "Comment dit-on 'Enfant' en Fon ?",
+                  options: ["vǐ", "tɔ́", "nɔ̂", "nyɔnu"],
+                  answer: "vǐ",
+                  hint: "Enfant se dit 'vǐ'."
+                },
+                {
+                  type: "qcm",
+                  question: "Que signifie le mot 'tɔ́' en Français ?",
+                  options: ["Père", "Mère", "Enfant", "Frère"],
+                  answer: "Père",
+                  hint: "tɔ́ veut dire Père."
+                },
+                {
+                  type: "pairs",
+                  question: "Associe les rôles familiaux :",
+                  pairs: [
+                    { fon: "vǐ", fr: "Enfant" },
+                    { fon: "tɔ́", fr: "Père" },
+                    { fon: "nɔ̂", fr: "Mère" }
                   ]
                 }
               ]
@@ -418,12 +703,51 @@ export default {
                   hint: "Écoute bien la prononciation de nɔví súnnu (Frère)."
                 },
                 {
+                  type: "audio",
+                  question: "Écoute et sélectionne la bonne transcription pour 'Sœur' :",
+                  word: "nyɔnu",
+                  options: ["nyɔnu", "nɔví súnnu", "nɔ̂", "tɔ́"],
+                  answer: "nyɔnu",
+                  hint: "Écoute bien la prononciation de nyɔnu (Sœur)."
+                },
+                {
+                  type: "audio",
+                  question: "Écoute et sélectionne la transcription pour 'Frère/Sœur' :",
+                  word: "nɔví",
+                  options: ["nɔví", "nyɔnu", "nɔví súnnu", "vǐ"],
+                  answer: "nɔví",
+                  hint: "Écoute bien la prononciation de nɔví (Frère/Sœur)."
+                },
+                {
                   type: "pairs",
                   question: "Associe chaque membre de la fratrie :",
                   pairs: [
                     { fon: "nɔví súnnu", fr: "Frère" },
                     { fon: "nyɔnu", fr: "Sœur" },
                     { fon: "nɔví", fr: "Frère/Sœur" }
+                  ]
+                },
+                {
+                  type: "qcm",
+                  question: "Que signifie le mot 'nyɔnu' ?",
+                  options: ["Sœur", "Mère", "Frère", "Enfant"],
+                  answer: "Sœur",
+                  hint: "nyɔnu correspond à Sœur."
+                },
+                {
+                  type: "qcm",
+                  question: "Que signifie 'nɔví súnnu' ?",
+                  options: ["Frère", "Père", "Enfant", "Sœur"],
+                  answer: "Frère",
+                  hint: "nɔví súnnu correspond à Frère."
+                },
+                {
+                  type: "pairs",
+                  question: "Réassocie les membres de la fratrie :",
+                  pairs: [
+                    { fon: "nɔví", fr: "Frère/Sœur" },
+                    { fon: "nyɔnu", fr: "Sœur" },
+                    { fon: "nɔví súnnu", fr: "Frère" }
                   ]
                 }
               ]
