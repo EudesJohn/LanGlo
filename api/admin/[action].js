@@ -27,26 +27,34 @@ module.exports = async (req, res) => {
       const limit  = Math.min(100, parseInt(req.query.limit || '50', 10));
       const q      = (req.query.q || '').trim();
       const filter = req.query.filter || 'all'; // all | pending | approved | no-audio
-
+      const type   = req.query.type || 'all'; // all | word | phrase
+ 
       const from = (page - 1) * limit;
       const to   = from + limit - 1;
-
+ 
       let query = supabase
         .from('words')
         .select('*', { count: 'exact' })
         .order('created_at', { ascending: false })
         .range(from, to);
-
+ 
       // Apply status filter
       if (filter === 'pending')  query = query.eq('status', 'pending');
       if (filter === 'approved') query = query.eq('status', 'approved');
       if (filter === 'no-audio') query = query.is('audio_url', null);
-
+ 
+      // Apply type filter (word vs phrase)
+      if (type === 'phrase') {
+        query = query.in('category', ['Phrase', 'Bible']);
+      } else if (type === 'word') {
+        query = query.neq('category', 'Phrase').neq('category', 'Bible');
+      }
+ 
       // Apply text search
       if (q) {
         query = query.or(`french.ilike.%${q}%,fon.ilike.%${q}%`);
       }
-
+ 
       const { data, error, count } = await query;
       if (error) throw error;
 

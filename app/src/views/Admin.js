@@ -18,6 +18,7 @@ export default {
       libPage: 1,
       libLimit: 50,
       libFilter: 'all',
+      libType: 'all', // all | word | phrase
       libSearch: '',
       libSearchDebounce: null,
       libLoading: false,
@@ -47,6 +48,7 @@ export default {
       if (tab === 'audio-studio' && this.studioWords.length === 0) this.fetchStudioWords();
     },
     libFilter() { this.libPage = 1; this.fetchLibrary(); },
+    libType() { this.libPage = 1; this.fetchLibrary(); },
     libSearch() {
       clearTimeout(this.libSearchDebounce);
       this.libSearchDebounce = setTimeout(() => { this.libPage = 1; this.fetchLibrary(); }, 400);
@@ -65,6 +67,7 @@ export default {
           page: this.libPage,
           limit: this.libLimit,
           filter: this.libFilter,
+          type: this.libType,
           q: this.libSearch
         });
         const res = await axios.get(`${API}/admin/all?${params}`);
@@ -240,16 +243,26 @@ export default {
       <div v-if="activeTab === 'library'">
 
         <!-- Toolbar -->
-        <div class="library-toolbar glass-card" style="border-radius:20px;padding:16px 20px;margin-bottom:24px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-          <div class="filter-chips" style="display:flex;gap:8px;flex-wrap:wrap;flex:1;">
-            <button @click="libFilter='all'"      :class="{'chip-active':libFilter==='all'}"      class="filter-chip">Tous</button>
-            <button @click="libFilter='pending'"  :class="{'chip-active':libFilter==='pending'}"  class="filter-chip">En attente <span class="chip-badge">{{ pendingCount }}</span></button>
-            <button @click="libFilter='approved'" :class="{'chip-active':libFilter==='approved'}" class="filter-chip">Approuvés</button>
-            <button @click="libFilter='no-audio'" :class="{'chip-active':libFilter==='no-audio'}" class="filter-chip">Sans audio <span class="chip-badge warn">{{ noAudioCount }}</span></button>
+        <div class="library-toolbar glass-card" style="border-radius:20px;padding:20px;margin-bottom:24px;display:flex;flex-direction:column;gap:16px;">
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;width:100%;">
+            <div class="filter-chips" style="display:flex;gap:8px;flex-wrap:wrap;flex:1;">
+              <button @click="libFilter='all'"      :class="{'chip-active':libFilter==='all'}"      class="filter-chip">Tous les états</button>
+              <button @click="libFilter='pending'"  :class="{'chip-active':libFilter==='pending'}"  class="filter-chip">En attente <span class="chip-badge">{{ pendingCount }}</span></button>
+              <button @click="libFilter='approved'" :class="{'chip-active':libFilter==='approved'}" class="filter-chip">Approuvés</button>
+              <button @click="libFilter='no-audio'" :class="{'chip-active':libFilter==='no-audio'}" class="filter-chip">Sans audio <span class="chip-badge warn">{{ noAudioCount }}</span></button>
+            </div>
+            <div class="admin-search-wrap" style="min-width:220px;">
+              <lucide-icon name="search" className="search-icon" />
+              <input v-model="libSearch" placeholder="Rechercher..." class="admin-search-input" />
+            </div>
           </div>
-          <div class="admin-search-wrap" style="min-width:220px;">
-            <lucide-icon name="search" className="search-icon" />
-            <input v-model="libSearch" placeholder="Rechercher..." class="admin-search-input" />
+          <div style="display:flex;align-items:center;gap:12px;border-top:1px solid rgba(255,255,255,0.05);padding-top:12px;flex-wrap:wrap;">
+            <span style="font-size:0.85rem;opacity:0.6;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-color);">Filtrer par type :</span>
+            <div class="filter-chips" style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button @click="libType='all'"     :class="{'chip-active':libType==='all'}"     class="filter-chip mini" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 10px;">Tous (Mots &amp; Phrases)</button>
+              <button @click="libType='word'"    :class="{'chip-active':libType==='word'}"    class="filter-chip mini" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 10px;">Mots uniquement</button>
+              <button @click="libType='phrase'"  :class="{'chip-active':libType==='phrase'}"  class="filter-chip mini" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 10px;">Phrases uniquement</button>
+            </div>
           </div>
         </div>
 
@@ -266,6 +279,9 @@ export default {
               <span class="ref-tag">
                 #{{ w.id }}
                 <span class="status-badge" :class="w.status">{{ w.status }}</span>
+                <span class="category-badge" style="background: rgba(255,107,53,0.15); border: 1px solid rgba(255,107,53,0.3); padding: 2px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; margin-left: 6px; text-transform: uppercase; color: var(--primary);">
+                  {{ w.category === 'Phrase' ? 'Phrase' : (w.category === 'Bible' ? 'Bible' : 'Mot') }}
+                </span>
                 <span v-if="!w.audio_url" class="no-audio-badge">🔇 sans audio</span>
               </span>
               <div class="quick-actions">
@@ -288,10 +304,21 @@ export default {
                 </div>
               </div>
 
-              <div class="f-group mt-15">
-                <label>Phonétique</label>
-                <input v-if="editingId===w.id" v-model="editForm.phonetic" class="mod-input" />
-                <div v-else class="mod-text">{{ w.phonetic || '--' }}</div>
+              <div class="field-pair mt-15">
+                <div class="f-group">
+                  <label>Phonétique</label>
+                  <input v-if="editingId===w.id" v-model="editForm.phonetic" class="mod-input" />
+                  <div v-else class="mod-text">{{ w.phonetic || '--' }}</div>
+                </div>
+                <div class="f-group">
+                  <label>Catégorie</label>
+                  <select v-if="editingId===w.id" v-model="editForm.category" class="mod-input" style="height: 51px; -webkit-appearance: none; -moz-appearance: none; appearance: none; background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23ffffff%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E'); background-repeat: no-repeat; background-position: right 18px top 50%; background-size: 12px auto; padding-right: 38px; cursor: pointer;">
+                    <option value="Mot" style="background:#14182d; color:#fff;">Mot</option>
+                    <option value="Phrase" style="background:#14182d; color:#fff;">Phrase</option>
+                    <option value="Bible" style="background:#14182d; color:#fff;">Bible</option>
+                  </select>
+                  <div v-else class="mod-text" style="text-transform: capitalize;">{{ w.category || 'Mot' }}</div>
+                </div>
               </div>
 
               <div class="f-group mt-15">
