@@ -221,26 +221,8 @@ export default {
     },
 
 
-      if (!confirm("⚠️ ATTENTION : Vous êtes sur le point de supprimer tous les pronoms personnels de la base de données.\n\nCette action est irréversible !\n\nVoulez-vous continuer ?")) return;
 
-      this.libLoading = true;
-      try {
-        const res = await axios.post(`${API}/admin/bulk-delete-pronouns`);
-        if (res.data.success) {
-          alert(`✅ Succès : ${res.data.deleted || 0} pronoms supprimés.`);
-          this.libPage = 1;
-          this.fetchLibrary();
-          this.$emit('refresh');
-        } else {
-          alert(res.data.message || "Une erreur est survenue.");
-        }
-      } catch (err) {
-        console.error(err);
-        alert("Erreur lors de la suppression des pronoms.");
-      } finally {
-        this.libLoading = false;
-      }
-    },
+
 // ── Audio Studio ─────────────────────────────────────────────
     async fetchStudioWords() {
       this.studioLoading = true; this.studioError = null;
