@@ -122,12 +122,22 @@ html { font-size: 14px; }
 html {
   overflow-x: hidden;
   overscroll-behavior-y: none;
+  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;  /* IE and Edge */
+}
+html::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
 }
 body {
   overflow-x: hidden;
   max-width: 100vw;
   width: 100%;
   overscroll-behavior-y: none;
+  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;  /* IE and Edge */
+}
+body::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
 }
 body { background: var(--bg); color: var(--text); min-height: 100vh; perspective: 1000px; }
 button:focus, a:focus, input:focus, select:focus, textarea:focus {
