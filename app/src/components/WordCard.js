@@ -224,35 +224,7 @@ export default {
         }
       });
     },
-      this.editForm = {
-        french: this.word.french || '',
-        fon: this.word.fon || '',
-        phonetic: this.word.phonetic || '',
-        category: this.word.category || 'Mot',
-        example: this.word.example || ''
-      };
-      this.isEditing = true;
-    },
-    cancelEdit() {
-      this.isEditing = false;
-    },
-    saveEdit() {
-      this.isSaving = true;
-      this.$emit('updateWord', {
-        ...this.word,
-        french: this.editForm.french,
-        fon: this.editForm.fon,
-        phonetic: this.editForm.phonetic,
-        category: this.editForm.category,
-        example: this.editForm.example,
-        onComplete: (success = true) => {
-          this.isSaving = false;
-          if (success) {
-            this.isEditing = false;
-          }
-        }
-      });
-    },
+
     deleteWord() {
       this.$emit('deleteWord', this.word.id);
     },
