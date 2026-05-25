@@ -42,6 +42,16 @@ export default {
         <div style="display: flex; flex-direction: column; gap: 15px;">
           
           <div class="f-group">
+            <label style="display: block; font-size: 0.75rem; font-weight: bold; text-transform: uppercase; opacity: 0.6; margin-bottom: 6px; letter-spacing: 0.5px;">Audio du Mot</label>
+            <audio-recorder @recorded="audioBlob = $event" />
+          </div>
+
+          <div class="f-group" v-if="editForm.category === 'Phrase' || editForm.category === 'Bible'">
+            <label style="display: block; font-size: 0.75rem; font-weight: bold; text-transform: uppercase; opacity: 0.6; margin-bottom: 6px; letter-spacing: 0.5px;">Audio de l'Exemple / Phrase</label>
+            <audio-recorder @recorded="exampleAudioBlob = $event" />
+          </div>
+
+          <div class="f-group">
             <label style="display: block; font-size: 0.75rem; font-weight: bold; text-transform: uppercase; opacity: 0.6; margin-bottom: 6px; letter-spacing: 0.5px;">Mot / Phrase en Fon</label>
             <textarea v-if="word.category === 'Phrase' || word.category === 'Bible' || editForm.fon.length > 40" v-model="editForm.fon" class="mod-textarea font-fon" style="min-height: 80px;"></textarea>
             <input v-else v-model="editForm.fon" class="mod-input font-fon" />
@@ -173,6 +183,47 @@ export default {
   `,
   methods: {
     startEdit() {
+      this.editForm = {
+        french: this.word.french || '',
+        fon: this.word.fon || '',
+        phonetic: this.word.phonetic || '',
+        category: this.word.category || 'Mot',
+        example: this.word.example || ''
+      };
+      // New audio blobs for admin editing
+      this.audioBlob = null;
+      this.exampleAudioBlob = null;
+      this.isEditing = true;
+    },
+    cancelEdit() {
+      this.isEditing = false;
+    },
+    async saveEdit() {
+      this.isSaving = true;
+      const toB64 = blob => new Promise((res, rej) => {
+        if (!blob) return res(null);
+        const r = new FileReader();
+        r.onloadend = () => res(r.result.split(',')[1]);
+        r.onerror = rej;
+        r.readAsDataURL(blob);
+      });
+      const audio_base64 = await toB64(this.audioBlob);
+      const example_audio_base64 = await toB64(this.exampleAudioBlob);
+      this.$emit('updateWord', {
+        ...this.word,
+        french: this.editForm.french,
+        fon: this.editForm.fon,
+        phonetic: this.editForm.phonetic,
+        category: this.editForm.category,
+        example: this.editForm.example,
+        audio_base64,
+        example_audio_base64,
+        onComplete: success => {
+          this.isSaving = false;
+          if (success) this.isEditing = false;
+        }
+      });
+    },
       this.editForm = {
         french: this.word.french || '',
         fon: this.word.fon || '',

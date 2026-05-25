@@ -586,7 +586,7 @@ export default {
           </div>
 
           <!-- Studio card -->
-          <div class="studio-card glass-card scale-in">
+          <div class="studio-card glass-card scale-in" :key="studioCurrentWord.id">
             <div class="word-display-box" style="text-align:center;padding:40px 40px 30px;border-bottom:1px solid rgba(255,255,255,0.07);">
               <div class="fon-label font-fon" style="font-size:3.5rem;font-weight:900;color:white;line-height:1.2;margin-bottom:12px;">
                 {{ studioWords[studioIndex].fon }}

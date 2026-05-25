@@ -579,7 +579,8 @@ module.exports = async (req, res) => {
     }
 
     // Updated studio-list: fetch words without audio, then filter out low-quality entries (e.g., single-letter Fon or bible source)
-if (action === 'studio-list') {
+// Updated studio-list: fetch words without audio, then filter out low-quality entries (e.g., single-letter Fon or missing French)
+
   // Obtenir le nombre total de mots sans audio (toutes catégories)
   const { count, error: countErr } = await supabase
     .from('words')
@@ -588,7 +589,7 @@ if (action === 'studio-list') {
 
   if (countErr) throw countErr;
 
-  // Obtenir les 20 premiers mots sans audio (Priorité au Vocabulaire)
+  // Obtenir les 20 premiers mots sans audio (Priorité au Vocabulaire, puis alphabétique)
   const { data, error } = await supabase
     .from('words')
     .select('*')
@@ -596,20 +597,24 @@ if (action === 'studio-list') {
     .neq('source', 'bible_alignment') // Exclure les entrées issues de l'alignement biblique
     .order('category', { ascending: false }) // 'Vocabulaire' avant 'Phrase' et 'Bible'
     .order('french', { ascending: true })
+    .order('id', { ascending: true }) // deterministic ordering
     .limit(20);
 
   if (error) throw error;
 
-  // Filtrer les entrées où le champ Fon est trop court (moins de 2 caractères)
+  // Filtrer les entrées où le champ Fon est trop court ou le français est vide
   const filtered = (data || []).filter(w => {
     const fon = (w.fon || '').trim();
-    return fon.length > 1;
+    const french = (w.french || '').trim();
+    return fon.length > 1 && french.length > 0;
   });
 
   return res.status(200).json({
     words: filtered,
     totalRemaining: count || 0
   });
+}
+// Duplicate studio-list block removed
 }
 
 // New bulk deletion actions for administrative cleanup
