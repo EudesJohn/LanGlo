@@ -198,8 +198,50 @@ export default {
         this.libLoading = false;
       }
     },
+    async confirmDeletePronouns() {
+      if (!confirm("⚠️ ATTENTION : Vous êtes sur le point de supprimer tous les pronoms personnels de la base de données.\n\nCette action est irréversible !\n\nVoulez-vous continuer ?")) return;
 
-    // ── Audio Studio ─────────────────────────────────────────────
+      this.libLoading = true;
+      try {
+        const res = await axios.post(`${API}/admin/bulk-delete-pronouns`);
+        if (res.data.success) {
+          alert(`✅ Succès : ${res.data.deleted || 0} pronoms supprimés.`);
+          this.libPage = 1;
+          this.fetchLibrary();
+          this.$emit('refresh');
+        } else {
+          alert(res.data.message || "Une erreur est survenue.");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Erreur lors de la suppression des pronoms.");
+      } finally {
+        this.libLoading = false;
+      }
+    },
+
+
+      if (!confirm("⚠️ ATTENTION : Vous êtes sur le point de supprimer tous les pronoms personnels de la base de données.\n\nCette action est irréversible !\n\nVoulez-vous continuer ?")) return;
+
+      this.libLoading = true;
+      try {
+        const res = await axios.post(`${API}/admin/bulk-delete-pronouns`);
+        if (res.data.success) {
+          alert(`✅ Succès : ${res.data.deleted || 0} pronoms supprimés.`);
+          this.libPage = 1;
+          this.fetchLibrary();
+          this.$emit('refresh');
+        } else {
+          alert(res.data.message || "Une erreur est survenue.");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Erreur lors de la suppression des pronoms.");
+      } finally {
+        this.libLoading = false;
+      }
+    },
+// ── Audio Studio ─────────────────────────────────────────────
     async fetchStudioWords() {
       this.studioLoading = true; this.studioError = null;
       try {
@@ -422,6 +464,16 @@ export default {
             >
               <lucide-icon name="trash-2" :size="14" />
               <span>Nettoyer les noms bibliques</span>
+            </button>
+            <button 
+              @click="confirmDeletePronouns" 
+              class="btn-delete-pronouns"
+              style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.25); color: #ef4444; padding: 8px 16px; border-radius: 10px; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px;"
+              onmouseover="this.style.background='rgba(239, 68, 68, 0.22)'; this.style.borderColor='rgba(239, 68, 68, 0.5)';"
+              onmouseout="this.style.background='rgba(239, 68, 68, 0.12)'; this.style.borderColor='rgba(239, 68, 68, 0.25)';"
+            >
+              <lucide-icon name="trash-2" :size="14" />
+              <span>Nettoyer les pronoms personnels</span>
             </button>
           </div>
         </div>
