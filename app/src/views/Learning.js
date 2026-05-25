@@ -1416,7 +1416,7 @@ export default {
                 <span style="color: white; font-weight: 600; font-size: 0.9rem;">Le Cou</span>
               </div>
               <div style="background: rgba(0,0,0,0.15); padding: 15px; border-radius: 14px; text-align: center; border: 1px solid rgba(255,255,255,0.03);">
-                <span style="font-size: 0.75rem; opacity: 0.5; text-transform: uppercase;">Ton Bas (`)</span> <br>
+                <span style="font-size: 0.75rem; opacity: 0.5; text-transform: uppercase;">Ton Bas (&#96;)</span> <br>
                 <strong class="font-fon" style="color: var(--primary); font-size: 1.4rem;">kɔ̀</strong> <br>
                 <span style="color: white; font-weight: 600; font-size: 0.9rem;">La Boue / Le Sol</span>
               </div>
