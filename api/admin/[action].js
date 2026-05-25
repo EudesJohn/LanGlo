@@ -114,8 +114,42 @@ module.exports = async (req, res) => {
         message: `Le mot ('${currentWord.french}' - '${currentWord.fon}') a été approuvé et publié !`,
         data 
       });
-    } 
-    
+    }
+
+    if (action === 'approve-all') {
+      const { data: pendingList, error: fetchErr } = await supabase
+        .from('words')
+        .select('id, french, fon')
+        .eq('status', 'pending');
+
+      if (fetchErr) throw fetchErr;
+
+      if (!pendingList || pendingList.length === 0) {
+        return res.status(200).json({
+          success: true,
+          count: 0,
+          message: "Aucun mot en attente d'approbation."
+        });
+      }
+
+      const { error: updateErr } = await supabase
+        .from('words')
+        .update({ status: 'approved' })
+        .eq('status', 'pending');
+
+      if (updateErr) throw updateErr;
+
+      for (const w of pendingList) {
+        await logActivity(adminUser, 'approve', w.id, w.french, w.fon);
+      }
+
+      return res.status(200).json({
+        success: true,
+        count: pendingList.length,
+        message: `${pendingList.length} mots ont été approuvés avec succès.`
+      });
+    }
+
     if (action === 'delete') {
       const { id } = req.body;
 

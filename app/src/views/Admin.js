@@ -21,7 +21,8 @@ export default {
       libType: 'all', // all | word | phrase
       libSearch: '',
       libSearchDebounce: null,
-      libLoading: false,
+      libLoading: true,
+      libHasLoaded: false,
       // Edition
       editingId: null,
       editForm: { french: '', fon: '', phonetic: '', example: '', wordAudioBlob: null, phraseAudioBlob: null },
@@ -88,6 +89,7 @@ export default {
         this.libWords     = res.data.data || [];
         this.libTotal     = res.data.total || 0;
         this.libTotalPages = res.data.totalPages || 1;
+        this.libHasLoaded = true;
       } catch (e) {
         console.error('Library fetch error:', e);
       } finally {
@@ -105,6 +107,28 @@ export default {
       } catch(e) {}
     },
 
+    async approveAllPending() {
+      if (this.pendingCount === 0) return;
+      if (!confirm(`Voulez-vous vraiment approuver et publier l'ensemble des ${this.pendingCount} mots en attente ?`)) return;
+      
+      this.libLoading = true;
+      try {
+        const res = await axios.post(`${API}/admin/approve-all`);
+        if (res.data.success) {
+          alert(`✅ ${res.data.message || 'Mots approuvés avec succès.'}`);
+          this.$emit('refresh');
+          this.fetchLibrary();
+          this.fetchActivity();
+        } else {
+          alert(res.data.message || "Une erreur est survenue lors de l'approbation groupée.");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Erreur lors de l'approbation groupée.");
+      } finally {
+        this.libLoading = false;
+      }
+    },
     approveWord(id) {
       if (this.processingIds.includes(id)) return;
       this.processingIds.push(id);
@@ -379,9 +403,20 @@ export default {
           </div>
           <div style="display:flex;align-items:center;justify-content:flex-end;border-top:1px solid rgba(255,255,255,0.05);padding-top:12px;flex-wrap:wrap;gap:12px;width:100%;">
             <button 
+              v-if="pendingCount > 0"
+              @click="approveAllPending" 
+              class="btn-approve-all"
+              style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none; color: white; padding: 8px 16px; border-radius: 10px; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);"
+              onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 16px rgba(16, 185, 129, 0.35)';"
+              onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(16, 185, 129, 0.2)';"
+            >
+              <lucide-icon name="check-circle" :size="15" />
+              <span>Approuver les {{ pendingCount }} mots en attente</span>
+            </button>
+            <button 
               @click="confirmDeleteBibleNames" 
               class="btn-delete-bible"
-              style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.25); color: #ef4444; padding: 7px 14px; border-radius: 10px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px;"
+              style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.25); color: #ef4444; padding: 8px 16px; border-radius: 10px; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px;"
               onmouseover="this.style.background='rgba(239, 68, 68, 0.22)'; this.style.borderColor='rgba(239, 68, 68, 0.5)';"
               onmouseout="this.style.background='rgba(239, 68, 68, 0.12)'; this.style.borderColor='rgba(239, 68, 68, 0.25)';"
             >
@@ -494,7 +529,7 @@ export default {
         </div>
 
         <!-- Empty state -->
-        <div v-if="!libLoading && libWords.length === 0" class="empty-state-v3 zoom-in">
+        <div v-if="!libLoading && libHasLoaded && libWords.length === 0" class="empty-state-v3 zoom-in">
           <div class="empty-icon"><lucide-icon name="search-x" :size="64" /></div>
           <h3>Aucun mot trouvé</h3>
           <p>{{ libSearch ? 'Aucun résultat pour "' + libSearch + '"' : 'Cette section est vide.' }}</p>
@@ -578,7 +613,7 @@ export default {
               </div>
             </div>
 
-            <div style="padding:0 40px 40px;display:flex;gap:16px;align-items:center;">
+            <div class="studio-footer-actions" style="padding: 0 40px 40px; border-top: none; align-items: center;">
               <button @click="studioDelete" class="btn-delete" :disabled="studioSubmitting" style="margin-right: auto;">
                 <lucide-icon name="trash-2" /> Supprimer ce mot
               </button>
