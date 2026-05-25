@@ -209,20 +209,21 @@ export default {
       });
       const audio_base64 = await toB64(this.audioBlob);
       const example_audio_base64 = await toB64(this.exampleAudioBlob);
-      this.$emit('updateWord', {
-        ...this.word,
-        french: this.editForm.french,
-        fon: this.editForm.fon,
-        phonetic: this.editForm.phonetic,
-        category: this.editForm.category,
-        example: this.editForm.example,
-        audio_base64,
-        example_audio_base64,
-        onComplete: success => {
+        const payload = Object.assign({}, this.word, {
+          french: this.editForm.french,
+          fon: this.editForm.fon,
+          phonetic: this.editForm.phonetic,
+          category: this.editForm.category,
+          example: this.editForm.example,
+          audio_base64,
+          example_audio_base64
+        });
+        payload.onComplete = success => {
           this.isSaving = false;
           if (success) this.isEditing = false;
-        }
-      });
+        };
+        this.$emit('updateWord', payload);
+
     },
 
     deleteWord() {
