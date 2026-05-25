@@ -228,7 +228,7 @@ module.exports = async (req, res) => {
         await logActivity(adminUser, 'audio_added', id, french, fon);
       }
 
-      return res.status(200).json({ success: true, data });
+      return res.status(200).json({ success: true, data, audio_url: new_audio_url || null, example_audio_url: new_example_audio_url || null });
     }
 
     if (action === 'my-activity') {

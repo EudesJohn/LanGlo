@@ -525,18 +525,20 @@ export default {
         const { onComplete, ...wordPayload } = updatedWord;
         const res = await axios.post(`${API}/admin/update`, wordPayload);
         if (res.data && res.data.success) {
-          notify("Mot / Phrase mis à jour avec succès !");
+          const hasAudio = !!wordPayload.audio_base64;
+          notify(hasAudio ? "🎙️ Audio enregistré avec succès !" : "Mot / Phrase mis à jour avec succès !");
           
           const updateItemInList = (list) => {
             const index = list.findIndex(w => w.id === wordPayload.id);
             if (index !== -1) {
               const existing = list[index];
-              list[index] = {
-                ...existing,
-                ...wordPayload,
+              const merged = Object.assign({}, existing, wordPayload, {
                 fon_highlighted: null,
                 french_highlighted: null
-              };
+              });
+              // If server returned a new audio_url, update it reactively
+              if (res.data.audio_url) merged.audio_url = res.data.audio_url;
+              list[index] = merged;
             }
           };
           
@@ -558,6 +560,7 @@ export default {
         const errMsg = e.response?.data?.message || "Erreur lors de la mise à jour";
         notify(errMsg, "error");
         if (updatedWord.onComplete) updatedWord.onComplete(false);
+
       }
     };
 

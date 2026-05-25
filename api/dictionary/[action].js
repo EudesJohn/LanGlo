@@ -579,15 +579,28 @@ module.exports = async (req, res) => {
     }
 
     if (action === 'studio-list') {
-      // Obtenir le nombre total de mots sans audio (toutes catégories)
+      // 1. Récupérer toutes les combinaisons français/fon qui ont déjà un audio (seulement 81 actuellement)
+      const { data: audioWords, error: audioErr } = await supabase
+        .from('words')
+        .select('french, fon')
+        .not('audio_url', 'is', null);
+
+      if (audioErr) throw audioErr;
+
+      const audioKeys = new Set(
+        (audioWords || []).map(w => `${(w.french || '').toLowerCase().trim()}|${(w.fon || '').toLowerCase().trim()}`)
+      );
+
+      // 2. Obtenir le nombre total de mots sans audio (hors alignement biblique)
       const { count, error: countErr } = await supabase
         .from('words')
         .select('*', { count: 'exact', head: true })
-        .is('audio_url', null);
+        .is('audio_url', null)
+        .neq('source', 'bible_alignment');
 
       if (countErr) throw countErr;
 
-      // Obtenir les 20 premiers mots sans audio (Priorité au Vocabulaire, puis alphabétique)
+      // 3. Obtenir un lot de mots sans audio (100 mots pour compenser les doublons potentiels)
       const { data, error } = await supabase
         .from('words')
         .select('*')
@@ -596,20 +609,46 @@ module.exports = async (req, res) => {
         .order('category', { ascending: false }) // 'Vocabulaire' avant 'Phrase' et 'Bible'
         .order('french', { ascending: true })
         .order('id', { ascending: true }) // deterministic ordering
-        .limit(20);
+        .limit(100);
 
       if (error) throw error;
 
-      // Filtrer les entrées où le champ Fon est trop court ou le français est vide
-      const filtered = (data || []).filter(w => {
-        const fon = (w.fon || '').trim();
-        const french = (w.french || '').trim();
-        return fon.length > 1 && french.length > 0;
-      });
+      // Pronoms personnels à exclure du studio (inutiles à enregistrer)
+      const PRONOUNS = new Set(['je','tu','il','elle','nous','vous','ils','elles','on','me','te','se','lui','y','en']);
+
+      // 4. Filtrer les entrées où le champ Fon est trop court ou le français est vide,
+      // tout en éliminant les doublons (intra-lot et ceux possédant déjà un audio ailleurs)
+      const seenInBatch = new Set();
+      const filtered = (data || [])
+        .filter(w => {
+          const fon = (w.fon || '').trim();
+          const french = (w.french || '').trim();
+          
+          // Exclure Fon trop court (1 lettre ou ponctuation seule)
+          if (fon.length <= 1 || french.length === 0) return false;
+          // Exclure mots français d'une seule lettre (A, B, etc.)
+          if (french.length <= 1) return false;
+          // Exclure les pronoms personnels
+          if (PRONOUNS.has(french.toLowerCase())) return false;
+          // Exclure si le Fon ne contient que des caractères spéciaux/ponctuation
+          if (!/[a-zA-Zɖɛɔáàâéèêíìóòúùǐǒǔ]/i.test(fon)) return false;
+
+          const key = `${french.toLowerCase()}|${fon.toLowerCase()}`;
+          
+          // Éliminer s'il y a déjà un enregistrement audio pour ce couple français/fon
+          if (audioKeys.has(key)) return false;
+          
+          // Éliminer les doublons de mots identiques à l'intérieur du lot fetched
+          if (seenInBatch.has(key)) return false;
+          
+          seenInBatch.add(key);
+          return true;
+        })
+        .slice(0, 20); // Garder les 20 premiers uniques
 
       return res.status(200).json({
         words: filtered,
-        totalRemaining: count || 0
+        totalRemaining: Math.max(0, (count || 0) - audioKeys.size)
       });
     }
 

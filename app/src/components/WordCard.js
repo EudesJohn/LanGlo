@@ -1,14 +1,18 @@
 // app/src/components/WordCard.js
 import LucideIcon from './LucideIcon.js'
+import AudioRecorder from './AudioRecorder.js'
 
 export default {
   props: ['word', 'query', 'favorites', 'isAdmin'],
   emits: ['navigate', 'updateWord', 'deleteWord'],
-  components: { LucideIcon },
+  components: { LucideIcon, AudioRecorder },
   data() {
     return {
       isEditing: false,
       isSaving: false,
+      isQuickAudio: false,
+      isQuickAudioSaving: false,
+      quickAudioBlob: null,
       editForm: {
         french: '',
         fon: '',
@@ -176,6 +180,38 @@ export default {
               </button>
             </div>
           </div>
+
+          <!-- ADMIN: Quick Audio Recording -->
+          <div v-if="isAdmin" style="margin-top: 18px; border-top: 1px solid rgba(255,255,255,0.07); padding-top: 16px;">
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+              <button
+                @click="isQuickAudio = !isQuickAudio; quickAudioBlob = null"
+                style="display: flex; align-items: center; gap: 7px; background: rgba(255,107,53,0.12); border: 1px solid rgba(255,107,53,0.3); color: var(--primary); padding: 8px 14px; border-radius: 10px; font-size: 0.82rem; font-weight: 700; cursor: pointer; transition: all 0.2s;"
+              >
+                <lucide-icon name="mic" :size="14" />
+                {{ word.audio_url ? '🔄 Remplacer audio' : '🎙️ Ajouter audio' }}
+              </button>
+            </div>
+
+            <div v-if="isQuickAudio" style="margin-top: 14px; background: rgba(0,0,0,0.2); border-radius: 14px; padding: 18px; border: 1px solid rgba(255,107,53,0.2);">
+              <p style="font-size: 0.8rem; opacity: 0.7; margin: 0 0 12px;">Prononcez <strong style="color: var(--primary);">{{ word.fon }}</strong> ({{ word.french }}) distinctement.</p>
+              <audio-recorder ref="quickRecorder" @recorded="quickAudioBlob = $event" />
+              <div style="display: flex; gap: 10px; margin-top: 14px;">
+                <button
+                  @click="saveQuickAudio"
+                  :disabled="!quickAudioBlob || isQuickAudioSaving"
+                  style="flex: 1; background: linear-gradient(135deg, var(--primary), #e55a2b); border: none; color: white; padding: 10px 16px; border-radius: 10px; font-size: 0.85rem; font-weight: 700; cursor: pointer; opacity: 1; transition: opacity 0.2s;"
+                  :style="(!quickAudioBlob || isQuickAudioSaving) ? 'opacity:0.4; cursor: not-allowed;' : ''"
+                >
+                  <span v-if="isQuickAudioSaving">Sauvegarde...</span>
+                  <span v-else>✅ Sauvegarder l'audio</span>
+                </button>
+                <button @click="isQuickAudio = false; quickAudioBlob = null" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.6); padding: 10px 14px; border-radius: 10px; font-size: 0.85rem; cursor: pointer;">
+                  Annuler
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
 
       </div>
@@ -224,6 +260,40 @@ export default {
         };
         this.$emit('updateWord', payload);
 
+    },
+
+    async saveQuickAudio() {
+      if (!this.quickAudioBlob || this.isQuickAudioSaving) return;
+      this.isQuickAudioSaving = true;
+      try {
+        const toB64 = blob => new Promise((res, rej) => {
+          const r = new FileReader();
+          r.onloadend = () => res(r.result.split(',')[1]);
+          r.onerror = rej;
+          r.readAsDataURL(blob);
+        });
+        const audio_base64 = await toB64(this.quickAudioBlob);
+        const payload = Object.assign({}, this.word, {
+          french: this.word.french,
+          fon: this.word.fon,
+          phonetic: this.word.phonetic,
+          category: this.word.category,
+          example: this.word.example,
+          audio_base64,
+          example_audio_base64: null
+        });
+        payload.onComplete = success => {
+          this.isQuickAudioSaving = false;
+          if (success) {
+            this.isQuickAudio = false;
+            this.quickAudioBlob = null;
+          }
+        };
+        this.$emit('updateWord', payload);
+      } catch (e) {
+        this.isQuickAudioSaving = false;
+        console.error('saveQuickAudio error:', e);
+      }
     },
 
     deleteWord() {
