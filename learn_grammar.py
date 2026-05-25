@@ -169,22 +169,46 @@ def save_patterns_to_supabase(patterns, translation_probs):
         ).execute()
         saved += len(batch)
         print(f"  -> {saved}/{len(patterns)} patterns sauvegardés...")
+
+    # Charger tous les mots existants pour éviter les doublons
+    print("Vérification des doublons dans la base...")
+    existing_words = set()
+    page = 0
+    while True:
+        result = supabase.table("words").select("french, fon").range(page * 1000, (page + 1) * 1000 - 1).execute()
+        batch = result.data
+        if not batch:
+            break
+        for row in batch:
+            fr_clean = (row.get("french") or "").lower().strip()
+            fon_clean = (row.get("fon") or "").lower().strip()
+            existing_words.add((fr_clean, fon_clean))
+        page += 1
+    print(f"  -> {len(existing_words)} mots uniques existants dans la base.")
+
     alignment_rows = []
     for fr_word, translations in list(translation_probs.items())[:5000]:
         best_fon = max(translations, key=translations.get)
         best_prob = translations[best_fon]
         if best_prob > 0.1:
-            alignment_rows.append({
-                "french": fr_word,
-                "fon": best_fon,
-                "confidence": round(best_prob, 4),
-                "source": "bible_alignment"
-            })
+            fr_clean = fr_word.lower().strip()
+            fon_clean = best_fon.lower().strip()
+            if (fr_clean, fon_clean) not in existing_words:
+                alignment_rows.append({
+                    "french": fr_word,
+                    "fon": best_fon,
+                    "confidence": round(best_prob, 4),
+                    "source": "bible_alignment"
+                })
+
+    print(f"Sauvegarde de {len(alignment_rows)} nouveaux alignements de mots...")
+    saved_alignments = 0
     for i in range(0, len(alignment_rows), batch_size):
         batch = alignment_rows[i:i + batch_size]
-        supabase.table("words").upsert(
-            batch, on_conflict="french,fon"
-        ).execute()
+        supabase.table("words").insert(batch).execute()
+        saved_alignments += len(batch)
+        print(f"  -> {saved_alignments}/{len(alignment_rows)} nouveaux alignements sauvegardés...")
+
     print(f"Terminé ! {len(patterns)} patterns + {len(alignment_rows)} alignements sauvegardés\n")
 
 if __name__ == "__main__":
