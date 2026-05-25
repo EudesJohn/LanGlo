@@ -1,5 +1,6 @@
 const supabase = require('../lib/supabase');
 const { verifyAdmin } = require('../lib/auth');
+const { logActivity } = require('../lib/activity');
 
 module.exports = async (req, res) => {
   const action = req.params?.action || req.query?.action || req.url.split('/').pop().split('?')[0];
@@ -106,6 +107,8 @@ module.exports = async (req, res) => {
         .eq('id', id);
       if (error) throw error;
       
+      await logActivity(adminUser, 'approve', id, currentWord.french, currentWord.fon);
+
       return res.status(200).json({ 
         success: true, 
         message: `Le mot ('${currentWord.french}' - '${currentWord.fon}') a été approuvé et publié !`,
@@ -134,6 +137,8 @@ module.exports = async (req, res) => {
         .eq('id', id);
       if (error) throw error;
       
+      await logActivity(adminUser, 'delete', id, currentWord.french, currentWord.fon);
+
       return res.status(200).json({ 
         success: true, 
         message: `Le mot ('${currentWord.french}' - '${currentWord.fon}') a été supprimé définitivement.` 
@@ -182,7 +187,46 @@ module.exports = async (req, res) => {
         .update(updatePayload)
         .eq('id', id);
       if (error) throw error;
+
+      await logActivity(adminUser, 'update', id, french, fon);
+      if (new_audio_url || new_example_audio_url) {
+        await logActivity(adminUser, 'audio_added', id, french, fon);
+      }
+
       return res.status(200).json({ success: true, data });
+    }
+
+    if (action === 'my-activity') {
+      const { data: activityList, error: actError } = await supabase
+        .from('admin_activity')
+        .select('*')
+        .eq('admin_id', adminUser.id)
+        .order('created_at', { ascending: false });
+
+      if (actError) throw actError;
+
+      let added = 0;
+      let modified = 0;
+      let deleted = 0;
+      let audio = 0;
+
+      (activityList || []).forEach(row => {
+        if (row.action_type === 'add' || row.action_type === 'approve') {
+          added++;
+        } else if (row.action_type === 'update') {
+          modified++;
+        } else if (row.action_type === 'delete') {
+          deleted++;
+        } else if (row.action_type === 'audio_added') {
+          audio++;
+        }
+      });
+
+      return res.status(200).json({
+        success: true,
+        stats: { added, modified, deleted, audio },
+        history: (activityList || []).slice(0, 50)
+      });
     }
 
     if (action === 'delete-biblical-names') {

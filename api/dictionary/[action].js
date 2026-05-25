@@ -1,4 +1,6 @@
 const supabase = require('../lib/supabase');
+const { verifyAdmin } = require('../lib/auth');
+const { logActivity } = require('../lib/activity');
 
 function applyFonGrammarRules(wordByWordArray) {
   const POSSESSIVES_MAP = {
@@ -257,6 +259,15 @@ module.exports = async (req, res) => {
       if (error) {
         console.error('DB Insert Error:', error.message);
         throw new Error(`Base de données : ${error.message}`);
+      }
+
+      // Enregistrer l'activité si c'est un admin qui a ajouté le mot
+      const adminUser = await verifyAdmin(req).catch(() => null);
+      if (adminUser && data && data[0]) {
+        await logActivity(adminUser, 'add', data[0].id, frenchWord, fonWord);
+        if (audio_url || example_audio_url) {
+          await logActivity(adminUser, 'audio_added', data[0].id, frenchWord, fonWord);
+        }
       }
 
       return res.status(200).json({ success: true, data: data ? data[0] : null });
@@ -555,9 +566,9 @@ module.exports = async (req, res) => {
     // ============================================================
     // NOUVELLES ACTIONS POUR LE STUDIO D'ENREGISTREMENT
     // ============================================================
+    let adminUser = null;
     if (action === 'studio-list' || action === 'studio-update') {
-      const { verifyAdmin } = require('../lib/auth');
-      const adminUser = await verifyAdmin(req);
+      adminUser = await verifyAdmin(req);
       if (!adminUser) {
         return res.status(403).json({
           success: false,
@@ -642,6 +653,20 @@ module.exports = async (req, res) => {
         return res.status(500).json({ success: false, message: updateError.message });
       }
 
+      // Enregistrer l'activité pour l'audio ajouté
+      try {
+        const { data: wordDetails } = await supabase
+          .from('words')
+          .select('french, fon')
+          .eq('id', id)
+          .maybeSingle();
+        if (wordDetails) {
+          await logActivity(adminUser, 'audio_added', id, wordDetails.french, wordDetails.fon);
+        }
+      } catch (err) {
+        console.error("Failed to log activity in studio-update:", err);
+      }
+
       return res.status(200).json({ success: true, audio_url });
     }
 
@@ -654,6 +679,26 @@ module.exports = async (req, res) => {
         return res.status(200).json(dailyWords[0]);
       }
       return res.status(200).json(null);
+    }
+
+    // ============================================================
+    // 4. TRANSLATE — Moteur IA avec grammar_patterns + mémorisation
+    // ============================================================
+    if (action === 'translate') {
+      const text = (req.query.text || req.body?.text || '').trim();
+      if (!text) {
+        return res.status(400).json({ success: false, message: 'Le paramètre "text" est requis.' });
+      }
+      const { generatePhrase } = require('../../lib/generatePhrases');
+      const result = await generatePhrase(text);
+      return res.status(200).json({
+        translation: result.fon,
+        phonetic: result.phonetic || '',
+        coverage: result.confidence,
+        unknownWords: result.unknownWords,
+        audioPlaylist: result.audioPlaylist,
+        segments: result.segments,
+      });
     }
 
     return res.status(404).json({ error: `Dictionary action '${action}' not found` });

@@ -35,6 +35,11 @@ export default {
       studioAudioBlob: null,
       studioPhonetic: '',
       studioError: null,
+      // Activité
+      activityStats: { added: 0, modified: 0, deleted: 0, audio: 0 },
+      activityHistory: [],
+      activityLoading: false,
+      activityInterval: null,
     }
   },
   computed: {
@@ -46,6 +51,12 @@ export default {
     activeTab(tab) {
       if (tab === 'library' && this.libWords.length === 0) this.fetchLibrary();
       if (tab === 'audio-studio' && this.studioWords.length === 0) this.fetchStudioWords();
+      if (tab === 'activity') {
+        this.fetchActivity();
+        this.startActivityPolling();
+      } else {
+        this.stopActivityPolling();
+      }
     },
     libFilter() { this.libPage = 1; this.fetchLibrary(); },
     libType() { this.libPage = 1; this.fetchLibrary(); },
@@ -57,6 +68,9 @@ export default {
   mounted() {
     this.fetchLibrary();
     this.fetchStudioWordCount();
+  },
+  beforeUnmount() {
+    this.stopActivityPolling();
   },
   methods: {
     // ── Library ─────────────────────────────────────────────────
@@ -95,13 +109,21 @@ export default {
       if (this.processingIds.includes(id)) return;
       this.processingIds.push(id);
       this.$emit('approve', id);
-      setTimeout(() => { this.processingIds = this.processingIds.filter(x => x !== id); this.fetchLibrary(); }, 1500);
+      setTimeout(() => { 
+        this.processingIds = this.processingIds.filter(x => x !== id); 
+        this.fetchLibrary(); 
+        this.fetchActivity();
+      }, 1500);
     },
     deleteWord(id) {
       if (this.processingIds.includes(id)) return;
       this.processingIds.push(id);
       this.$emit('delete', id);
-      setTimeout(() => { this.processingIds = this.processingIds.filter(x => x !== id); this.fetchLibrary(); }, 1500);
+      setTimeout(() => { 
+        this.processingIds = this.processingIds.filter(x => x !== id); 
+        this.fetchLibrary(); 
+        this.fetchActivity();
+      }, 1500);
     },
     startEdit(word) {
       this.editingId = word.id;
@@ -119,7 +141,10 @@ export default {
       const example_audio_base64 = await toB64(this.editForm.phraseAudioBlob);
       this.$emit('updateWord', { ...this.editForm, audio_base64, example_audio_base64 });
       this.editingId = null;
-      setTimeout(() => this.fetchLibrary(), 800);
+      setTimeout(() => {
+        this.fetchLibrary();
+        this.fetchActivity();
+      }, 800);
     },
     cancelEdit() { this.editingId = null; },
     async confirmDeleteBibleNames() {
@@ -188,6 +213,7 @@ export default {
         if (result.data.success) {
           this.studioWords.splice(this.studioIndex, 1);
           this.studioTotal--;
+          this.fetchActivity();
           if (this.studioWords.length === 0 && this.studioTotal > 0) await this.fetchStudioWords();
           else { if (this.studioIndex >= this.studioWords.length) this.studioIndex = 0; this.resetStudio(); }
         } else alert(result.data.message || 'Erreur');
@@ -204,6 +230,7 @@ export default {
         if (res.data.success) {
           this.studioWords.splice(this.studioIndex, 1);
           this.studioTotal--;
+          this.fetchActivity();
           
           if (this.studioWords.length === 0 && this.studioTotal > 0) {
             await this.fetchStudioWords();
@@ -220,6 +247,64 @@ export default {
         alert('Erreur lors de la suppression.');
       } finally {
         this.studioSubmitting = false;
+      }
+    },
+    // ── Activity ────────────────────────────────────────────────
+    async fetchActivity() {
+      try {
+        const res = await axios.get(`${API}/admin/my-activity`);
+        if (res.data.success) {
+          this.activityStats = res.data.stats;
+          this.activityHistory = res.data.history;
+        }
+      } catch (e) {
+        console.error('Error fetching admin activity:', e);
+      }
+    },
+    startActivityPolling() {
+      this.stopActivityPolling();
+      this.activityInterval = setInterval(() => {
+        this.fetchActivity();
+      }, 10000);
+    },
+    stopActivityPolling() {
+      if (this.activityInterval) {
+        clearInterval(this.activityInterval);
+        this.activityInterval = null;
+      }
+    },
+    getTimelineIcon(type) {
+      if (type === 'add') return 'plus-circle';
+      if (type === 'approve') return 'check-circle';
+      if (type === 'update') return 'edit';
+      if (type === 'delete') return 'trash-2';
+      if (type === 'audio_added') return 'mic';
+      return 'info';
+    },
+    getActionLabel(type) {
+      if (type === 'add') return 'Ajout direct';
+      if (type === 'approve') return 'Approbation';
+      if (type === 'update') return 'Modification';
+      if (type === 'delete') return 'Suppression';
+      if (type === 'audio_added') return 'Audio enregistré';
+      return 'Action';
+    },
+    formatTime(dateStr) {
+      if (!dateStr) return '';
+      try {
+        const d = new Date(dateStr);
+        const now = new Date();
+        const isToday = d.toDateString() === now.toDateString();
+        const timeOptions = { hour: '2-digit', minute: '2-digit' };
+        const timeStr = d.toLocaleTimeString('fr-FR', timeOptions);
+        if (isToday) {
+          return `Aujourd'hui à ${timeStr}`;
+        }
+        const dateOptions = { day: 'numeric', month: 'short' };
+        const datePart = d.toLocaleDateString('fr-FR', dateOptions);
+        return `${datePart} à ${timeStr}`;
+      } catch (e) {
+        return dateStr;
       }
     }
   },
@@ -267,6 +352,10 @@ export default {
             <lucide-icon name="mic" />
             <span>Studio Audio</span>
             <span class="tab-count accent">{{ noAudioCount.toLocaleString() }}</span>
+          </button>
+          <button @click="activeTab = 'activity'" :class="{ active: activeTab === 'activity' }" class="main-tab-btn activity-tab">
+            <lucide-icon name="activity" />
+            <span>Mon Activité</span>
           </button>
         </div>
       </div>
@@ -509,6 +598,105 @@ export default {
             </div>
           </div>
         </div>
+      </div>
+
+      <!-- ══════════ ZONE 3 — MON ACTIVITÉ ══════════ -->
+      <div v-if="activeTab === 'activity'" class="activity-zone">
+        
+        <!-- Dashboard Stats Grid -->
+        <div class="activity-stats-grid">
+          <!-- Card: Words Added -->
+          <div class="stat-card glass-card added-card slide-up">
+            <div class="stat-icon-wrapper">
+              <lucide-icon name="plus-circle" :size="20" />
+            </div>
+            <div class="stat-details">
+              <span class="stat-card-label">Mots Ajoutés</span>
+              <span class="stat-card-value">{{ activityStats.added }}</span>
+            </div>
+            <div class="card-glow-bg"></div>
+          </div>
+
+          <!-- Card: Words Modified -->
+          <div class="stat-card glass-card modified-card slide-up" style="animation-delay: 0.1s;">
+            <div class="stat-icon-wrapper">
+              <lucide-icon name="edit" :size="20" />
+            </div>
+            <div class="stat-details">
+              <span class="stat-card-label">Modifiés</span>
+              <span class="stat-card-value">{{ activityStats.modified }}</span>
+            </div>
+            <div class="card-glow-bg"></div>
+          </div>
+
+          <!-- Card: Words Deleted -->
+          <div class="stat-card glass-card deleted-card slide-up" style="animation-delay: 0.2s;">
+            <div class="stat-icon-wrapper">
+              <lucide-icon name="trash-2" :size="20" />
+            </div>
+            <div class="stat-details">
+              <span class="stat-card-label">Supprimés</span>
+              <span class="stat-card-value">{{ activityStats.deleted }}</span>
+            </div>
+            <div class="card-glow-bg"></div>
+          </div>
+
+          <!-- Card: Audios Added -->
+          <div class="stat-card glass-card audio-card slide-up" style="animation-delay: 0.3s;">
+            <div class="stat-icon-wrapper">
+              <lucide-icon name="mic" :size="20" />
+            </div>
+            <div class="stat-details">
+              <span class="stat-card-label">Audios Ajoutés</span>
+              <span class="stat-card-value">{{ activityStats.audio }}</span>
+            </div>
+            <div class="card-glow-bg"></div>
+          </div>
+        </div>
+
+        <!-- History Timeline -->
+        <div class="timeline-section glass-card mt-24" style="padding: 24px;">
+          <div class="section-header" style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.07); padding-bottom:16px; margin-bottom:20px;">
+            <h3 style="margin:0; font-size:1.25rem; font-weight:800; color:white; display:flex; align-items:center; gap:8px;">
+              <lucide-icon name="history" /> Historique récent
+            </h3>
+            <button @click="fetchActivity" class="btn-refresh-pulse" :disabled="activityLoading" title="Actualiser">
+              <lucide-icon name="refresh-cw" :class="{spin: activityLoading}" />
+            </button>
+          </div>
+
+          <div v-if="activityLoading && activityHistory.length === 0" style="text-align:center; padding:40px;">
+            <div class="spinner"></div>
+          </div>
+
+          <div v-else-if="activityHistory.length === 0" class="empty-state-v3" style="padding:60px 20px; text-align:center;">
+            <div class="empty-icon" style="margin-bottom: 12px;"><lucide-icon name="activity" :size="48" style="opacity:0.3; margin:0 auto;" /></div>
+            <h3 style="color:white; margin-bottom:6px;">Aucune action enregistrée</h3>
+            <p style="opacity:0.6; margin:0;">Vos actions d'administration apparaîtront ici au fur et à mesure.</p>
+          </div>
+
+          <div v-else class="activity-timeline">
+            <div v-for="item in activityHistory" :key="item.id" class="timeline-item">
+              <div class="timeline-badge" :class="item.action_type">
+                <lucide-icon :name="getTimelineIcon(item.action_type)" :size="12" />
+              </div>
+              <div class="timeline-content">
+                <div class="timeline-title-row">
+                  <span class="timeline-action-text">
+                    <strong>{{ getActionLabel(item.action_type) }}</strong> : 
+                    <span class="word-highlight font-fon">{{ item.word_fon }}</span> 
+                    <span class="word-french-translation">({{ item.word_french }})</span>
+                  </span>
+                  <span class="timeline-time">{{ formatTime(item.created_at) }}</span>
+                </div>
+                <div class="timeline-details" style="font-size:0.8rem; opacity:0.5; margin-top:4px;">
+                  ID mot: #{{ item.word_id || 'N/A' }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
 
     </div>
