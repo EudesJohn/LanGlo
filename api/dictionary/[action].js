@@ -682,23 +682,24 @@ module.exports = async (req, res) => {
       return res.status(200).json(null);
     }
 
-    // ============================================================
-    // 4. TRANSLATE — Moteur IA avec grammar_patterns + mémorisation
-    // ============================================================
     if (action === 'translate') {
       const text = (req.query.text || req.body?.text || '').trim();
       if (!text) {
         return res.status(400).json({ success: false, message: 'Le paramètre "text" est requis.' });
       }
-      const { generatePhrase } = require('../../lib/generatePhrases');
-      const result = await generatePhrase(text);
+      const { translate } = require('../../lib/fonBrain');
+      const result = await translate(text);
       return res.status(200).json({
+        success: true,
         translation: result.fon,
+        fon: result.fon,
         phonetic: result.phonetic || '',
         coverage: result.confidence,
+        confidence: result.confidence,
         unknownWords: result.unknownWords,
         audioPlaylist: result.audioPlaylist,
         segments: result.segments,
+        analysis: result.analysis,
       });
     }
 
