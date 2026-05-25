@@ -591,14 +591,12 @@ module.exports = async (req, res) => {
         (audioWords || []).map(w => `${(w.french || '').toLowerCase().trim()}|${(w.fon || '').toLowerCase().trim()}`)
       );
 
-      // 2. Obtenir le nombre total de mots sans audio (hors alignement biblique et hors phrases/bibles)
+      // 2. Obtenir le nombre total de mots sans audio (hors alignement biblique)
       const { count, error: countErr } = await supabase
         .from('words')
         .select('*', { count: 'exact', head: true })
         .is('audio_url', null)
-        .neq('source', 'bible_alignment')
-        .neq('category', 'Phrase')
-        .neq('category', 'Bible');
+        .neq('source', 'bible_alignment');
 
       if (countErr) throw countErr;
 
@@ -608,8 +606,7 @@ module.exports = async (req, res) => {
         .select('*')
         .is('audio_url', null)
         .neq('source', 'bible_alignment') // Exclure les entrées issues de l'alignement biblique
-        .neq('category', 'Phrase')
-        .neq('category', 'Bible')
+        .order('category', { ascending: false }) // 'Vocabulaire' avant 'Phrase' et 'Bible'
         .order('french', { ascending: true })
         .order('id', { ascending: true }) // deterministic ordering
         .limit(100);
@@ -715,6 +712,19 @@ module.exports = async (req, res) => {
         }
       }
 
+      // Récupérer d'abord les détails du mot pour enregistrer l'activité et propager aux doublons
+      let wordDetails = null;
+      try {
+        const { data } = await supabase
+          .from('words')
+          .select('french, fon')
+          .eq('id', id)
+          .maybeSingle();
+        wordDetails = data;
+      } catch (err) {
+        console.error("Failed to fetch details before update:", err);
+      }
+
       const updatePayload = {
         status: 'approved' // Automatiquement approuvé puisqu'il passe par le studio
       };
@@ -730,18 +740,27 @@ module.exports = async (req, res) => {
         return res.status(500).json({ success: false, message: updateError.message });
       }
 
-      // Enregistrer l'activité pour l'audio ajouté
-      try {
-        const { data: wordDetails } = await supabase
-          .from('words')
-          .select('french, fon')
-          .eq('id', id)
-          .maybeSingle();
-        if (wordDetails) {
-          await logActivity(adminUser, 'audio_added', id, wordDetails.french, wordDetails.fon);
+      // Propager automatiquement le nouvel audio à tous les doublons exacts (même français et même fon) sans audio
+      if (audio_url && wordDetails && wordDetails.french && wordDetails.fon) {
+        try {
+          const { error: propErr } = await supabase
+            .from('words')
+            .update({ audio_url })
+            .ilike('french', wordDetails.french.trim())
+            .ilike('fon', wordDetails.fon.trim())
+            .is('audio_url', null);
+          if (propErr) console.error("Propagation error:", propErr.message);
+        } catch (err) {
+          console.error("Propagation failed:", err);
         }
-      } catch (err) {
-        console.error("Failed to log activity in studio-update:", err);
+      }
+
+      if (wordDetails) {
+        try {
+          await logActivity(adminUser, 'audio_added', id, wordDetails.french, wordDetails.fon);
+        } catch (err) {
+          console.error("Failed to log activity in studio-update:", err);
+        }
       }
 
       return res.status(200).json({ success: true, audio_url });

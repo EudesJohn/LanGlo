@@ -223,6 +223,21 @@ module.exports = async (req, res) => {
         .eq('id', id);
       if (error) throw error;
 
+      // Propager automatiquement le nouvel audio à tous les doublons exacts (même français et même fon) sans audio
+      if (new_audio_url && french && fon) {
+        try {
+          const { error: propErr } = await supabase
+            .from('words')
+            .update({ audio_url: new_audio_url })
+            .ilike('french', french.trim())
+            .ilike('fon', fon.trim())
+            .is('audio_url', null);
+          if (propErr) console.error("Propagation error (admin update):", propErr.message);
+        } catch (err) {
+          console.error("Propagation failed in admin update:", err);
+        }
+      }
+
       await logActivity(adminUser, 'update', id, french, fon);
       if (new_audio_url || new_example_audio_url) {
         await logActivity(adminUser, 'audio_added', id, french, fon);
