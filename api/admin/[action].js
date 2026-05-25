@@ -53,7 +53,8 @@ module.exports = async (req, res) => {
  
       // Apply text search
       if (q) {
-        query = query.or(`french.ilike.%${q}%,fon.ilike.%${q}%`);
+        const escapedQ = q.replace(/"/g, '\\"');
+        query = query.or(`french.ilike."%${escapedQ}%",fon.ilike."%${escapedQ}%"`);
       }
  
       const { data, error, count } = await query;

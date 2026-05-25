@@ -300,12 +300,13 @@ module.exports = async (req, res) => {
       // ----------------------------------------------------------
       // ÉTAPE 1 : Recherche exacte de la phrase ou du mot complet
       // ----------------------------------------------------------
+      const escapedSearchTerm = searchTerm.replace(/"/g, '\\"');
       const { data: exactMatchesRaw, error } = await supabase
         .from('words')
         .select('*')
         .eq('status', 'approved')
         .neq('category', 'Bible') // Les phrases bibliques ne sont pas affichées comme résultats directs
-        .or(`french.ilike.%${searchTerm}%,fon.ilike.%${searchTerm}%`)
+        .or(`french.ilike."%${escapedSearchTerm}%",fon.ilike."%${escapedSearchTerm}%"`)
         .order('category', { ascending: false }) // Prioritize Vocabulaire > Phrase
         .limit(50);
 
