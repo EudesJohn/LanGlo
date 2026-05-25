@@ -143,7 +143,8 @@
   "scripts": {
     "dev": "node local-dev.js",
     "build": "echo 'No compilation needed'",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "test-translation": "node scratch/test_translation.js"
   },
   "keywords": [],
   "author": "",
