@@ -591,12 +591,14 @@ module.exports = async (req, res) => {
         (audioWords || []).map(w => `${(w.french || '').toLowerCase().trim()}|${(w.fon || '').toLowerCase().trim()}`)
       );
 
-      // 2. Obtenir le nombre total de mots sans audio (hors alignement biblique)
+      // 2. Obtenir le nombre total de mots sans audio (hors alignement biblique et hors phrases/bibles)
       const { count, error: countErr } = await supabase
         .from('words')
         .select('*', { count: 'exact', head: true })
         .is('audio_url', null)
-        .neq('source', 'bible_alignment');
+        .neq('source', 'bible_alignment')
+        .neq('category', 'Phrase')
+        .neq('category', 'Bible');
 
       if (countErr) throw countErr;
 
@@ -606,7 +608,8 @@ module.exports = async (req, res) => {
         .select('*')
         .is('audio_url', null)
         .neq('source', 'bible_alignment') // Exclure les entrées issues de l'alignement biblique
-        .order('category', { ascending: false }) // 'Vocabulaire' avant 'Phrase' et 'Bible'
+        .neq('category', 'Phrase')
+        .neq('category', 'Bible')
         .order('french', { ascending: true })
         .order('id', { ascending: true }) // deterministic ordering
         .limit(100);
@@ -648,7 +651,7 @@ module.exports = async (req, res) => {
 
       return res.status(200).json({
         words: filtered,
-        totalRemaining: Math.max(0, (count || 0) - audioKeys.size)
+        totalRemaining: count || 0
       });
     }
 
