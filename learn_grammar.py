@@ -48,7 +48,7 @@ def load_aligned_verses():
             break
         all_verses.extend(batch)
         page += 1
-        print(f"  → {len(all_verses)} versets chargés...")
+        print(f"  -> {len(all_verses)} versets chargés...")
     print(f"Total : {len(all_verses)} versets\n")
     return all_verses
 
@@ -76,7 +76,7 @@ def build_alignment_table(verses):
                 fon: count / total
                 for fon, count in fon_counter.most_common(5)
             }
-    print(f"  → {len(translation_probs)} mots français alignés\n")
+    print(f"  -> {len(translation_probs)} mots français alignés\n")
     return translation_probs
 
 WORD_TAGS = {
@@ -155,7 +155,7 @@ def extract_phrase_patterns(verses, min_occurrences=3):
                 "confidence": min(0.99, count / 200),
                 "source": "Bible"
             })
-    print(f"  → {len(patterns)} patterns extraits\n")
+    print(f"  -> {len(patterns)} patterns extraits\n")
     return patterns
 
 def save_patterns_to_supabase(patterns, translation_probs):
@@ -168,7 +168,7 @@ def save_patterns_to_supabase(patterns, translation_probs):
             batch, on_conflict="pattern_fr,pattern_fon"
         ).execute()
         saved += len(batch)
-        print(f"  → {saved}/{len(patterns)} patterns sauvegardés...")
+        print(f"  -> {saved}/{len(patterns)} patterns sauvegardés...")
     alignment_rows = []
     for fr_word, translations in list(translation_probs.items())[:5000]:
         best_fon = max(translations, key=translations.get)
