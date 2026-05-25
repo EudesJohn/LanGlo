@@ -772,7 +772,7 @@ td { padding: 15px; border-bottom: 1px solid var(--glass-border); }
 }
 
 /* ADMIN V3 - PREMIUM DASHBOARD */
-.view-admin-v3 { max-width: 1400px; margin: 0 auto; padding: 40px 20px; animation: fadeIn 0.5s ease; }
+.view-admin-v3 { max-width: 1400px; margin: 0 auto; padding: 40px 20px 120px; animation: fadeIn 0.5s ease; }
 
 .admin-dashboard-header { 
   background: rgba(255,255,255,0.03); backdrop-filter: blur(20px);
@@ -1010,7 +1010,7 @@ td { padding: 15px; border-bottom: 1px solid var(--glass-border); }
 .audio-pill.active { color: #00ff88; border-color: rgba(0,255,136,0.2); background: rgba(0,255,136,0.05); }
 
 /* ── AUDIO STUDIO ZONE ─────────────────────────────────── */
-.studio-zone { animation: fadeIn 0.4s ease; }
+.studio-zone { animation: fadeIn 0.4s ease; padding-bottom: 60px; }
 .studio-layout { max-width: 800px; margin: 0 auto; }
 .studio-card { border-radius: 30px; overflow: hidden; }
 

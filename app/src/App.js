@@ -569,7 +569,7 @@ export default {
         <ethnicities v-if="currentPage === 'ethnicities'" @navigate="navigate" />
       </main>
 
-      <app-footer @navigate="navigate" @notify="notify" />
+      <app-footer v-if="currentPage !== 'admin' && currentPage !== 'studio' && currentPage !== 'learning'" @navigate="navigate" @notify="notify" />
 
       <!-- PWA INSTALL BANNER -->
       <div class="pwa-install-banner" :class="{ visible: showInstallBanner }">
