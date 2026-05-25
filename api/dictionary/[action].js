@@ -578,66 +578,7 @@ module.exports = async (req, res) => {
       }
     }
 
-    // Updated studio-list: fetch words without audio, then filter out low-quality entries (e.g., single-letter Fon or bible source)
-// Updated studio-list: fetch words without audio, then filter out low-quality entries (e.g., single-letter Fon or missing French)
-
-  // Obtenir le nombre total de mots sans audio (toutes catégories)
-  const { count, error: countErr } = await supabase
-    .from('words')
-    .select('*', { count: 'exact', head: true })
-    .is('audio_url', null);
-
-  if (countErr) throw countErr;
-
-  // Obtenir les 20 premiers mots sans audio (Priorité au Vocabulaire, puis alphabétique)
-  const { data, error } = await supabase
-    .from('words')
-    .select('*')
-    .is('audio_url', null)
-    .neq('source', 'bible_alignment') // Exclure les entrées issues de l'alignement biblique
-    .order('category', { ascending: false }) // 'Vocabulaire' avant 'Phrase' et 'Bible'
-    .order('french', { ascending: true })
-    .order('id', { ascending: true }) // deterministic ordering
-    .limit(20);
-
-  if (error) throw error;
-
-  // Filtrer les entrées où le champ Fon est trop court ou le français est vide
-  const filtered = (data || []).filter(w => {
-    const fon = (w.fon || '').trim();
-    const french = (w.french || '').trim();
-    return fon.length > 1 && french.length > 0;
-  });
-
-  return res.status(200).json({
-    words: filtered,
-    totalRemaining: count || 0
-  });
-}
-// Duplicate studio-list block removed
-}
-
-// New bulk deletion actions for administrative cleanup
-if (action === 'bulk-delete-bible') {
-  // Supprimer toutes les entrées provenant de l'alignement biblique
-  const { error, count } = await supabase
-    .from('words')
-    .delete()
-    .eq('source', 'bible_alignment');
-  if (error) throw error;
-  return res.status(200).json({ success: true, deleted: count || 0 });
-}
-
-if (action === 'bulk-delete-pronouns') {
-  // Liste des pronoms personnels français à supprimer
-  const pronouns = ['je', 'tu', 'il', 'elle', 'nous', 'vous', 'ils', 'elles', 'on'];
-  const { error, count } = await supabase
-    .from('words')
-    .delete()
-    .in('french', pronouns);
-  if (error) throw error;
-  return res.status(200).json({ success: true, deleted: count || 0 });
-}
+    if (action === 'studio-list') {
       // Obtenir le nombre total de mots sans audio (toutes catégories)
       const { count, error: countErr } = await supabase
         .from('words')
@@ -651,16 +592,50 @@ if (action === 'bulk-delete-pronouns') {
         .from('words')
         .select('*')
         .is('audio_url', null)
-        .order('category', { ascending: false }) // 'Vocabulaire' vient avant 'Phrase' et 'Bible'
+        .neq('source', 'bible_alignment') // Exclure les entrées issues de l'alignement biblique
+        .order('category', { ascending: false }) // 'Vocabulaire' avant 'Phrase' et 'Bible'
         .order('french', { ascending: true })
+        .order('id', { ascending: true }) // deterministic ordering
         .limit(20);
 
       if (error) throw error;
 
+      // Filtrer les entrées où le champ Fon est trop court ou le français est vide
+      const filtered = (data || []).filter(w => {
+        const fon = (w.fon || '').trim();
+        const french = (w.french || '').trim();
+        return fon.length > 1 && french.length > 0;
+      });
+
       return res.status(200).json({
-        words: data || [],
+        words: filtered,
         totalRemaining: count || 0
       });
+    }
+
+    if (action === 'bulk-delete-bible') {
+      const adminUser = await verifyAdmin(req).catch(() => null);
+      if (!adminUser) return res.status(403).json({ success: false, message: "Accès refusé" });
+
+      const { error, count } = await supabase
+        .from('words')
+        .delete()
+        .eq('source', 'bible_alignment');
+      if (error) throw error;
+      return res.status(200).json({ success: true, deleted: count || 0 });
+    }
+
+    if (action === 'bulk-delete-pronouns') {
+      const adminUser = await verifyAdmin(req).catch(() => null);
+      if (!adminUser) return res.status(403).json({ success: false, message: "Accès refusé" });
+
+      const pronouns = ['je', 'tu', 'il', 'elle', 'nous', 'vous', 'ils', 'elles', 'on'];
+      const { error, count } = await supabase
+        .from('words')
+        .delete()
+        .in('french', pronouns);
+      if (error) throw error;
+      return res.status(200).json({ success: true, deleted: count || 0 });
     }
 
     if (action === 'studio-update') {
