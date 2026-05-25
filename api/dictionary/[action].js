@@ -578,7 +578,61 @@ module.exports = async (req, res) => {
       }
     }
 
-    if (action === 'studio-list') {
+    // Updated studio-list: fetch words without audio, then filter out low-quality entries (e.g., single-letter Fon or bible source)
+if (action === 'studio-list') {
+  // Obtenir le nombre total de mots sans audio (toutes catégories)
+  const { count, error: countErr } = await supabase
+    .from('words')
+    .select('*', { count: 'exact', head: true })
+    .is('audio_url', null);
+
+  if (countErr) throw countErr;
+
+  // Obtenir les 20 premiers mots sans audio (Priorité au Vocabulaire)
+  const { data, error } = await supabase
+    .from('words')
+    .select('*')
+    .is('audio_url', null)
+    .neq('source', 'bible_alignment') // Exclure les entrées issues de l'alignement biblique
+    .order('category', { ascending: false }) // 'Vocabulaire' avant 'Phrase' et 'Bible'
+    .order('french', { ascending: true })
+    .limit(20);
+
+  if (error) throw error;
+
+  // Filtrer les entrées où le champ Fon est trop court (moins de 2 caractères)
+  const filtered = (data || []).filter(w => {
+    const fon = (w.fon || '').trim();
+    return fon.length > 1;
+  });
+
+  return res.status(200).json({
+    words: filtered,
+    totalRemaining: count || 0
+  });
+}
+
+// New bulk deletion actions for administrative cleanup
+if (action === 'bulk-delete-bible') {
+  // Supprimer toutes les entrées provenant de l'alignement biblique
+  const { error, count } = await supabase
+    .from('words')
+    .delete()
+    .eq('source', 'bible_alignment');
+  if (error) throw error;
+  return res.status(200).json({ success: true, deleted: count || 0 });
+}
+
+if (action === 'bulk-delete-pronouns') {
+  // Liste des pronoms personnels français à supprimer
+  const pronouns = ['je', 'tu', 'il', 'elle', 'nous', 'vous', 'ils', 'elles', 'on'];
+  const { error, count } = await supabase
+    .from('words')
+    .delete()
+    .in('french', pronouns);
+  if (error) throw error;
+  return res.status(200).json({ success: true, deleted: count || 0 });
+}
       // Obtenir le nombre total de mots sans audio (toutes catégories)
       const { count, error: countErr } = await supabase
         .from('words')
