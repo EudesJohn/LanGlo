@@ -15,7 +15,10 @@ import os
 import re
 import json
 from collections import defaultdict, Counter
+from dotenv import load_dotenv
 from supabase import create_client
+
+load_dotenv()
 
 # Compatibilité avec le nom de variable du projet (.env utilise SUPABASE_SERVICE_ROLE_KEY)
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
