@@ -4,8 +4,8 @@ import LucideIcon from '../components/LucideIcon.js'
 
 export default {
   components: { WordCard, LucideIcon },
-  props: ['words', 'query', 'favorites', 'searchResult'],
-  emits: ['navigate'],
+  props: ['words', 'query', 'favorites', 'searchResult', 'isAdmin'],
+  emits: ['navigate', 'updateWord', 'deleteWord'],
   template: `
     <div class="view-dictionary">
       <div class="container">
@@ -58,7 +58,10 @@ export default {
                 :word="word" 
                 :query="query"
                 :favorites="favorites"
+                :is-admin="isAdmin"
                 @navigate="$emit('navigate', $event)"
+                @update-word="$emit('updateWord', $event)"
+                @delete-word="$emit('deleteWord', $event)"
               />
             </div>
 
@@ -109,7 +112,10 @@ export default {
                   :word="word" 
                   :query="query"
                   :favorites="favorites"
+                  :is-admin="isAdmin"
                   @navigate="$emit('navigate', $event)"
+                  @update-word="$emit('updateWord', $event)"
+                  @delete-word="$emit('deleteWord', $event)"
                 />
               </div>
             </div>

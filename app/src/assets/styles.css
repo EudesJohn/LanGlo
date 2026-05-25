@@ -873,7 +873,7 @@ td { padding: 15px; border-bottom: 1px solid var(--glass-border); }
   border: 1px solid rgba(255,255,255,0.03); overflow: hidden;
 }
 .mod-card-v3:hover { transform: translateY(-5px); border-color: rgba(255,255,255,0.1); box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
-.mod-card-v3.editing-glow { border-color: var(--primary); box-shadow: 0 0 30px rgba(255, 107, 107, 0.15); }
+.word-card-luxury.editing-glow, .mod-card-v3.editing-glow { border-color: var(--primary) !important; box-shadow: 0 0 30px rgba(255, 107, 107, 0.2) !important; }
 
 .ref-tag { position: absolute; top: 20px; left: 30px; font-size: 0.7rem; font-family: monospace; opacity: 0.3; }
 .card-top-v3 { display: flex; justify-content: flex-end; margin-bottom: 20px; }

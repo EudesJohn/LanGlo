@@ -520,12 +520,78 @@ export default {
       }
     });
 
+    const handleUpdateWordFromSearch = async (updatedWord) => {
+      try {
+        const { onComplete, ...wordPayload } = updatedWord;
+        const res = await axios.post(`${API}/admin/update`, wordPayload);
+        if (res.data && res.data.success) {
+          notify("Mot / Phrase mis à jour avec succès !");
+          
+          const updateItemInList = (list) => {
+            const index = list.findIndex(w => w.id === wordPayload.id);
+            if (index !== -1) {
+              const existing = list[index];
+              list[index] = {
+                ...existing,
+                ...wordPayload,
+                fon_highlighted: null,
+                french_highlighted: null
+              };
+            }
+          };
+          
+          updateItemInList(words.value);
+          if (searchResult.value.exactMatches) {
+            updateItemInList(searchResult.value.exactMatches);
+          }
+          if (searchResult.value.exampleSentences) {
+            updateItemInList(searchResult.value.exampleSentences);
+          }
+          
+          if (onComplete) onComplete(true);
+        } else {
+          notify(res.data.message || "Erreur de mise à jour", "error");
+          if (onComplete) onComplete(false);
+        }
+      } catch (e) {
+        console.error("Error updating word from search:", e);
+        const errMsg = e.response?.data?.message || "Erreur lors de la mise à jour";
+        notify(errMsg, "error");
+        if (updatedWord.onComplete) updatedWord.onComplete(false);
+      }
+    };
+
+    const handleDeleteWordFromSearch = async (id) => {
+      if (!confirm("Voulez-vous vraiment supprimer définitivement ce mot / cette phrase ?")) return;
+      try {
+        const res = await axios.post(`${API}/admin/delete`, { id });
+        if (res.data && res.data.success) {
+          notify(res.data.message || "Mot supprimé avec succès !");
+          
+          words.value = words.value.filter(w => w.id !== id);
+          if (searchResult.value.exactMatches) {
+            searchResult.value.exactMatches = searchResult.value.exactMatches.filter(w => w.id !== id);
+          }
+          if (searchResult.value.exampleSentences) {
+            searchResult.value.exampleSentences = searchResult.value.exampleSentences.filter(w => w.id !== id);
+          }
+        } else {
+          notify(res.data.message || "Erreur de suppression", "error");
+        }
+      } catch (e) {
+        console.error("Error deleting word from search:", e);
+        const errMsg = e.response?.data?.message || "Erreur lors de la suppression";
+        notify(errMsg, "error");
+      }
+    };
+
     return {
       currentPage, user, words, favorites, pendingWords, allWords, searchQuery, searchResult, notification, stats, navbarKey, wordOfDay, isSearching,
       showInstallBanner, isIOS, triggerInstall,
       navigate, handleSearch, handleLogin, handleLogout, notify, isProfileComplete,
       handleRegister, handleUpdateProfile, adminApprove, adminDelete, handleUpdateWord, fetchAdminData,
-      handleAddWord, handleForgotPassword, handleGoogleLogin, handleResetPassword
+      handleAddWord, handleForgotPassword, handleGoogleLogin, handleResetPassword,
+      handleUpdateWordFromSearch, handleDeleteWordFromSearch
     };
   },
   template: `
@@ -542,7 +608,7 @@ export default {
         :isProfileComplete="isProfileComplete"
         @navigate="navigate" 
         @logout="handleLogout"
-        @search="handleSearch" 
+        @search="searchQuery = $event; handleSearch($event)" 
       />
 
       <main class="main-content">
@@ -553,7 +619,10 @@ export default {
           :query="searchQuery" 
           :favorites="favorites"
           :search-result="searchResult"
+          :is-admin="user?.role === 'admin'"
           @navigate="navigate"
+          @updateWord="handleUpdateWordFromSearch"
+          @deleteWord="handleDeleteWordFromSearch"
         />
         <login v-if="currentPage === 'login'" @login="handleLogin" @google-login="handleGoogleLogin" @navigate="navigate" />
         <register v-if="currentPage === 'register'" @register="handleRegister" @navigate="navigate" />
