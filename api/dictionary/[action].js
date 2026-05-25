@@ -138,7 +138,7 @@ async function getDailyWords(numWords = 5) {
       .from('words')
       .select('*', { count: 'exact', head: true })
       .eq('status', 'approved')
-      .eq('category', 'Vocabulaire');
+      .eq('category', 'Mot');
 
     if (countErr || !count) {
       const { data } = await supabase
@@ -155,7 +155,7 @@ async function getDailyWords(numWords = 5) {
         .from('words')
         .select('*')
         .eq('status', 'approved')
-        .eq('category', 'Vocabulaire')
+        .eq('category', 'Mot')
         .range(idx, idx)
         .maybeSingle()
     );
