@@ -36,6 +36,8 @@ export default {
       studioAudioBlob: null,
       studioPhonetic: '',
       studioError: null,
+      // Avec Audio
+      withAudioTotal: 0,
       // Activité
       activityStats: { added: 0, modified: 0, deleted: 0, audio: 0 },
       activityHistory: [],
@@ -46,6 +48,7 @@ export default {
   computed: {
     pendingCount() { return this.pendingWords.length; },
     noAudioCount() { return this.studioTotal; },
+    withAudioCount() { return this.withAudioTotal; },
     studioCurrentWord() { return this.studioWords[this.studioIndex] || null; }
   },
   watch: {
@@ -104,6 +107,7 @@ export default {
       try {
         const res = await axios.get(`${API}/dictionary/studio-list`);
         this.studioTotal = res.data.totalRemaining || 0;
+        this.withAudioTotal = res.data.totalWithAudio || 0;
       } catch(e) {}
     },
 
@@ -230,6 +234,7 @@ export default {
         const res = await axios.get(`${API}/dictionary/studio-list`);
         this.studioWords = res.data.words || [];
         this.studioTotal = res.data.totalRemaining || 0;
+        this.withAudioTotal = res.data.totalWithAudio || 0;
         this.studioIndex = 0; this.resetStudio();
       } catch { this.studioError = 'Impossible de charger les mots.'; }
       finally { this.studioLoading = false; }
@@ -373,7 +378,11 @@ export default {
             </div>
             <div class="stat-pill secondary">
               <span class="stat-label">Sans audio</span>
-              <span class="stat-value">{{ noAudioCount }}</span>
+              <span class="stat-value">{{ noAudioCount.toLocaleString() }}</span>
+            </div>
+            <div class="stat-pill success-pill">
+              <span class="stat-label">Avec audio</span>
+              <span class="stat-value">{{ withAudioCount.toLocaleString() }}</span>
             </div>
             <div class="stat-pill tertiary">
               <span class="stat-label">Total base</span>
@@ -415,10 +424,11 @@ export default {
         <div class="library-toolbar glass-card" style="border-radius:20px;padding:20px;margin-bottom:24px;display:flex;flex-direction:column;gap:16px;">
           <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;width:100%;">
             <div class="filter-chips" style="display:flex;gap:8px;flex-wrap:wrap;flex:1;">
-              <button @click="libFilter='all'"      :class="{'chip-active':libFilter==='all'}"      class="filter-chip">Tous les états</button>
-              <button @click="libFilter='pending'"  :class="{'chip-active':libFilter==='pending'}"  class="filter-chip">En attente <span class="chip-badge">{{ pendingCount }}</span></button>
-              <button @click="libFilter='approved'" :class="{'chip-active':libFilter==='approved'}" class="filter-chip">Approuvés</button>
-              <button @click="libFilter='no-audio'" :class="{'chip-active':libFilter==='no-audio'}" class="filter-chip">Sans audio <span class="chip-badge warn">{{ noAudioCount }}</span></button>
+              <button @click="libFilter='all'"        :class="{'chip-active':libFilter==='all'}"        class="filter-chip">Tous les états</button>
+              <button @click="libFilter='pending'"    :class="{'chip-active':libFilter==='pending'}"    class="filter-chip">En attente <span class="chip-badge">{{ pendingCount }}</span></button>
+              <button @click="libFilter='approved'"   :class="{'chip-active':libFilter==='approved'}"   class="filter-chip">Approuvés</button>
+              <button @click="libFilter='no-audio'"   :class="{'chip-active':libFilter==='no-audio'}"   class="filter-chip">Sans audio <span class="chip-badge warn">{{ noAudioCount.toLocaleString() }}</span></button>
+              <button @click="libFilter='with-audio'" :class="{'chip-active':libFilter==='with-audio'}" class="filter-chip">🎙️ Avec audio <span class="chip-badge success">{{ withAudioCount.toLocaleString() }}</span></button>
             </div>
             <div class="admin-search-wrap" style="min-width:220px;">
               <lucide-icon name="search" className="search-icon" />

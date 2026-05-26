@@ -973,6 +973,9 @@ td { padding: 15px; border-bottom: 1px solid var(--glass-border); }
 .stat-pill.secondary .stat-label { color: #ff9f43; }
 .stat-pill.tertiary { background: rgba(99,179,237,0.1); border-color: rgba(99,179,237,0.2); }
 .stat-pill.tertiary .stat-label { color: #63b3ed; }
+.stat-pill.success-pill { background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.25); }
+.stat-pill.success-pill .stat-label { color: #10b981; }
+.stat-pill.success-pill .stat-value { color: #10b981; }
 
 /* ── LIBRARY FILTER CHIPS ──────────────────────────────── */
 .filter-chip {
@@ -991,6 +994,7 @@ td { padding: 15px; border-bottom: 1px solid var(--glass-border); }
   border-radius: 9999px; padding: 2px 8px; font-size: 0.75rem;
 }
 .chip-badge.warn { background: rgba(255,159,67,0.2); color: #ff9f43; }
+.chip-badge.success { background: rgba(16,185,129,0.2); color: #10b981; }
 
 /* ── NO-AUDIO BADGE ────────────────────────────────────── */
 .no-audio-badge {

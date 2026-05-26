@@ -600,6 +600,14 @@ module.exports = async (req, res) => {
 
       if (countErr) throw countErr;
 
+      // 2.5 Obtenir le nombre total de mots avec audio
+      const { count: withAudioCount, error: withAudioErr } = await supabase
+        .from('words')
+        .select('*', { count: 'exact', head: true })
+        .not('audio_url', 'is', null);
+
+      if (withAudioErr) throw withAudioErr;
+
       // 3. Obtenir un lot de mots sans audio (100 mots pour compenser les doublons potentiels)
       const { data, error } = await supabase
         .from('words')
@@ -648,7 +656,8 @@ module.exports = async (req, res) => {
 
       return res.status(200).json({
         words: filtered,
-        totalRemaining: count || 0
+        totalRemaining: count || 0,
+        totalWithAudio: withAudioCount || 0
       });
     }
 

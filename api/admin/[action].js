@@ -43,6 +43,7 @@ module.exports = async (req, res) => {
       if (filter === 'pending')  query = query.eq('status', 'pending');
       if (filter === 'approved') query = query.eq('status', 'approved');
       if (filter === 'no-audio') query = query.is('audio_url', null);
+      if (filter === 'with-audio') query = query.not('audio_url', 'is', null);
  
       // Apply type filter (word vs phrase)
       if (type === 'phrase') {
