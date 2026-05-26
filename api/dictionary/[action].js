@@ -579,16 +579,32 @@ module.exports = async (req, res) => {
     }
 
     if (action === 'studio-list') {
-      // 1. Récupérer toutes les combinaisons français/fon qui ont déjà un audio (seulement 81 actuellement)
-      const { data: audioWords, error: audioErr } = await supabase
-        .from('words')
-        .select('french, fon')
-        .not('audio_url', 'is', null);
+      // 1. Récupérer toutes les combinaisons français/fon qui ont déjà un audio (avec pagination pour dépasser la limite de 1000)
+      let audioWords = [];
+      let page = 0;
+      const pageSize = 1000;
+      let hasMore = true;
 
-      if (audioErr) throw audioErr;
+      while (hasMore) {
+        const { data: chunk, error: audioErr } = await supabase
+          .from('words')
+          .select('french, fon')
+          .not('audio_url', 'is', null)
+          .range(page * pageSize, (page + 1) * pageSize - 1);
+
+        if (audioErr) throw audioErr;
+
+        if (chunk && chunk.length > 0) {
+          audioWords = audioWords.concat(chunk);
+          hasMore = chunk.length === pageSize;
+          page++;
+        } else {
+          hasMore = false;
+        }
+      }
 
       const audioKeys = new Set(
-        (audioWords || []).map(w => `${(w.french || '').toLowerCase().trim()}|${(w.fon || '').toLowerCase().trim()}`)
+        audioWords.map(w => `${(w.french || '').toLowerCase().trim()}|${(w.fon || '').toLowerCase().trim()}`)
       );
 
       // 2. Obtenir le nombre total de mots sans audio (hors alignement biblique)
