@@ -1,4 +1,5 @@
 const supabase = require('../lib/supabase');
+const { setCookie, clearCookie } = require('../lib/auth');
 
 module.exports = async (req, res) => {
   const action = req.params?.action || req.query?.action || req.url.split('/').pop().split('?')[0];
@@ -29,11 +30,12 @@ module.exports = async (req, res) => {
         .select('*', { count: 'exact', head: true })
         .eq('added_by', dbUser?.id || 0);
 
-      res.cookie('token', authData.session.access_token, {
+      setCookie(res, 'token', authData.session.access_token, {
         httpOnly: true,
         sameSite: 'strict',
         secure: process.env.NODE_ENV === 'production',
-        maxAge: 7 * 24 * 60 * 60 * 1000
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+        path: '/'
       });
 
       return res.status(200).json({
@@ -249,11 +251,12 @@ module.exports = async (req, res) => {
       const { access_token } = req.body;
       if (!access_token) return res.status(400).json({ success: false, message: 'Token requis.' });
 
-      res.cookie('token', access_token, {
+      setCookie(res, 'token', access_token, {
         httpOnly: true,
         sameSite: 'strict',
         secure: process.env.NODE_ENV === 'production',
-        maxAge: 7 * 24 * 60 * 60 * 1000
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+        path: '/'
       });
 
       return res.status(200).json({ success: true });
@@ -263,10 +266,11 @@ module.exports = async (req, res) => {
     if (action === 'logout') {
       if (req.method !== 'POST') return res.status(405).json({ message: 'Method Not Allowed' });
 
-      res.clearCookie('token', {
+      clearCookie(res, 'token', {
         httpOnly: true,
         sameSite: 'strict',
-        secure: process.env.NODE_ENV === 'production'
+        secure: process.env.NODE_ENV === 'production',
+        path: '/'
       });
 
       return res.status(200).json({ success: true });
