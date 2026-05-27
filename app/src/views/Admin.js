@@ -1,8 +1,7 @@
 // app/src/views/Admin.js
 import AudioRecorder from '../components/AudioRecorder.js';
 import LucideIcon from '../components/LucideIcon.js'
-
-const API = '/api';
+import { API } from '../config.js'
 
 export default {
   components: { AudioRecorder, LucideIcon },
@@ -421,8 +420,8 @@ export default {
       <div v-if="activeTab === 'library'">
 
         <!-- Toolbar -->
-        <div class="library-toolbar glass-card" style="border-radius:20px;padding:20px;margin-bottom:24px;display:flex;flex-direction:column;gap:16px;">
-          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;width:100%;">
+        <div class="library-toolbar glass-card library-toolbar-layout">
+          <div class="library-toolbar-row">
             <div class="filter-chips" style="display:flex;gap:8px;flex-wrap:wrap;flex:1;">
               <button @click="libFilter='all'"        :class="{'chip-active':libFilter==='all'}"        class="filter-chip">Tous les états</button>
               <button @click="libFilter='pending'"    :class="{'chip-active':libFilter==='pending'}"    class="filter-chip">En attente <span class="chip-badge">{{ pendingCount }}</span></button>
@@ -430,39 +429,30 @@ export default {
               <button @click="libFilter='no-audio'"   :class="{'chip-active':libFilter==='no-audio'}"   class="filter-chip">Sans audio <span class="chip-badge warn">{{ noAudioCount.toLocaleString() }}</span></button>
               <button @click="libFilter='with-audio'" :class="{'chip-active':libFilter==='with-audio'}" class="filter-chip">🎙️ Avec audio <span class="chip-badge success">{{ withAudioCount.toLocaleString() }}</span></button>
             </div>
-            <div class="admin-search-wrap" style="min-width:220px;">
+            <div class="admin-search-wrap">
               <lucide-icon name="search" className="search-icon" />
               <input v-model="libSearch" placeholder="Rechercher..." class="admin-search-input" />
             </div>
           </div>
-          <div style="display:flex;align-items:center;justify-content:flex-end;border-top:1px solid rgba(255,255,255,0.05);padding-top:12px;flex-wrap:wrap;gap:12px;width:100%;">
-            <button 
+          <div class="library-toolbar-bottom">
+            <button
               v-if="pendingCount > 0"
-              @click="approveAllPending" 
+              @click="approveAllPending"
               class="btn-approve-all"
-              style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none; color: white; padding: 8px 16px; border-radius: 10px; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);"
-              onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 16px rgba(16, 185, 129, 0.35)';"
-              onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(16, 185, 129, 0.2)';"
             >
               <lucide-icon name="check-circle" :size="15" />
               <span>Approuver les {{ pendingCount }} mots en attente</span>
             </button>
-            <button 
-              @click="confirmDeleteBibleNames" 
-              class="btn-delete-bible"
-              style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.25); color: #ef4444; padding: 8px 16px; border-radius: 10px; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px;"
-              onmouseover="this.style.background='rgba(239, 68, 68, 0.22)'; this.style.borderColor='rgba(239, 68, 68, 0.5)';"
-              onmouseout="this.style.background='rgba(239, 68, 68, 0.12)'; this.style.borderColor='rgba(239, 68, 68, 0.25)';"
+            <button
+              @click="confirmDeleteBibleNames"
+              class="btn-danger-action"
             >
               <lucide-icon name="trash-2" :size="14" />
               <span>Nettoyer les noms bibliques</span>
             </button>
-            <button 
-              @click="confirmDeletePronouns" 
-              class="btn-delete-pronouns"
-              style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.25); color: #ef4444; padding: 8px 16px; border-radius: 10px; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px;"
-              onmouseover="this.style.background='rgba(239, 68, 68, 0.22)'; this.style.borderColor='rgba(239, 68, 68, 0.5)';"
-              onmouseout="this.style.background='rgba(239, 68, 68, 0.12)'; this.style.borderColor='rgba(239, 68, 68, 0.25)';"
+            <button
+              @click="confirmDeletePronouns"
+              class="btn-danger-action"
             >
               <lucide-icon name="trash-2" :size="14" />
               <span>Nettoyer les pronoms personnels</span>
@@ -471,7 +461,7 @@ export default {
         </div>
 
         <!-- Loading spinner -->
-        <div v-if="libLoading" style="text-align:center;padding:60px;">
+        <div v-if="libLoading" class="activity-loading-state">
           <div class="spinner"></div>
         </div>
 
@@ -483,7 +473,7 @@ export default {
               <span class="ref-tag">
                 #{{ w.id }}
                 <span class="status-badge" :class="w.status">{{ w.status }}</span>
-                <span class="category-badge" style="background: rgba(255,107,53,0.15); border: 1px solid rgba(255,107,53,0.3); padding: 2px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; margin-left: 6px; text-transform: uppercase; color: var(--primary);">
+                <span class="category-badge">
                   {{ w.category === 'Phrase' ? 'Phrase' : (w.category === 'Bible' ? 'Bible' : 'Mot') }}
                 </span>
                 <span v-if="!w.audio_url" class="no-audio-badge">🔇 sans audio</span>
@@ -597,33 +587,33 @@ export default {
       <!-- ══════════ ZONE 2 — STUDIO AUDIO ══════════ -->
       <div v-if="activeTab === 'audio-studio'" class="studio-zone">
 
-        <div v-if="studioLoading" class="studio-card glass-card" style="padding:80px 40px;text-align:center;">
+        <div v-if="studioLoading" class="studio-card glass-card studio-state-card">
           <div class="spinner"></div>
           <p style="margin-top:20px;opacity:0.7;">Chargement...</p>
         </div>
 
-        <div v-else-if="studioError" class="studio-card glass-card" style="padding:60px 40px;text-align:center;border-color:rgba(239,68,68,0.3);">
+        <div v-else-if="studioError" class="studio-card glass-card studio-state-card error">
           <lucide-icon name="alert-triangle" style="color:#ef4444;" :size="48" />
           <p style="color:#ef4444;margin-top:16px;font-weight:600;">{{ studioError }}</p>
           <button @click="fetchStudioWords" class="btn-premium mini" style="margin-top:20px;">Réessayer</button>
         </div>
 
-        <div v-else-if="studioWords.length === 0" class="studio-card glass-card" style="padding:100px 40px;text-align:center;">
-          <div style="font-size:4rem;margin-bottom:20px;">🎉</div>
-          <h3 style="font-size:2rem;font-weight:800;color:white;">Studio à jour !</h3>
+        <div v-else-if="studioWords.length === 0" class="studio-card glass-card studio-state-card empty">
+          <div class="empty-icon"><lucide-icon name="check-circle" :size="64" /></div>
+          <h3 style="font-size:2rem;font-weight:800;color:white;margin-bottom:10px;">Studio à jour !</h3>
           <p style="margin-top:10px;opacity:0.7;">Tous les mots ont un enregistrement audio.</p>
         </div>
 
         <div v-else class="studio-layout">
           <!-- Progress -->
-          <div class="studio-progress-bar glass-card" style="border-radius:20px;padding:20px 28px;margin-bottom:24px;display:flex;align-items:center;gap:20px;">
-            <div style="flex:1;">
-              <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
-                <span style="font-size:0.85rem;opacity:0.7;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Progression audio</span>
-                <span style="font-size:0.9rem;font-weight:700;color:var(--primary);">{{ studioIndex+1 }} / {{ studioWords.length }} <span style="opacity:0.5;font-weight:400;">({{ studioTotal.toLocaleString() }} restants)</span></span>
+          <div class="studio-progress-layout glass-card">
+            <div class="studio-progress-info" style="flex:1;">
+              <div class="studio-progress-header" style="display:flex;justify-content:space-between;margin-bottom:8px;">
+                <span class="studio-progress-label" style="font-size:0.85rem;opacity:0.7;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Progression audio</span>
+                <span class="studio-progress-count" style="font-size:0.9rem;font-weight:700;color:var(--primary);">{{ studioIndex+1 }} / {{ studioWords.length }} <span style="opacity:0.5;font-weight:400;">({{ studioTotal.toLocaleString() }} restants)</span></span>
               </div>
-              <div style="height:6px;background:rgba(255,255,255,0.08);border-radius:99px;overflow:hidden;">
-                <div :style="'width:'+Math.round(((studioIndex+1)/studioWords.length)*100)+'%;height:100%;background:linear-gradient(90deg,var(--primary),#ff9f43);border-radius:99px;transition:width 0.4s;'"></div>
+              <div class="studio-progress-track" style="height:6px;background:rgba(255,255,255,0.08);border-radius:99px;overflow:hidden;">
+                <div class="studio-progress-fill" :style="{ width: Math.round(((studioIndex+1)/studioWords.length)*100) + '%' }"></div>
               </div>
             </div>
             <button @click="fetchStudioWords" class="btn-refresh-pulse"><lucide-icon name="refresh-cw" /></button>
@@ -631,20 +621,20 @@ export default {
 
           <!-- Studio card -->
           <div class="studio-card glass-card scale-in" :key="studioCurrentWord.id">
-            <div class="word-display-box" style="text-align:center;padding:40px 40px 30px;border-bottom:1px solid rgba(255,255,255,0.07);">
-              <div class="fon-label font-fon" style="font-size:3.5rem;font-weight:900;color:white;line-height:1.2;margin-bottom:12px;">
+            <div class="word-display-box">
+              <div class="fon-label font-fon">
                 {{ studioWords[studioIndex].fon }}
               </div>
-              <div style="font-size:1.2rem;opacity:0.7;">
-                signifie : <strong style="color:var(--primary);">{{ studioWords[studioIndex].french }}</strong>
+              <div class="fr-label">
+                signifie : <strong>{{ studioWords[studioIndex].french }}</strong>
               </div>
               <div v-if="studioWords[studioIndex].phonetic" style="margin-top:10px;font-size:1rem;opacity:0.5;font-family:monospace;">{{ studioWords[studioIndex].phonetic }}</div>
-              <button @click="studioSpeakHint" class="btn-hint" style="margin-top:20px;">
+              <button @click="studioSpeakHint" class="btn-hint">
                 <lucide-icon name="volume-2" /> Indice TTS
               </button>
             </div>
 
-            <div class="studio-controls-grid" style="padding:30px 40px;">
+            <div class="studio-controls-grid">
               <div class="control-box">
                 <label class="control-title">1. Phonétique (facultatif)</label>
                 <p class="control-desc">Corrigez ou ajoutez la transcription phonétique.</p>
@@ -657,7 +647,7 @@ export default {
               </div>
             </div>
 
-            <div class="studio-footer-actions" style="padding: 0 40px 40px; border-top: none; align-items: center;">
+            <div class="studio-footer-panel">
               <button @click="studioDelete" class="btn-delete" :disabled="studioSubmitting" style="margin-right: auto;">
                 <lucide-icon name="trash-2" /> Supprimer ce mot
               </button>
@@ -670,9 +660,9 @@ export default {
           </div>
 
           <!-- Queue -->
-          <div class="glass-card" style="border-radius:20px;padding:20px;margin-top:24px;">
-            <h4 style="margin:0 0 14px;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.08em;opacity:0.6;">Prochains mots</h4>
-            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <div class="glass-card upcoming-section">
+            <h4 class="upcoming-title">Prochains mots</h4>
+            <div class="upcoming-list">
               <div v-for="(w,i) in studioWords.slice(0,12)" :key="w.id" @click="studioIndex=i;resetStudio()" class="upcoming-chip" :class="{'current-chip':i===studioIndex}">{{ w.fon }}</div>
             </div>
           </div>
@@ -734,9 +724,9 @@ export default {
         </div>
 
         <!-- History Timeline -->
-        <div class="timeline-section glass-card mt-24" style="padding: 24px;">
-          <div class="section-header" style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.07); padding-bottom:16px; margin-bottom:20px;">
-            <h3 style="margin:0; font-size:1.25rem; font-weight:800; color:white; display:flex; align-items:center; gap:8px;">
+        <div class="timeline-section-card glass-card mt-24">
+          <div class="activity-section-header">
+            <h3 class="activity-section-title">
               <lucide-icon name="history" /> Historique récent
             </h3>
             <button @click="fetchActivity" class="btn-refresh-pulse" :disabled="activityLoading" title="Actualiser">
@@ -744,12 +734,12 @@ export default {
             </button>
           </div>
 
-          <div v-if="activityLoading && activityHistory.length === 0" style="text-align:center; padding:40px;">
+          <div v-if="activityLoading && activityHistory.length === 0" class="activity-loading-state">
             <div class="spinner"></div>
           </div>
 
-          <div v-else-if="activityHistory.length === 0" class="empty-state-v3" style="padding:60px 20px; text-align:center;">
-            <div class="empty-icon" style="margin-bottom: 12px;"><lucide-icon name="activity" :size="48" style="opacity:0.3; margin:0 auto;" /></div>
+          <div v-else-if="activityHistory.length === 0" class="activity-empty-state">
+            <div class="empty-icon"><lucide-icon name="activity" :size="48" /></div>
             <h3 style="color:white; margin-bottom:6px;">Aucune action enregistrée</h3>
             <p style="opacity:0.6; margin:0;">Vos actions d'administration apparaîtront ici au fur et à mesure.</p>
           </div>

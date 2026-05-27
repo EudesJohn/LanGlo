@@ -54,7 +54,7 @@ module.exports = async (req, res) => {
  
       // Apply text search
       if (q) {
-        const escapedQ = q.replace(/"/g, '\\"');
+        const escapedQ = q.replace(/[\\%_]/g, '\\$&').replace(/"/g, '""');
         query = query.or(`french.ilike."%${escapedQ}%",fon.ilike."%${escapedQ}%"`);
       }
  
@@ -189,6 +189,9 @@ module.exports = async (req, res) => {
         try {
           const cleanBase64 = base64.replace(/^data:.*?;base64,/, '');
           const buffer = Buffer.from(cleanBase64, 'base64');
+          if (buffer.length > 5 * 1024 * 1024) {
+            throw new Error('Le fichier audio dépasse la limite de 5 Mo.');
+          }
           const fileName = `${Date.now()}_${name}.ogg`;
           
           const { error } = await supabase.storage

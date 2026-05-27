@@ -52,7 +52,11 @@ module.exports = async (req, res) => {
     if (action === 'register') {
       if (req.method !== 'POST') return res.status(405).json({ message: 'Method Not Allowed' });
       const { name, email, password, nationality, ethnicity, fon_level } = req.body;
-      
+
+      if (!password || password.length < 8) {
+        return res.status(400).json({ success: false, message: 'Le mot de passe doit contenir au moins 8 caractères.' });
+      }
+
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
@@ -111,9 +115,12 @@ module.exports = async (req, res) => {
 
       if (avatar_base64) {
         try {
-          const fileName = `${id}_${Date.now()}.jpg`;
           const fileBuffer = Buffer.from(avatar_base64, 'base64');
-          
+          if (fileBuffer.length > 2 * 1024 * 1024) {
+            throw new Error("L'avatar dépasse la limite de 2 Mo.");
+          }
+          const fileName = `${id}_${Date.now()}.jpg`;
+
           // Ensure public 'avatars' storage bucket exists
           try {
             await supabase.storage.createBucket('avatars', { public: true });
@@ -223,6 +230,10 @@ module.exports = async (req, res) => {
         return res.status(400).json({ success: false, message: 'Token et nouveau mot de passe requis.' });
       }
 
+      if (password.length < 8) {
+        return res.status(400).json({ success: false, message: 'Le mot de passe doit contenir au moins 8 caractères.' });
+      }
+
       const { error: sessionErr } = await supabase.auth.setSession({ access_token: token, refresh_token: '' });
       if (sessionErr) throw sessionErr;
 
@@ -230,6 +241,35 @@ module.exports = async (req, res) => {
       if (updateErr) throw updateErr;
 
       return res.status(200).json({ success: true, message: 'Mot de passe mis à jour avec succès.' });
+    }
+
+    // 5b. SYNC SESSION (for OAuth flows)
+    if (action === 'sync-session') {
+      if (req.method !== 'POST') return res.status(405).json({ message: 'Method Not Allowed' });
+      const { access_token } = req.body;
+      if (!access_token) return res.status(400).json({ success: false, message: 'Token requis.' });
+
+      res.cookie('token', access_token, {
+        httpOnly: true,
+        sameSite: 'strict',
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 7 * 24 * 60 * 60 * 1000
+      });
+
+      return res.status(200).json({ success: true });
+    }
+
+    // 5c. LOGOUT
+    if (action === 'logout') {
+      if (req.method !== 'POST') return res.status(405).json({ message: 'Method Not Allowed' });
+
+      res.clearCookie('token', {
+        httpOnly: true,
+        sameSite: 'strict',
+        secure: process.env.NODE_ENV === 'production'
+      });
+
+      return res.status(200).json({ success: true });
     }
 
     // 6. SYNC LEARNING PROGRESS

@@ -1,21 +1,16 @@
 // api/lib/auth.js
 const supabase = require('./supabase');
 
-async function verifyAdmin(req) {
-  let token = null;
-
-  // 1. Check cookies (populated by cookie-parser or Vercel helpers)
+async function extractToken(req) {
   if (req.cookies && req.cookies.token) {
-    token = req.cookies.token;
+    return req.cookies.token;
   }
 
-  // 2. Check Authorization header
-  if (!token && req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
-    token = req.headers.authorization.split(' ')[1];
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+    return req.headers.authorization.split(' ')[1];
   }
 
-  // 3. Fallback manually parsing req.headers.cookie
-  if (!token && req.headers.cookie) {
+  if (req.headers.cookie) {
     try {
       const cookies = req.headers.cookie.split(';').reduce((acc, cookie) => {
         const parts = cookie.split('=');
@@ -25,27 +20,38 @@ async function verifyAdmin(req) {
         return acc;
       }, {});
       if (cookies.token) {
-        token = cookies.token;
+        return cookies.token;
       }
     } catch (err) {
       console.error("Manual cookie parsing error:", err);
     }
   }
 
-  if (!token) {
-    console.warn("ADMIN API WARNING: No token found in request headers or cookies.");
-    return null;
-  }
+  return null;
+}
+
+async function verifyUser(req) {
+  const token = await extractToken(req);
+  if (!token) return null;
 
   try {
-    // Verify token with Supabase Auth
     const { data: { user }, error } = await supabase.auth.getUser(token);
-    if (error || !user) {
-      console.warn("ADMIN API WARNING: Invalid token or user not found. Error:", error?.message);
-      return null;
-    }
+    if (error || !user) return null;
+    return user;
+  } catch (err) {
+    console.error("Token verification failed:", err);
+    return null;
+  }
+}
 
-    // Retrieve user details from the database public.users table to verify role
+async function verifyAdmin(req) {
+  const token = await extractToken(req);
+  if (!token) return null;
+
+  try {
+    const { data: { user }, error } = await supabase.auth.getUser(token);
+    if (error || !user) return null;
+
     const { data: dbUser, error: dbError } = await supabase
       .from('users')
       .select('role')
@@ -53,11 +59,7 @@ async function verifyAdmin(req) {
       .maybeSingle();
 
     if (dbError || !dbUser) {
-      // Fallback: check user metadata if public.users is not synced
-      if (user.user_metadata && user.user_metadata.role === 'admin') {
-        return user;
-      }
-      console.warn("ADMIN API WARNING: User not found in public.users table and no admin metadata found.");
+      console.warn("ADMIN API WARNING: User not found in public.users table.");
       return null;
     }
 
@@ -74,5 +76,6 @@ async function verifyAdmin(req) {
 }
 
 module.exports = {
-  verifyAdmin
+  verifyAdmin,
+  verifyUser
 };

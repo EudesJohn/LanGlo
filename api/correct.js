@@ -2,10 +2,16 @@
 // Route Vercel Serverless pour mémoriser les corrections linguistiques des utilisateurs
 
 const { learnFromCorrection } = require('../lib/fonBrain');
+const { verifyUser } = require('./lib/auth');
 
 module.exports = async (req, res) => {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
+  }
+
+  const user = await verifyUser(req);
+  if (!user) {
+    return res.status(401).json({ error: 'Authentification requise.' });
   }
 
   const { french, wrongFon, correctFon } = req.body || {};

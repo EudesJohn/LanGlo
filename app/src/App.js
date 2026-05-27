@@ -17,26 +17,15 @@ import Studio from './views/Studio.js'
 import Learning from './views/Learning.js'
 import Footer from './components/Footer.js'
 import LucideIcon from './components/LucideIcon.js'
+import { API, SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js'
 
 const { ref, onMounted, nextTick, computed } = Vue;
-
-// Configure axios interceptor to automatically attach authorization header
-axios.interceptors.request.use(config => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-}, error => {
-  return Promise.reject(error);
-});
 
 export default {
   components: { Navbar, Home, Login, Register, Dictionary, Profile, Admin, AddWord, ForgotPassword, ResetPassword, LinkInvalid, About, Ethnicities, Studio, Learning, Toast, AppFooter: Footer, LucideIcon },
   setup() {
     const currentPage = ref('home');
     const user = ref(JSON.parse(localStorage.getItem('user')) || null);
-    const token = ref(localStorage.getItem('token') || null);
     const words = ref([]);
     const favorites = ref([]);
     const pendingWords = ref([]);
@@ -58,17 +47,11 @@ export default {
       }
     };
 
-    const API = '/api';
     const supabaseClient = ref(null);
 
-    const initSupabase = async () => {
+    const initSupabase = () => {
       try {
-        console.log("Fetching Supabase config...");
-        const res = await axios.get(`${API}/config/supabase`);
-        const { supabaseUrl, supabaseAnonKey } = res.data;
-        if (!supabaseUrl || !supabaseAnonKey) throw new Error("Credentials missing from API response");
-        supabaseClient.value = supabase.createClient(supabaseUrl, supabaseAnonKey);
-        console.log("✅ Supabase initialized successfully");
+        supabaseClient.value = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         return true;
       } catch (e) {
         console.error("❌ Failed to initialize Supabase:", e);
@@ -186,9 +169,7 @@ export default {
         const res = await axios.post(`${API}/auth/login`, creds);
         if (res.data.success) {
           user.value = res.data.user;
-          token.value = res.data.token;
           localStorage.setItem('user', JSON.stringify(user.value));
-          localStorage.setItem('token', token.value);
           navbarKey.value++;
           notify("Ravi de vous revoir, " + user.value.name);
           navigate('home');
@@ -298,11 +279,10 @@ export default {
       }
     };
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
+      try { await axios.post(`${API}/auth/logout`); } catch (_) {}
       user.value = null;
-      token.value = null;
       localStorage.removeItem('user');
-      localStorage.removeItem('token');
       navbarKey.value++;
       notify("Déconnexion réussie");
       navigate('home');
@@ -482,7 +462,11 @@ export default {
         }
 
         localStorage.setItem('user', JSON.stringify(user.value));
-        localStorage.setItem('token', session.access_token);
+
+        // Sync session to backend for httpOnly cookie
+        try {
+          await axios.post(`${API}/auth/sync-session`, { access_token: session.access_token });
+        } catch (_) { /* cookie already set or non-critical */ }
 
         if (user.value.role === 'admin') fetchAdminData();
 

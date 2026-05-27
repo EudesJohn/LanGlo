@@ -1,5 +1,6 @@
 // app/src/views/Learning.js
 import LucideIcon from '../components/LucideIcon.js';
+import { API } from '../config.js';
 
 export default {
   components: { LucideIcon },
@@ -825,7 +826,7 @@ export default {
       // If user logged in, sync directly to the remote database
       if (this.user && this.user.id) {
         try {
-          const res = await axios.post('/api/auth/sync-learning', {
+          const res = await axios.post(`${API}/auth/sync-learning`, {
             id: this.user.id,
             xp: this.xp,
             hearts: this.hearts,
@@ -900,7 +901,7 @@ export default {
     async fetchAudioForWord(word) {
       if (this.audioCache[word]) return;
       try {
-        const res = await axios.get(`/api/dictionary/search?q=${word}`);
+        const res = await axios.get(`${API}/dictionary/search?q=${word}`);
         if (res.data && res.data.exactMatches && res.data.exactMatches.length > 0) {
           const match = res.data.exactMatches.find(m => m.audio_url);
           if (match) {
@@ -1215,7 +1216,7 @@ export default {
       <canvas v-if="confettiActive" ref="confettiCanvas" class="confetti-canvas"></canvas>
 
       <!-- TOP LEARNING SUBNAV / STATS -->
-      <div v-if="!currentLesson" class="container" style="max-width: 800px; margin-top: 10px;">
+      <div v-if="!currentLesson" class="container learning-container with-top">
         <div class="learning-stats-bar glass-card">
           <div class="stat-bubble clickable" @click="$emit('navigate', 'profile')" title="Vos points XP accumulés">
             <span class="stat-icon">✨</span>
@@ -1236,10 +1237,10 @@ export default {
       </div>
 
       <!-- MAIN ROADMAP PATH VIEW -->
-      <div v-if="!currentLesson" class="container" style="max-width: 800px; padding: 20px 10px;">
-        
+      <div v-if="!currentLesson" class="container learning-container" style="padding: 20px 10px;">
+
         <!-- TABS BAR -->
-        <div style="display: flex; gap: 12px; margin-bottom: 25px;">
+        <div class="learning-tabs-bar" style="display: flex; gap: 12px; margin-bottom: 25px;">
           <button @click="showGuides = false" class="main-tab-btn" :class="{ active: !showGuides }" style="flex: 1; justify-content: center; border-radius: 20px;">
             <lucide-icon name="play-circle" />
             <span>Parcours de Jeu</span>
@@ -1318,78 +1319,80 @@ export default {
           </div>
 
           <!-- GUIDE 1: ALPHABET & TONS -->
-          <div v-if="activeGuideTab === 'alphabet'" class="glass-card animate-fadeIn" style="padding: 30px; border-radius: 24px; border: 1px solid var(--glass-border);">
+          <div v-if="activeGuideTab === 'alphabet'" class="glass-card animate-fadeIn guide-card">
             <h3 class="gradient-text" style="font-size: 1.8rem; margin-bottom: 15px;">🔤 Alphabet Standard &amp; Système de Tons</h3>
-            <p style="opacity: 0.8; line-height: 1.6; margin-bottom: 20px;">
+            <p class="guide-intro">
               Le Fon (fɔ̀ngbè) utilise l'alphabet latin officiel standardisé par le <strong>CENALA</strong> (Bénin), enrichi de caractères phonétiques spéciaux et de digrammes indispensables pour transcrire fidèlement ses sons et ses variations de hauteur mélodique.
             </p>
 
-            <h4 style="color: white; font-weight: 800; margin-top: 25px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+            <h4 class="guide-heading" style="margin-top: 25px;">
               <span style="color: var(--primary);">•</span> Les 3 lettres spéciales du Fon
             </h4>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px;">
-              <div style="background: rgba(0,0,0,0.15); padding: 15px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.03);">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div class="guide-grid-3">
+              <div class="guide-info-card">
+  <div class="guide-card-header">
                   <strong style="color: var(--primary); font-size: 1.6rem;" class="font-fon">Ɖ / ɖ</strong>
                   <span class="badge-luxury" style="font-size: 0.65rem;">Rétroflexe</span>
                 </div>
-                <p style="font-size: 0.85rem; opacity: 0.7; margin: 0; line-height: 1.4;">
+                <p class="guide-card-text">
                   Un "d" prononcé avec le bout de la langue replié vers le palais. <br>
                   <em>Exemple :</em> <strong class="font-fon">ɖu</strong> (manger).
                 </p>
               </div>
 
-              <div style="background: rgba(0,0,0,0.15); padding: 15px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.03);">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <div class="guide-info-card">
+  <div class="guide-card-header">
                   <strong style="color: var(--primary); font-size: 1.6rem;" class="font-fon">Ɛ / ɛ</strong>
                   <span class="badge-luxury" style="font-size: 0.65rem;">È ouvert</span>
                 </div>
-                <p style="font-size: 0.85rem; opacity: 0.7; margin: 0; line-height: 1.4;">
+                <p class="guide-card-text">
                   Se prononce comme le "è" ouvert français dans le mot "mer". <br>
                   <em>Exemple :</em> <strong class="font-fon">ɛnɛ</strong> (quatre).
                 </p>
               </div>
 
-              <div style="background: rgba(0,0,0,0.15); padding: 15px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.03);">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <div class="guide-info-card">
+  <div class="guide-card-header">
                   <strong style="color: var(--primary); font-size: 1.6rem;" class="font-fon">Ɔ / ɔ</strong>
                   <span class="badge-luxury" style="font-size: 0.65rem;">O ouvert</span>
                 </div>
-                <p style="font-size: 0.85rem; opacity: 0.7; margin: 0; line-height: 1.4;">
+                <p class="guide-card-text">
                   Se prononce comme le "o" ouvert français dans le mot "fort". <br>
                   <em>Exemple :</em> <strong class="font-fon">tɔn</strong> (de/possessif).
                 </p>
               </div>
             </div>
 
-            <h4 style="color: white; font-weight: 800; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+            <h4 class="guide-heading">
+
               <span style="color: var(--primary);">•</span> Consonnes Complexes (Digrammes)
             </h4>
-            <p style="opacity: 0.7; font-size: 0.9rem; line-height: 1.5; margin-bottom: 15px;">
+            <p class="guide-text">
               Certaines articulations doubles exigent de prononcer deux consonnes simultanément, typiques des langues de l'Afrique de l'Ouest :
             </p>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 25px; font-size: 0.88rem;">
-              <div style="background: rgba(255,255,255,0.02); padding: 12px 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.02);">
+            <div class="guide-grid-2" style="font-size: 0.88rem;">
+              <div class="guide-digramme-card">
                 <strong style="color: white;" class="font-fon">gb</strong> : Consonne labio-vélaire sonore. Prononcez "g" et "b" en même temps. <br><small style="opacity: 0.5;">Ex: <strong>fɔ̀ngbè</strong> (langue fon).</small>
               </div>
-              <div style="background: rgba(255,255,255,0.02); padding: 12px 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.02);">
+              <div class="guide-digramme-card">
                 <strong style="color: white;" class="font-fon">kp</strong> : Variante sourde du précédent. Prononcez "k" et "p" simultanément. <br><small style="opacity: 0.5;">Ex: <strong>ɖokpó</strong> (un).</small>
               </div>
-              <div style="background: rgba(255,255,255,0.02); padding: 12px 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.02);">
+              <div class="guide-digramme-card">
                 <strong style="color: white;" class="font-fon">ny</strong> : Se prononce comme le "gn" français dans "champagne". <br><small style="opacity: 0.5;">Ex: <strong>nyɔnu</strong> (femme/sœur).</small>
               </div>
-              <div style="background: rgba(255,255,255,0.02); padding: 12px 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.02);">
+              <div class="guide-digramme-card">
                 <strong style="color: white;" class="font-fon">hw / xw</strong> : Fricatives arrondies aspirées (proches de "wh" en anglais ou "x" espagnol). <br><small style="opacity: 0.5;">Ex: <strong>xwégbé</strong> (maison).</small>
               </div>
             </div>
 
-            <h4 style="color: white; font-weight: 800; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+            <h4 class="guide-heading">
+
               <span style="color: var(--primary);">•</span> Nasalisation des Voyelles
             </h4>
-            <p style="opacity: 0.7; font-size: 0.9rem; line-height: 1.5; margin-bottom: 15px;">
+            <p class="guide-text">
               Le Fon comprend 7 voyelles orales et 5 voyelles nasales (notées par un suffixe <strong>"n"</strong>). La nasalisation est un marqueur sémantique fondamental :
             </p>
-            <div style="background: rgba(255, 107, 53, 0.03); padding: 15px 20px; border-radius: 16px; border: 1px dashed rgba(255, 107, 53, 0.2); display: flex; justify-content: space-around; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 25px;">
+            <div class="guide-highlight-box">
               <div style="text-align: center;">
                 <span style="opacity: 0.5; font-size: 0.8rem;">Oral</span> <br>
                 <strong class="font-fon" style="color: white; font-size: 1.3rem;">sà</strong> <br>
@@ -1403,24 +1406,25 @@ export default {
               </div>
             </div>
 
-            <h4 style="color: white; font-weight: 800; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+            <h4 class="guide-heading">
+
               <span style="color: var(--primary);">•</span> Le Pouvoir Absolu des Tons (La Mélodie)
             </h4>
-            <p style="opacity: 0.7; font-size: 0.9rem; line-height: 1.5; margin-bottom: 15px;">
+            <p class="guide-text">
               Le Fon est une <strong>langue à tons</strong>. La hauteur musicale de votre voix change radicalement le sens d'un mot orthographié de la même manière :
             </p>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px;">
-              <div style="background: rgba(0,0,0,0.15); padding: 15px; border-radius: 14px; text-align: center; border: 1px solid rgba(255,255,255,0.03);">
+            <div class="guide-grid-auto">
+              <div class="guide-info-card" style="text-align: center; padding: 15px; border-radius: 14px;">
                 <span style="font-size: 0.75rem; opacity: 0.5; text-transform: uppercase;">Ton Haut (´)</span> <br>
                 <strong class="font-fon" style="color: var(--primary); font-size: 1.4rem;">kɔ́</strong> <br>
                 <span style="color: white; font-weight: 600; font-size: 0.9rem;">Le Cou</span>
               </div>
-              <div style="background: rgba(0,0,0,0.15); padding: 15px; border-radius: 14px; text-align: center; border: 1px solid rgba(255,255,255,0.03);">
+              <div class="guide-info-card" style="text-align: center; padding: 15px; border-radius: 14px;">
                 <span style="font-size: 0.75rem; opacity: 0.5; text-transform: uppercase;">Ton Bas (&#96;)</span> <br>
                 <strong class="font-fon" style="color: var(--primary); font-size: 1.4rem;">kɔ̀</strong> <br>
                 <span style="color: white; font-weight: 600; font-size: 0.9rem;">La Boue / Le Sol</span>
               </div>
-              <div style="background: rgba(0,0,0,0.15); padding: 15px; border-radius: 14px; text-align: center; border: 1px solid rgba(255,255,255,0.03);">
+              <div class="guide-info-card" style="text-align: center; padding: 15px; border-radius: 14px;">
                 <span style="font-size: 0.75rem; opacity: 0.5; text-transform: uppercase;">Ton Montant (ˇ)</span> <br>
                 <strong class="font-fon" style="color: var(--primary); font-size: 1.4rem;">kɔ̌</strong> <br>
                 <span style="color: white; font-weight: 600; font-size: 0.9rem;">Refuser</span>
@@ -1429,166 +1433,171 @@ export default {
           </div>
 
           <!-- GUIDE 2: GRAMMAIRE & CONJUGAISON -->
-          <div v-if="activeGuideTab === 'grammar'" class="glass-card animate-fadeIn" style="padding: 30px; border-radius: 24px; border: 1px solid var(--glass-border);">
+          <div v-if="activeGuideTab === 'grammar'" class="glass-card animate-fadeIn guide-card">
             <h3 class="gradient-text" style="font-size: 1.8rem; margin-bottom: 15px;">📝 Syntaxe, Pronoms &amp; Marqueurs de Temps</h3>
-            <p style="opacity: 0.8; line-height: 1.6; margin-bottom: 20px;">
+            <p class="guide-intro">
               Le Fon est une <strong>langue isolante</strong> : les mots y sont invariables. Pas de conjugaisons compliquées, pas d'accords en genre ou en nombre. Tout repose sur l'ordre des mots (Sujet + Verbe + Objet) et l'utilisation de marqueurs de contexte.
             </p>
             
-            <h4 style="color: white; font-weight: 800; margin-top: 25px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+            <h4 class="guide-heading" style="margin-top: 25px;">
               <span style="color: var(--primary);">•</span> Table des Pronoms Personnels
             </h4>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 25px;">
-              <div style="background: rgba(0,0,0,0.15); padding: 12px 18px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.03); display: flex; justify-content: space-between;">
+            <div class="guide-grid-3" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+              <div class="guide-pronoun-row">
                 <span>1ère Sing. (Je / Moi)</span>
                 <strong style="color: var(--primary);" class="font-fon">ùn / mì</strong>
               </div>
-              <div style="background: rgba(0,0,0,0.15); padding: 12px 18px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.03); display: flex; justify-content: space-between;">
+              <div class="guide-pronoun-row">
                 <span>1ère Plur. (Nous)</span>
                 <strong style="color: var(--primary);" class="font-fon">mǐ</strong>
               </div>
-              <div style="background: rgba(0,0,0,0.15); padding: 12px 18px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.03); display: flex; justify-content: space-between;">
+              <div class="guide-pronoun-row">
                 <span>2ème Sing. (Tu / Toi)</span>
                 <strong style="color: var(--primary);" class="font-fon">a</strong>
               </div>
-              <div style="background: rgba(0,0,0,0.15); padding: 12px 18px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.03); display: flex; justify-content: space-between;">
+              <div class="guide-pronoun-row">
                 <span>2ème Plur. (Vous)</span>
                 <strong style="color: var(--primary);" class="font-fon">mi</strong>
               </div>
-              <div style="background: rgba(0,0,0,0.15); padding: 12px 18px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.03); display: flex; justify-content: space-between;">
+              <div class="guide-pronoun-row">
                 <span>3ème Sing. (Il / Elle)</span>
                 <strong style="color: var(--primary);" class="font-fon">é</strong>
               </div>
-              <div style="background: rgba(0,0,0,0.15); padding: 12px 18px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.03); display: flex; justify-content: space-between;">
+              <div class="guide-pronoun-row">
                 <span>3ème Plur. (Ils / Elles)</span>
                 <strong style="color: var(--primary);" class="font-fon">ye</strong>
               </div>
             </div>
 
-            <h4 style="color: white; font-weight: 800; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+            <h4 class="guide-heading">
+
               <span style="color: var(--primary);">•</span> Possession Postpositionnelle (L'inversion possessive)
             </h4>
-            <p style="opacity: 0.7; font-size: 0.9rem; line-height: 1.5; margin-bottom: 15px;">
+            <p class="guide-text">
               En Fon, on ne place pas l'adjectif possessif devant le nom. On place le nom d'abord, suivi du possesseur, souvent lié par la particule de possession <strong class="font-fon" style="color:var(--primary)">tɔn</strong> :
             </p>
-            <div style="background: rgba(255,255,255,0.02); padding: 15px 20px; border-radius: 16px; border: 1px solid var(--glass-border); margin-bottom: 25px; line-height: 1.8;">
+            <div class="guide-example-box">
               • Ma maison ➔ <strong class="font-fon" style="color:var(--primary)">xɔ ce tɔn</strong> <span style="opacity:0.5;">(Maison + de moi)</span><br>
               • Son pain ➔ <strong class="font-fon" style="color:var(--primary)">wɔ̌xúxú tɔn</strong> <span style="opacity:0.5;">(Pain + de lui/elle)</span><br>
               • Ta viande ➔ <strong class="font-fon" style="color:var(--primary)">lan tɔwé tɔn</strong> <span style="opacity:0.5;">(Viande + de toi)</span>
             </div>
 
-            <h4 style="color: white; font-weight: 800; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+            <h4 class="guide-heading">
+
               <span style="color: var(--primary);">•</span> Conjugaison : Le Système d'Aspects &amp; Temps
             </h4>
-            <p style="opacity: 0.7; font-size: 0.9rem; line-height: 1.5; margin-bottom: 15px;">
+            <p class="guide-text">
               Le verbe reste <strong>strictement invariable</strong>. Pour marquer le temps ou le déroulement de l'action, on insère des marqueurs directement après le pronom sujet :
             </p>
-            <div style="display: grid; grid-template-columns: 1fr; gap: 10px; margin-bottom: 25px;">
-              <div style="background: rgba(0,0,0,0.12); padding: 12px 15px; border-radius: 12px; border-left: 4px solid #ff6b35;">
+            <div class="guide-tense-grid">
+              <div class="guide-tense-box" style="border-left-color: #ff6b35;">
                 <span style="font-weight: 700; color: white;">Aoriste (Présent / Passé immédiat)</span> : Verbe nu. <br>
                 ➔ <strong class="font-fon" style="color:var(--primary);">ùn ɖu</strong> = Je mange / J'ai mangé.
               </div>
-              <div style="background: rgba(0,0,0,0.12); padding: 12px 15px; border-radius: 12px; border-left: 4px solid #4cc9f0;">
+              <div class="guide-tense-box" style="border-left-color: #4cc9f0;">
                 <span style="font-weight: 700; color: white;">Futur</span> : Particule <strong class="font-fon" style="color:var(--primary);">na</strong> devant le verbe. <br>
                 ➔ <strong class="font-fon" style="color:var(--primary);">ùn na ɖu</strong> = Je vais manger.
               </div>
-              <div style="background: rgba(0,0,0,0.12); padding: 12px 15px; border-radius: 12px; border-left: 4px solid #7209b7;">
+              <div class="guide-tense-box" style="border-left-color: #7209b7;">
                 <span style="font-weight: 700; color: white;">Passé Accomplie</span> : Particules <strong class="font-fon" style="color:var(--primary);">ko</strong> (déjà) ou <strong class="font-fon" style="color:var(--primary);">ɖo</strong>. <br>
                 ➔ <strong class="font-fon" style="color:var(--primary);">ùn ko ɖu</strong> = J'ai déjà mangé.
               </div>
-              <div style="background: rgba(0,0,0,0.12); padding: 12px 15px; border-radius: 12px; border-left: 4px solid #f72585;">
+              <div class="guide-tense-box" style="border-left-color: #f72585;">
                 <span style="font-weight: 700; color: white;">Présent Progressif (En train de)</span> : Particule <strong class="font-fon" style="color:var(--primary);">ɖò</strong> et suffixe <strong class="font-fon" style="color:var(--primary);">wɛ́</strong> avec redoublement du verbe ! <br>
                 ➔ <strong class="font-fon" style="color:var(--primary);">ùn ɖò ɖuɖu wɛ́</strong> = Je suis en train de manger.
               </div>
-              <div style="background: rgba(0,0,0,0.12); padding: 12px 15px; border-radius: 12px; border-left: 4px solid #2ec4b6;">
+              <div class="guide-tense-box" style="border-left-color: #2ec4b6;">
                 <span style="font-weight: 700; color: white;">Habituel (Routine)</span> : Particule <strong class="font-fon" style="color:var(--primary);">nɔ</strong> devant le verbe. <br>
                 ➔ <strong class="font-fon" style="color:var(--primary);">ùn nɔ ɖu wɔ̌xúxú</strong> = Je mange habituellement du pain.
               </div>
             </div>
 
-            <h4 style="color: white; font-weight: 800; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+            <h4 class="guide-heading">
+
               <span style="color: var(--primary);">•</span> La Règle d'Or de la Négation
             </h4>
-            <p style="opacity: 0.7; font-size: 0.9rem; line-height: 1.5; margin-bottom: 10px;">
+            <p class="guide-text" style="margin-bottom: 10px;">
               Pour nier une phrase, on utilise l'adverbe de négation <strong class="font-fon" style="color:var(--primary)">ă</strong> (parfois transcrit <em>ã</em>) ou la particule finale <strong class="font-fon" style="color:var(--primary)">ɔ</strong> tout à la fin de la phrase :
             </p>
-            <div style="background: rgba(231, 29, 54, 0.05); padding: 15px; border-radius: 16px; border: 1px solid rgba(231, 29, 54, 0.2); font-size: 0.95rem; line-height: 1.6;">
+            <div class="guide-negation-box">
               • Je vois ➔ <strong class="font-fon" style="color:white">ùn mɔ</strong> <br>
               • Je ne vois pas ➔ <strong class="font-fon" style="color:var(--primary)">ùn mɔ ă</strong> <span style="opacity:0.5;">(Je + voir + pas)</span>
             </div>
           </div>
 
           <!-- GUIDE 3: SALUTATIONS & SOCIAL -->
-          <div v-if="activeGuideTab === 'salutations'" class="glass-card animate-fadeIn" style="padding: 30px; border-radius: 24px; border: 1px solid var(--glass-border);">
+          <div v-if="activeGuideTab === 'salutations'" class="glass-card animate-fadeIn guide-card">
             <h3 class="gradient-text" style="font-size: 1.8rem; margin-bottom: 15px;">🗣️ Salutations, Relations &amp; Politesse</h3>
-            <p style="opacity: 0.8; line-height: 1.6; margin-bottom: 20px;">
+            <p class="guide-intro">
               Au Bénin, saluer est un art social sacré et chaleureux. Ne pas saluer ou abréger une salutation est perçu comme impoli. On demande toujours des nouvelles de la santé, de la famille et du réveil.
             </p>
 
-            <h4 style="color: white; font-weight: 800; margin-top: 25px; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+            <h4 class="guide-heading" style="margin-top: 25px; margin-bottom: 15px;">
               <span style="color: var(--primary);">•</span> Dialogue de Salutation Traditionnelle du Matin
             </h4>
             
             <!-- CHAT STYLE MOCKUP -->
-            <div style="display: flex; flex-direction: column; gap: 15px; background: rgba(0,0,0,0.2); padding: 20px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 25px;">
+            <div class="chat-dialog">
               <!-- Ami A -->
-              <div style="display: flex; gap: 10px; align-items: flex-start; max-width: 80%;">
-                <div style="background: var(--primary); color: white; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0;">A</div>
-                <div style="background: rgba(255, 107, 53, 0.1); border: 1px solid rgba(255, 107, 53, 0.2); padding: 10px 15px; border-radius: 0 16px 16px 16px;">
+              <div class="chat-message">
+                <div class="chat-avatar chat-avatar-a">A</div>
+                <div class="chat-bubble-a">
                   <strong style="color: white;" class="font-fon">A fɔn à ?</strong>
                   <div style="font-size: 0.8rem; opacity: 0.6; margin-top: 4px;">Littéralement : "T'es-tu réveillé ?" (Bonjour le matin)</div>
                 </div>
               </div>
               
               <!-- Ami B -->
-              <div style="display: flex; gap: 10px; align-items: flex-start; max-width: 80%; align-self: flex-end; flex-direction: row-reverse;">
-                <div style="background: #2ec4b6; color: white; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0;">B</div>
-                <div style="background: rgba(46, 196, 182, 0.1); border: 1px solid rgba(46, 196, 182, 0.2); padding: 10px 15px; border-radius: 16px 0 16px 16px;">
+              <div class="chat-message right">
+                <div class="chat-avatar chat-avatar-b">B</div>
+                <div class="chat-bubble-b">
                   <strong style="color: white;" class="font-fon">Een, ùn fɔn ganji, bo a ?</strong>
                   <div style="font-size: 0.8rem; opacity: 0.6; margin-top: 4px;">"Oui, je me suis bien réveillé, et toi ?"</div>
                 </div>
               </div>
 
               <!-- Ami A -->
-              <div style="display: flex; gap: 10px; align-items: flex-start; max-width: 80%;">
-                <div style="background: var(--primary); color: white; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0;">A</div>
-                <div style="background: rgba(255, 107, 53, 0.1); border: 1px solid rgba(255, 107, 53, 0.2); padding: 10px 15px; border-radius: 0 16px 16px 16px;">
+              <div class="chat-message">
+                <div class="chat-avatar chat-avatar-a">A</div>
+                <div class="chat-bubble-a">
                   <strong style="color: white;" class="font-fon">Ùn ɖo ganji, àwànù.</strong>
                   <div style="font-size: 0.8rem; opacity: 0.6; margin-top: 4px;">"Je vais bien, merci."</div>
                 </div>
               </div>
             </div>
 
-            <h4 style="color: white; font-weight: 800; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+            <h4 class="guide-heading">
+
               <span style="color: var(--primary);">•</span> Salutations selon l'heure de la journée
             </h4>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-bottom: 25px;">
-              <div style="background: rgba(0,0,0,0.15); padding: 15px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.03);">
-                <div style="font-size: 0.75rem; opacity: 0.5;">L'APRÈS-MIDI / SOLEIL</div>
+            <div class="guide-salutation-grid">
+              <div class="guide-info-card">
+  <div style="font-size: 0.75rem; opacity: 0.5;">L'APRÈS-MIDI / SOLEIL</div>
                 <strong style="color: var(--primary); font-size: 1.15rem;" class="font-fon">Kudo hwemɛ !</strong>
                 <div style="color: white; font-weight: 600; margin-top: 3px;">Bon après-midi</div>
               </div>
-              <div style="background: rgba(0,0,0,0.15); padding: 15px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.03);">
-                <div style="font-size: 0.75rem; opacity: 0.5;">LE SOIR / CRÉPUSCULE</div>
+              <div class="guide-info-card">
+  <div style="font-size: 0.75rem; opacity: 0.5;">LE SOIR / CRÉPUSCULE</div>
                 <strong style="color: var(--primary); font-size: 1.15rem;" class="font-fon">Kúdo gbáda !</strong>
                 <div style="color: white; font-weight: 600; margin-top: 3px;">Bonsoir</div>
               </div>
-              <div style="background: rgba(0,0,0,0.15); padding: 15px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.03);">
-                <div style="font-size: 0.75rem; opacity: 0.5;">SOUHAITER LA BIENVENUE</div>
+              <div class="guide-info-card">
+  <div style="font-size: 0.75rem; opacity: 0.5;">SOUHAITER LA BIENVENUE</div>
                 <strong style="color: var(--primary); font-size: 1.15rem;" class="font-fon">Ku abɔ ! / Mi ku abɔ !</strong>
                 <div style="color: white; font-weight: 600; margin-top: 3px;">Bienvenue (Pluriel/Respect)</div>
               </div>
-              <div style="background: rgba(0,0,0,0.15); padding: 15px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.03);">
-                <div style="font-size: 0.75rem; opacity: 0.5;">PARTIR / PRENDRE CONGÉ</div>
+              <div class="guide-info-card">
+  <div style="font-size: 0.75rem; opacity: 0.5;">PARTIR / PRENDRE CONGÉ</div>
                 <strong style="color: var(--primary); font-size: 1.15rem;" class="font-fon">Bo yi bo wá !</strong>
                 <div style="color: white; font-weight: 600; margin-top: 3px;">Au revoir (Litt: Va et reviens)</div>
               </div>
             </div>
 
-            <h4 style="color: white; font-weight: 800; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+            <h4 class="guide-heading">
+
               <span style="color: var(--primary);">•</span> Faire Connaissance &amp; Formules de Politesse
             </h4>
-            <div style="background: rgba(255,255,255,0.02); padding: 20px; border-radius: 18px; border: 1px solid var(--glass-border); line-height: 1.8;">
+            <div class="guide-example-box" style="padding: 20px; border-radius: 18px;">
               • Comment t'appelles-tu ? ➔ <strong class="font-fon" style="color: var(--primary);">Nɛ̌ wɛ ye nɔ yɔ̌ we ?</strong><br>
               • Je m'appelle Eudes ➔ <strong class="font-fon" style="color: var(--primary);">Ye nɔ yɔ̌ mì ɖɔ Eudes</strong> <span style="opacity:0.5;">(On m'appelle Eudes)</span><br>
               • S'il vous plaît ➔ <strong class="font-fon" style="color: var(--primary);">Mi kɛnklɛɛn</strong><br>
@@ -1598,89 +1607,91 @@ export default {
           </div>
 
           <!-- GUIDE 4: NOMBRES & LOGIQUE -->
-          <div v-if="activeGuideTab === 'numbers'" class="glass-card animate-fadeIn" style="padding: 30px; border-radius: 24px; border: 1px solid var(--glass-border);">
+          <div v-if="activeGuideTab === 'numbers'" class="glass-card animate-fadeIn guide-card">
             <h3 class="gradient-text" style="font-size: 1.8rem; margin-bottom: 15px;">🔢 Système de Comptage Vigésimal &amp; Quinaire</h3>
-            <p style="opacity: 0.8; line-height: 1.6; margin-bottom: 20px;">
+            <p class="guide-intro">
               Le système numérique du Fon combine une <strong>base 5</strong> pour les unités et une <strong>base 20</strong> (système vigésimal) pour les nombres supérieurs.
             </p>
 
-            <h4 style="color: white; font-weight: 800; margin-top: 25px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+            <h4 class="guide-heading" style="margin-top: 25px;">
               <span style="color: var(--primary);">•</span> Les Chiffres Fondamentaux de 1 à 10
             </h4>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 25px;">
-              <div style="background: rgba(0,0,0,0.15); padding: 10px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.03); text-align: center;">
+            <div class="guide-grid-auto" style="grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px;">
+              <div class="guide-info-card" style="padding: 10px; border-radius: 12px; text-align: center;">
                 <span style="opacity: 0.5; font-size: 0.8rem;">1</span> <br>
                 <strong style="color: var(--primary);" class="font-fon">ɖokpó</strong>
               </div>
-              <div style="background: rgba(0,0,0,0.15); padding: 10px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.03); text-align: center;">
+              <div class="guide-info-card" style="padding: 10px; border-radius: 12px; text-align: center;">
                 <span style="opacity: 0.5; font-size: 0.8rem;">2</span> <br>
                 <strong style="color: var(--primary);" class="font-fon">wè</strong>
               </div>
-              <div style="background: rgba(0,0,0,0.15); padding: 10px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.03); text-align: center;">
+              <div class="guide-info-card" style="padding: 10px; border-radius: 12px; text-align: center;">
                 <span style="opacity: 0.5; font-size: 0.8rem;">3</span> <br>
                 <strong style="color: var(--primary);" class="font-fon">atɔn</strong>
               </div>
-              <div style="background: rgba(0,0,0,0.15); padding: 10px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.03); text-align: center;">
+              <div class="guide-info-card" style="padding: 10px; border-radius: 12px; text-align: center;">
                 <span style="opacity: 0.5; font-size: 0.8rem;">4</span> <br>
                 <strong style="color: var(--primary);" class="font-fon">ɛnɛ</strong>
               </div>
-              <div style="background: rgba(0,0,0,0.15); padding: 10px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.03); text-align: center;">
+              <div class="guide-info-card" style="padding: 10px; border-radius: 12px; text-align: center;">
                 <span style="opacity: 0.5; font-size: 0.8rem;">5</span> <br>
                 <strong style="color: var(--primary);" class="font-fon">atɔ́ɔ́n</strong>
               </div>
-              <div style="background: rgba(0,0,0,0.15); padding: 10px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.03); text-align: center;">
+              <div class="guide-info-card" style="padding: 10px; border-radius: 12px; text-align: center;">
                 <span style="opacity: 0.5; font-size: 0.8rem;">6</span> <br>
                 <strong style="color: var(--primary);" class="font-fon">aizɛn</strong>
               </div>
-              <div style="background: rgba(0,0,0,0.15); padding: 10px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.03); text-align: center;">
+              <div class="guide-info-card" style="padding: 10px; border-radius: 12px; text-align: center;">
                 <span style="opacity: 0.5; font-size: 0.8rem;">7</span> <br>
                 <strong style="color: var(--primary);" class="font-fon">tɛ́nwè</strong>
               </div>
-              <div style="background: rgba(0,0,0,0.15); padding: 10px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.03); text-align: center;">
+              <div class="guide-info-card" style="padding: 10px; border-radius: 12px; text-align: center;">
                 <span style="opacity: 0.5; font-size: 0.8rem;">8</span> <br>
                 <strong style="color: var(--primary);" class="font-fon">tantɔn</strong>
               </div>
-              <div style="background: rgba(0,0,0,0.15); padding: 10px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.03); text-align: center;">
+              <div class="guide-info-card" style="padding: 10px; border-radius: 12px; text-align: center;">
                 <span style="opacity: 0.5; font-size: 0.8rem;">9</span> <br>
                 <strong style="color: var(--primary);" class="font-fon">tɛ́nnɛ</strong>
               </div>
-              <div style="background: rgba(0,0,0,0.15); padding: 10px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.03); text-align: center;">
+              <div class="guide-info-card" style="padding: 10px; border-radius: 12px; text-align: center;">
                 <span style="opacity: 0.5; font-size: 0.8rem;">10</span> <br>
                 <strong style="color: var(--primary);" class="font-fon">wǒ</strong>
               </div>
             </div>
 
-            <h4 style="color: white; font-weight: 800; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+            <h4 class="guide-heading">
+
               <span style="color: var(--primary);">•</span> Les Dizaines &amp; Nombres Pivots
             </h4>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 25px;">
-              <div style="background: rgba(255,255,255,0.02); padding: 12px 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.03); display: flex; justify-content: space-between;">
+            <div class="guide-grid-auto" style="gap: 12px;">
+              <div class="guide-digramme-card" style="display: flex; justify-content: space-between;">
                 <span>15 (Pivot)</span> <strong class="font-fon" style="color: white;">afɔtɔn</strong>
               </div>
-              <div style="background: rgba(255,255,255,0.02); padding: 12px 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.03); display: flex; justify-content: space-between;">
+              <div class="guide-digramme-card" style="display: flex; justify-content: space-between;">
                 <span>20 (Base)</span> <strong class="font-fon" style="color: white;">ko</strong>
               </div>
-              <div style="background: rgba(255,255,255,0.02); padding: 12px 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.03); display: flex; justify-content: space-between;">
+              <div class="guide-digramme-card" style="display: flex; justify-content: space-between;">
                 <span>30</span> <strong class="font-fon" style="color: white;">gban</strong>
               </div>
-              <div style="background: rgba(255,255,255,0.02); padding: 12px 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.03); display: flex; justify-content: space-between;">
+              <div class="guide-digramme-card" style="display: flex; justify-content: space-between;">
                 <span>40 (20 × 2)</span> <strong class="font-fon" style="color: white;">kanɖé</strong>
               </div>
-              <div style="background: rgba(255,255,255,0.02); padding: 12px 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.03); display: flex; justify-content: space-between;">
+              <div class="guide-digramme-card" style="display: flex; justify-content: space-between;">
                 <span>50 (40 + 10)</span> <strong class="font-fon" style="color: white;">kanɖé wo</strong>
               </div>
-              <div style="background: rgba(255,255,255,0.02); padding: 12px 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.03); display: flex; justify-content: space-between;">
+              <div class="guide-digramme-card" style="display: flex; justify-content: space-between;">
                 <span>100 (20 × 5)</span> <strong class="font-fon" style="color: white;">kanwe ko</strong>
               </div>
             </div>
 
-            <h4 style="color: white; font-weight: 800; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+            <h4 class="guide-heading">
+
               <span style="color: var(--primary);">•</span> La logique de liaison "nukun" (addition)
             </h4>
-            <p style="opacity: 0.7; font-size: 0.9rem; line-height: 1.5; margin-bottom: 15px;">
+            <p class="guide-text">
               Pour former les nombres intermédiaires, le Fon utilise le terme <strong style="color:var(--primary)">nukun</strong> (qui signifie littéralement "œil" ou "addition") pour additionner des unités à la base supérieure :
             </p>
-            <div style="background: rgba(255,107,53,0.02); padding: 20px; border-radius: 18px; border: 1px dashed rgba(255,107,53,0.2); line-height: 2;">
+            <div class="guide-liaison-box">
               • <strong>16</strong> (15 + 1) ➔ <strong class="font-fon" style="color:var(--primary)">afɔtɔn nukun ɖokpó</strong> <br>
               • <strong>21</strong> (20 + 1) ➔ <strong class="font-fon" style="color:var(--primary)">ko nukun ɖokpó</strong> <br>
               • <strong>42</strong> (40 + 2) ➔ <strong class="font-fon" style="color:var(--primary)">kanɖé nukun wé</strong>
@@ -1688,51 +1699,51 @@ export default {
           </div>
 
           <!-- GUIDE 5: SURVIE & EXPRESSIONS -->
-          <div v-if="activeGuideTab === 'vocab'" class="glass-card animate-fadeIn" style="padding: 30px; border-radius: 24px; border: 1px solid var(--glass-border);">
+          <div v-if="activeGuideTab === 'vocab'" class="glass-card animate-fadeIn guide-card">
             <h3 class="gradient-text" style="font-size: 1.8rem; margin-bottom: 15px;">📚 Guide de Survie &amp; Lexique Quotidien</h3>
-            <p style="opacity: 0.8; line-height: 1.6; margin-bottom: 20px;">
+            <p class="guide-intro">
               Les expressions les plus courantes dont vous aurez besoin pour vous intégrer, faire les courses au marché ou demander de l'aide en urgence.
             </p>
 
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+            <div class="guide-grid-3" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
               <!-- Catégorie Marché -->
-              <div style="background: rgba(0,0,0,0.15); padding: 20px; border-radius: 18px; border: 1px solid rgba(255,255,255,0.03);">
-                <h4 style="color: white; font-weight: 800; margin-top: 0; margin-bottom: 12px; color: var(--primary);">💰 Négocier au Marché</h4>
-                <div style="display: flex; flex-direction: column; gap: 10px; font-size: 0.9rem;">
-                  <div style="display:flex; justify-content:space-between;"><span>Combien ça coûte ?</span> <strong class="font-fon" style="color: white;">Bì nyí nabí ?</strong></div>
-                  <div style="display:flex; justify-content:space-between;"><span>C'est trop cher !</span> <strong class="font-fon" style="color: white;">É vɛ́ kaka !</strong></div>
-                  <div style="display:flex; justify-content:space-between;"><span>Diminue le prix !</span> <strong class="font-fon" style="color: white;">Vɔ̌ gbɔ !</strong></div>
+              <div class="guide-vocab-category">
+                <h4 class="guide-heading" style="margin-top: 0; color: var(--primary);">💰 Négocier au Marché</h4>
+                <div class="guide-vocab-grid">
+                  <div class="guide-vocab-row"><span>Combien ça coûte ?</span> <strong class="font-fon" style="color: white;">Bì nyí nabí ?</strong></div>
+                  <div class="guide-vocab-row"><span>C'est trop cher !</span> <strong class="font-fon" style="color: white;">É vɛ́ kaka !</strong></div>
+                  <div class="guide-vocab-row"><span>Diminue le prix !</span> <strong class="font-fon" style="color: white;">Vɔ̌ gbɔ !</strong></div>
                 </div>
               </div>
 
               <!-- Catégorie Faim & Soif -->
-              <div style="background: rgba(0,0,0,0.15); padding: 20px; border-radius: 18px; border: 1px solid rgba(255,255,255,0.03);">
-                <h4 style="color: white; font-weight: 800; margin-top: 0; margin-bottom: 12px; color: var(--primary);">🍽️ Alimentation &amp; Besoins</h4>
-                <div style="display: flex; flex-direction: column; gap: 10px; font-size: 0.9rem;">
-                  <div style="display:flex; justify-content:space-between;"><span>Donne-moi de l'eau</span> <strong class="font-fon" style="color: white;">Nǎ mì sin</strong></div>
-                  <div style="display:flex; justify-content:space-between;"><span>Donne-moi du pain</span> <strong class="font-fon" style="color: white;">Nǎ mì wɔ̌xúxú</strong></div>
-                  <div style="display:flex; justify-content:space-between;"><span>Je veux manger</span> <strong class="font-fon" style="color: white;">Un jló na ɖu nǔ</strong></div>
+              <div class="guide-vocab-category">
+                <h4 class="guide-heading" style="margin-top: 0; color: var(--primary);">🍽️ Alimentation &amp; Besoins</h4>
+                <div class="guide-vocab-grid">
+                  <div class="guide-vocab-row"><span>Donne-moi de l'eau</span> <strong class="font-fon" style="color: white;">Nǎ mì sin</strong></div>
+                  <div class="guide-vocab-row"><span>Donne-moi du pain</span> <strong class="font-fon" style="color: white;">Nǎ mì wɔ̌xúxú</strong></div>
+                  <div class="guide-vocab-row"><span>Je veux manger</span> <strong class="font-fon" style="color: white;">Un jló na ɖu nǔ</strong></div>
                 </div>
               </div>
 
               <!-- Catégorie Direction -->
-              <div style="background: rgba(0,0,0,0.15); padding: 20px; border-radius: 18px; border: 1px solid rgba(255,255,255,0.03);">
-                <h4 style="color: white; font-weight: 800; margin-top: 0; margin-bottom: 12px; color: var(--primary);">📍 Orientation</h4>
-                <div style="display: flex; flex-direction: column; gap: 10px; font-size: 0.9rem;">
-                  <div style="display:flex; justify-content:space-between;"><span>Où est la route de...?</span> <strong class="font-fon" style="color: white;">Fitɛ wɛ ali ... tɔn ɖe ?</strong></div>
-                  <div style="display:flex; justify-content:space-between;"><span>C'est devant</span> <strong class="font-fon" style="color: white;">É ɖò nukɔn</strong></div>
-                  <div style="display:flex; justify-content:space-between;"><span>C'est derrière</span> <strong class="font-fon" style="color: white;">É ɖò gudo</strong></div>
+              <div class="guide-vocab-category">
+                <h4 class="guide-heading" style="margin-top: 0; color: var(--primary);">📍 Orientation</h4>
+                <div class="guide-vocab-grid">
+                  <div class="guide-vocab-row"><span>Où est la route de...?</span> <strong class="font-fon" style="color: white;">Fitɛ wɛ ali ... tɔn ɖe ?</strong></div>
+                  <div class="guide-vocab-row"><span>C'est devant</span> <strong class="font-fon" style="color: white;">É ɖò nukɔn</strong></div>
+                  <div class="guide-vocab-row"><span>C'est derrière</span> <strong class="font-fon" style="color: white;">É ɖò gudo</strong></div>
                 </div>
               </div>
 
               <!-- Catégorie Urgences -->
-              <div style="background: rgba(0,0,0,0.15); padding: 20px; border-radius: 18px; border: 1px solid rgba(255,255,255,0.03);">
-                <h4 style="color: white; font-weight: 800; margin-top: 0; margin-bottom: 12px; color: var(--primary);">⚠️ Urgences &amp; États</h4>
-                <div style="display: flex; flex-direction: column; gap: 10px; font-size: 0.9rem;">
-                  <div style="display:flex; justify-content:space-between;"><span>Aidez-moi !</span> <strong class="font-fon" style="color: white;">Mi wá dɔn mì !</strong></div>
-                  <div style="display:flex; justify-content:space-between;"><span>Je suis fatigué</span> <strong class="font-fon" style="color: white;">Kpɔlo ɖo mì</strong></div>
-                  <div style="display:flex; justify-content:space-between;"><span>J'ai faim</span> <strong class="font-fon" style="color: white;">Xɔvɛ ɖo mì</strong></div>
-                  <div style="display:flex; justify-content:space-between;"><span>Je suis malade</span> <strong class="font-fon" style="color: white;">Azɔn ɖò mì ɖu wɛ</strong></div>
+              <div class="guide-vocab-category">
+                <h4 class="guide-heading" style="margin-top: 0; color: var(--primary);">⚠️ Urgences &amp; États</h4>
+                <div class="guide-vocab-grid">
+                  <div class="guide-vocab-row"><span>Aidez-moi !</span> <strong class="font-fon" style="color: white;">Mi wá dɔn mì !</strong></div>
+                  <div class="guide-vocab-row"><span>Je suis fatigué</span> <strong class="font-fon" style="color: white;">Kpɔlo ɖo mì</strong></div>
+                  <div class="guide-vocab-row"><span>J'ai faim</span> <strong class="font-fon" style="color: white;">Xɔvɛ ɖo mì</strong></div>
+                  <div class="guide-vocab-row"><span>Je suis malade</span> <strong class="font-fon" style="color: white;">Azɔn ɖò mì ɖu wɛ</strong></div>
                 </div>
               </div>
             </div>

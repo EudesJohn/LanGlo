@@ -134,13 +134,13 @@ function getDailyIndices(count, numWords = 5) {
 
 async function getDailyWords(numWords = 5) {
   try {
-    const { count, error: countErr } = await supabase
+    const { data: allIds, error: idsErr } = await supabase
       .from('words')
-      .select('*', { count: 'exact', head: true })
+      .select('id')
       .eq('status', 'approved')
       .eq('category', 'Mot');
 
-    if (countErr || !count) {
+    if (idsErr || !allIds || allIds.length === 0) {
       const { data } = await supabase
         .from('words')
         .select('*')
@@ -149,19 +149,15 @@ async function getDailyWords(numWords = 5) {
       return data || [];
     }
 
-    const indices = getDailyIndices(count, numWords);
-    const queries = indices.map(idx =>
-      supabase
-        .from('words')
-        .select('*')
-        .eq('status', 'approved')
-        .eq('category', 'Mot')
-        .range(idx, idx)
-        .maybeSingle()
-    );
+    const indices = getDailyIndices(allIds.length, numWords);
+    const selectedIds = indices.map(i => allIds[i].id);
 
-    const results = await Promise.all(queries);
-    return results.map(r => r.data).filter(Boolean);
+    const { data: words } = await supabase
+      .from('words')
+      .select('*')
+      .in('id', selectedIds);
+
+    return words || [];
   } catch (err) {
     console.error("Error in getDailyWords:", err);
     return [];
@@ -300,7 +296,7 @@ module.exports = async (req, res) => {
       // ----------------------------------------------------------
       // ÉTAPE 1 : Recherche exacte de la phrase ou du mot complet
       // ----------------------------------------------------------
-      const escapedSearchTerm = searchTerm.replace(/"/g, '\\"');
+      const escapedSearchTerm = searchTerm.replace(/[\\%_]/g, '\\$&').replace(/"/g, '""');
       const { data: exactMatchesRaw, error } = await supabase
         .from('words')
         .select('*')

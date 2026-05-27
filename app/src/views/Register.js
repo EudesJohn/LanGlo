@@ -59,7 +59,7 @@ export default {
               <label class="auth-label">MOT DE PASSE</label>
               <div class="input-wrapper-v2">
                 <lucide-icon name="lock" />
-                <input :type="showPassword ? 'text' : 'password'" v-model="password" class="input-v2" placeholder="Minimum 6 caractères" required />
+                <input :type="showPassword ? 'text' : 'password'" v-model="password" class="input-v2" placeholder="Minimum 8 caractères" required minlength="8" />
                 <button type="button" class="eye-btn" @click="showPassword = !showPassword">
                   <lucide-icon :name="showPassword ? 'eye-off' : 'eye'" />
                 </button>

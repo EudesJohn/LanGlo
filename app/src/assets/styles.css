@@ -1680,9 +1680,485 @@ td { padding: 15px; border-bottom: 1px solid var(--glass-border); }
   }
 }
 
-/* =============================================
-   GBE TCHE APPRENDRE - DUOLINGO-STYLE STYLES
-   ============================================= */
+/* ══════════════════════════════════════════════
+   ADMIN EXTRACTED STYLE CLASSES
+   ══════════════════════════════════════════════ */
+
+/* Toolbar layout (replaces inline flex-box on glass-card) */
+.library-toolbar-layout {
+  border-radius: 20px;
+  padding: 20px;
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.library-toolbar-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.library-toolbar-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding-top: 12px;
+  flex-wrap: wrap;
+  gap: 12px;
+  width: 100%;
+}
+
+/* Approve-all gradient button */
+.btn-approve-all {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border: none;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+}
+.btn-approve-all:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35);
+}
+
+/* Danger action button (delete bible, delete pronouns) */
+.btn-danger-action {
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  color: #ef4444;
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn-danger-action:hover {
+  background: rgba(239, 68, 68, 0.22);
+  border-color: rgba(239, 68, 68, 0.5);
+}
+
+/* Category badge displayed on mod cards */
+.category-badge {
+  background: rgba(255, 107, 53, 0.15);
+  border: 1px solid rgba(255, 107, 53, 0.3);
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-left: 6px;
+  text-transform: uppercase;
+  color: var(--primary);
+}
+
+/* Studio state cards (loading, error, empty) */
+.studio-state-card {
+  padding: 80px 40px;
+  text-align: center;
+}
+
+.studio-state-card.error {
+  padding: 60px 40px;
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.studio-state-card.empty {
+  padding: 100px 40px;
+}
+
+/* Studio progress bar layout */
+.studio-progress-layout {
+  border-radius: 20px;
+  padding: 20px 28px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.studio-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), #ff9f43);
+  border-radius: 99px;
+  transition: width 0.4s;
+}
+
+/* Activity section header */
+.activity-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  padding-bottom: 16px;
+  margin-bottom: 20px;
+}
+
+.activity-section-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Learning container max-width helper */
+.learning-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.learning-container.with-top {
+  max-width: 800px;
+  margin-top: 10px;
+}
+
+/* Studio word display area (admin inline studio) */
+.studio-word-display {
+  text-align: center;
+  padding: 40px 40px 30px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.studio-word-fon {
+  font-size: 3.5rem;
+  font-weight: 900;
+  color: white;
+  line-height: 1.2;
+  margin-bottom: 12px;
+}
+
+.studio-word-meaning {
+  font-size: 1.2rem;
+  opacity: 0.7;
+}
+
+.studio-word-phonetic {
+  margin-top: 10px;
+  font-size: 1rem;
+  opacity: 0.5;
+  font-family: monospace;
+}
+
+/* Studio controls in admin */
+.studio-controls-panel {
+  padding: 30px 40px;
+}
+
+.studio-footer-panel {
+  padding: 0 40px 40px;
+  border-top: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Upcoming words section */
+.upcoming-section {
+  border-radius: 20px;
+  padding: 20px;
+  margin-top: 24px;
+}
+
+.upcoming-title {
+  margin: 0 0 14px;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.6;
+}
+
+.upcoming-list {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Activity timeline section */
+.timeline-section-card {
+  padding: 24px;
+}
+
+.activity-empty-state {
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.activity-loading-state {
+  text-align: center;
+  padding: 40px;
+}
+
+/* ══════════════════════════════════════════════
+   LEARNING GUIDE CONTENT STYLES
+   ══════════════════════════════════════════════ */
+
+.guide-card {
+  padding: 30px;
+  border-radius: 24px;
+  border: 1px solid var(--glass-border);
+}
+
+.guide-heading {
+  color: white;
+  font-weight: 800;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.guide-heading .guide-bullet {
+  color: var(--primary);
+}
+
+.guide-subtitle {
+  font-size: 1.8rem;
+  margin-bottom: 15px;
+}
+
+.guide-text {
+  opacity: 0.7;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin-bottom: 15px;
+}
+
+.guide-intro {
+  opacity: 0.8;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.guide-info-card {
+  background: rgba(0, 0, 0, 0.15);
+  padding: 15px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.guide-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.guide-letter {
+  color: var(--primary);
+  font-size: 1.6rem;
+}
+
+.guide-card-text {
+  font-size: 0.85rem;
+  opacity: 0.7;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.guide-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.guide-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 25px;
+  font-size: 0.88rem;
+}
+
+.guide-grid-auto {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.guide-grid-1 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  margin-bottom: 25px;
+}
+
+.guide-highlight-box {
+  background: rgba(255, 107, 53, 0.03);
+  padding: 15px 20px;
+  border-radius: 16px;
+  border: 1px dashed rgba(255, 107, 53, 0.2);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.guide-example-box {
+  background: rgba(255, 255, 255, 0.02);
+  padding: 15px 20px;
+  border-radius: 16px;
+  border: 1px solid var(--glass-border);
+  margin-bottom: 25px;
+  line-height: 1.8;
+}
+
+.guide-tense-box {
+  background: rgba(0, 0, 0, 0.12);
+  padding: 12px 15px;
+  border-radius: 12px;
+  border-left: 4px solid var(--primary);
+}
+
+.guide-pronoun-row {
+  background: rgba(0, 0, 0, 0.15);
+  padding: 12px 18px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  display: flex;
+  justify-content: space-between;
+}
+
+.guide-negation-box {
+  background: rgba(231, 29, 54, 0.05);
+  padding: 15px;
+  border-radius: 16px;
+  border: 1px solid rgba(231, 29, 54, 0.2);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+/* Chat dialog in salutations guide */
+.chat-message {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  max-width: 80%;
+}
+
+.chat-message.right {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+
+.chat-avatar {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.chat-avatar-a {
+  background: var(--primary);
+  color: white;
+}
+
+.chat-avatar-b {
+  background: #2ec4b6;
+  color: white;
+}
+
+.chat-bubble-a {
+  background: rgba(255, 107, 53, 0.1);
+  border: 1px solid rgba(255, 107, 53, 0.2);
+  padding: 10px 15px;
+  border-radius: 0 16px 16px 16px;
+}
+
+.chat-bubble-b {
+  background: rgba(46, 196, 182, 0.1);
+  border: 1px solid rgba(46, 196, 182, 0.2);
+  padding: 10px 15px;
+  border-radius: 16px 0 16px 16px;
+}
+
+.chat-dialog {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 20px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  margin-bottom: 25px;
+}
+
+.guide-digramme-card {
+  background: rgba(255, 255, 255, 0.02);
+  padding: 12px 15px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.02);
+}
+
+.guide-vocab-category {
+  background: rgba(0, 0, 0, 0.15);
+  padding: 20px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.guide-vocab-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 0.9rem;
+}
+
+.guide-vocab-row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.guide-tense-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  margin-bottom: 25px;
+}
+
+.guide-salutation-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+  margin-bottom: 25px;
+}
+
+.guide-liaison-box {
+  background: rgba(255, 107, 53, 0.02);
+  padding: 20px;
+  border-radius: 18px;
+  border: 1px dashed rgba(255, 107, 53, 0.2);
+  line-height: 2;
+}
+
+/*
+  =============================================
+  GBE TCHE APPRENDRE - DUOLINGO-STYLE STYLES
+  ============================================= */
 
 .confetti-canvas {
   position: fixed;

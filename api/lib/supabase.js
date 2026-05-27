@@ -10,11 +10,6 @@ if (!supabaseUrl || !supabaseAnonKey) {
   console.warn("Supabase credentials missing. Ensure SUPABASE_URL and SUPABASE_ANON_KEY are set in environment variables.");
 }
 
-console.log("Supabase Client Init:");
-console.log("- URL:", supabaseUrl);
-console.log("- Service Role Key Present:", !!supabaseServiceRoleKey);
-console.log("- Anon Key Present:", !!supabaseAnonKey);
-
 // Use Service Role Key for backend if available, otherwise fallback to Anon Key
 const supabase = createClient(supabaseUrl, supabaseServiceRoleKey || supabaseAnonKey);
 

@@ -8,8 +8,7 @@ const fs = require('fs');
 const app = express();
 const PORT = 3000;
 
-app.use(express.json({ limit: '50mb' }));
-app.use(cookieParser());
+app.use(express.json({ limit: '5mb' }));
 // Rate limiting for API endpoints – 100 requests per minute per IP
 const apiLimiter = rateLimit({
   windowMs: 60 * 1000,
@@ -18,8 +17,8 @@ const apiLimiter = rateLimit({
 });
 app.use('/api/', apiLimiter);
 
-app.use(cookieParser());
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+app.use(express.urlencoded({ limit: '5mb', extended: true }));
 
 // Main handler for all requests
 app.all('/api/:resource/:action', async (req, res) => {
