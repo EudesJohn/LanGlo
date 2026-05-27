@@ -7,10 +7,10 @@
     <meta http-equiv="Content-Security-Policy" content="
       default-src 'self';
       script-src 'self' https://unpkg.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net;
-      style-src 'self' 'unsafe-inline';
-      connect-src 'self' https://*.supabase.co;
+      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+      connect-src 'self' https://*.supabase.co https://unpkg.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net;
       img-src 'self' data: blob: https://*.supabase.co;
-      font-src 'self';
+      font-src 'self' https://fonts.gstatic.com;
       frame-src 'none';
       object-src 'none';
     ">
@@ -30,25 +30,6 @@
 <body>
     <div id="app"></div>
 
-    <script type="module">
-        import App from './src/App.js';
-
-        // Register Service Worker for PWA
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(reg => {
-                        console.log('Service Worker registered successfully!', reg.scope);
-                        // Proactively check for updates on reload
-                        reg.update();
-                    })
-                    .catch(err => console.warn('Service Worker registration failed:', err));
-            });
-        }
-
-        const { createApp } = Vue;
-        const app = createApp(App);
-        app.mount('#app');
-    </script>
+    <script type="module" src="./src/main.js"></script>
 </body>
 </html>
