@@ -1,8 +1,19 @@
 const supabase = require('../lib/supabase');
 const { setCookie, clearCookie } = require('../lib/auth');
+const { rateLimit } = require('../lib/rateLimit');
+
+const SENSITIVE_ACTIONS = ['login', 'register', 'forgot-password', 'reset-password'];
 
 module.exports = async (req, res) => {
   const action = req.params?.action || req.query?.action || req.url.split('/').pop().split('?')[0];
+
+  if (SENSITIVE_ACTIONS.includes(action)) {
+    const result = rateLimit(req, { max: 10, windowMs: 15 * 60 * 1000 });
+    if (!result.allowed) {
+      res.setHeader('Retry-After', result.retryAfter);
+      return res.status(429).json({ success: false, message: 'Trop de tentatives. Réessayez dans quelques minutes.' });
+    }
+  }
 
   try {
     // 1. LOGIN
@@ -90,11 +101,12 @@ module.exports = async (req, res) => {
       }
 
       if (authData.session) {
-        res.cookie('token', authData.session.access_token, {
+        setCookie(res, 'token', authData.session.access_token, {
           httpOnly: true,
           sameSite: 'strict',
           secure: process.env.NODE_ENV === 'production',
-          maxAge: 7 * 24 * 60 * 60 * 1000
+          maxAge: 7 * 24 * 60 * 60 * 1000,
+          path: '/'
         });
       }
 
@@ -122,13 +134,6 @@ module.exports = async (req, res) => {
             throw new Error("L'avatar dépasse la limite de 2 Mo.");
           }
           const fileName = `${id}_${Date.now()}.jpg`;
-
-          // Ensure public 'avatars' storage bucket exists
-          try {
-            await supabase.storage.createBucket('avatars', { public: true });
-          } catch (bucketErr) {
-            // Silence if already exists
-          }
 
           const { error: uploadError } = await supabase.storage
             .from('avatars')

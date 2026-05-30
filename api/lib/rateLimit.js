@@ -1,43 +1,48 @@
 // api/lib/rateLimit.js
-// Best-effort in-memory rate limiter for Vercel serverless functions.
-// Note: each cold start resets counters. For production with multiple instances,
-// this is a deterrent, not a hard guarantee. Pair with Vercel Firewall for strict limits.
+// Simple in-memory rate limiter for Vercel serverless functions.
+// Note: in-memory = par instance. En production avec plusieurs instances,
+// chaque instance a son compteur. Suffisant pour ralentir les attaques basiques.
 
-const requests = new Map();
+const attempts = new Map();
 
-module.exports = function rateLimit({ windowMs = 60000, max = 100 } = {}) {
-  return function rateLimitMiddleware(req, res, next) {
-    const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim()
-      || req.headers['x-real-ip']
-      || req.socket?.remoteAddress
-      || 'unknown';
+const WINDOW_MS = 15 * 60 * 1000; // 15 minutes
+const MAX_ATTEMPTS = 10;
 
+// Nettoyage périodique toutes les 5 minutes
+if (!globalThis.__rateLimitCleanup) {
+  globalThis.__rateLimitCleanup = setInterval(() => {
     const now = Date.now();
-    const windowStart = now - windowMs;
-    let hits = requests.get(ip) || [];
-
-    // Remove expired entries
-    hits = hits.filter(t => t > windowStart);
-
-    if (hits.length >= max) {
-      res.status(429).json({ error: 'Trop de requêtes. Veuillez réessayer plus tard.' });
-      return true; // signaled blocked
+    for (const [key, entry] of attempts) {
+      if (now - entry.start > WINDOW_MS) attempts.delete(key);
     }
+  }, 5 * 60 * 1000);
+  if (globalThis.__rateLimitCleanup.unref) {
+    globalThis.__rateLimitCleanup.unref();
+  }
+}
 
-    hits.push(now);
-    requests.set(ip, hits);
+function rateLimit(req, { max = MAX_ATTEMPTS, windowMs = WINDOW_MS } = {}) {
+  const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim()
+    || req.headers['x-real-ip']
+    || req.socket?.remoteAddress
+    || 'unknown';
 
-    // Clean up old entries periodically
-    if (requests.size > 10000) {
-      for (const [key, timestamps] of requests) {
-        const valid = timestamps.filter(t => t > Date.now() - windowMs);
-        if (valid.length === 0) requests.delete(key);
-        else requests.set(key, valid);
-      }
-    }
+  const action = req.params?.action || req.query?.action || req.url.split('/').pop().split('?')[0];
+  const key = `${ip}:${action}`;
+  const now = Date.now();
 
-    res.setHeader('X-RateLimit-Limit', max);
-    res.setHeader('X-RateLimit-Remaining', Math.max(0, max - hits.length));
-    return false;
-  };
-};
+  const entry = attempts.get(key);
+  if (!entry || now - entry.start > windowMs) {
+    attempts.set(key, { start: now, count: 1 });
+    return { allowed: true, remaining: max - 1 };
+  }
+
+  entry.count++;
+  if (entry.count > max) {
+    return { allowed: false, remaining: 0, retryAfter: Math.ceil((windowMs - (now - entry.start)) / 1000) };
+  }
+
+  return { allowed: true, remaining: max - entry.count };
+}
+
+module.exports = { rateLimit };
