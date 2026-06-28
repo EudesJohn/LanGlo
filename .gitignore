@@ -8,3 +8,5 @@ api-old-node/
 dist/
 .DS_Store
 scratch/
+
+.vercel
